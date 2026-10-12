@@ -219,12 +219,12 @@ until you press **Read it**; the applications list and board mark it *reply to r
 another stage clears it, and undoing the move puts it back.
 
 **Chasing people, or giving up on them.** For people (a recruiter you're talking to outside
-any one application), three small buttons sit next to *Waiting* or *Replies to read* on Next
+any one application), three buttons sit next to *Waiting* or *Replies to read* on Next
 actions, and at the top of their page:
 
-- **Chased** (the paper plane): you sent a nudge. You're waiting on them again from today, and
+- **Chased**: you sent a nudge. You're waiting on them again from today, and
   Next actions says *Chased today* instead of how long you've been waiting.
-- **Ghosted** (the ghost) and **Not interested** (thumbs down): you've stopped expecting
+- **Ghosted** and **Not interested**: you've stopped expecting
   anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
   *Not interested*, with the date, and **Reopen** clears it. Marking them as waiting or
   replied again reopens it too.

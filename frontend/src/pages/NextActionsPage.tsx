@@ -212,7 +212,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
           compact
           who={person.name}
         />
-        <PersonChase contact={person} />
+        <PersonChase contact={person} compact />
       </Group>
     </Group>
   );
