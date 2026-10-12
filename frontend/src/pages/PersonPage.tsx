@@ -29,6 +29,7 @@ import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
+import { PersonChase, PersonClosed } from "../components/PersonChase";
 import { PersonWaiting } from "../components/Waiting";
 import { ago, formatDateTime } from "../utils/time";
 
@@ -74,11 +75,13 @@ export function PersonPage() {
           </div>
         </Group>
         <Group gap="xs">
+          <PersonClosed contact={contact} />
           <PersonWaiting
             id={contact.id}
             since={contact.awaiting_reply_since}
             toRead={contact.reply_to_read_since}
           />
+          {!contact.closed_as && <PersonChase contact={contact} />}
           <Button
             variant="default"
             size="xs"
