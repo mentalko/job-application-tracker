@@ -114,6 +114,9 @@ class ContactIn(In):
     details: list[ContactDetailIn] = []
 
 
+ContactClosed = Literal["ghosted", "not_interested"]
+
+
 class ContactPatch(Patch):
     not_null = frozenset({"name"})
     name: str | None = Field(default=None, min_length=1, max_length=200)
@@ -123,6 +126,9 @@ class ContactPatch(Patch):
     details: list[ContactDetailIn] | None = None  # replaces all details when sent
     awaiting_reply_since: date | None = None  # you replied and are waiting; null: you heard back
     reply_to_read_since: date | None = None  # they've replied and you need to read it (clears waiting)
+    chased_on: date | None = None  # you chased them: waiting again from this day
+    closed_as: ContactClosed | None = None  # ghosted or not interested: off Next actions
+    closed_on: date | None = None  # defaults to today when closed_as is set
 
 
 class ContactOut(Out):
@@ -134,6 +140,9 @@ class ContactOut(Out):
     details: list[ContactDetailOut] = []
     awaiting_reply_since: date | None = None
     reply_to_read_since: date | None = None
+    chased_on: date | None = None
+    closed_as: str | None = None  # ghosted | not_interested
+    closed_on: date | None = None
     created_at: datetime
     updated_at: datetime
 

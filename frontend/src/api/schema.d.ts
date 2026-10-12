@@ -1601,6 +1601,12 @@ export interface components {
             agency_id: string | null;
             /** Awaiting Reply Since */
             awaiting_reply_since?: string | null;
+            /** Chased On */
+            chased_on?: string | null;
+            /** Closed As */
+            closed_as?: string | null;
+            /** Closed On */
+            closed_on?: string | null;
             /** Company Id */
             company_id: string | null;
             /**
@@ -1633,6 +1639,12 @@ export interface components {
             agency_id?: string | null;
             /** Awaiting Reply Since */
             awaiting_reply_since?: string | null;
+            /** Chased On */
+            chased_on?: string | null;
+            /** Closed As */
+            closed_as?: ("ghosted" | "not_interested") | null;
+            /** Closed On */
+            closed_on?: string | null;
             /** Company Id */
             company_id?: string | null;
             /** Details */

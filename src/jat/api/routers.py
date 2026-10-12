@@ -184,10 +184,22 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
     contact = get_or_404(session, Contact, contact_id)
     data = body.model_dump(mode="json", exclude_unset=True, exclude={"details"})
     _validate_contact(session, data)
-    for key in ("awaiting_reply_since", "reply_to_read_since"):
+    for key in ("awaiting_reply_since", "reply_to_read_since", "chased_on", "closed_on"):
         if key in data:
             data[key] = getattr(body, key)  # a date, not its JSON string
+    # Chasing someone means waiting on them again, from that day.
+    if data.get("chased_on") and "awaiting_reply_since" not in data:
+        data["awaiting_reply_since"] = data["chased_on"]
     _one_reply_state(data)
+    if data.get("closed_as"):
+        # Ghosted or not interested: nothing to wait for or read any more.
+        data.setdefault("closed_on", None)
+        data["closed_on"] = data["closed_on"] or date.today()
+        data["awaiting_reply_since"] = data["reply_to_read_since"] = None
+    elif data.get("awaiting_reply_since") or data.get("reply_to_read_since"):
+        data["closed_as"] = data["closed_on"] = None  # the conversation's open again
+    elif "closed_as" in data:
+        data["closed_on"] = None  # reopened
     for key, value in data.items():
         setattr(contact, key, value)
     if body.details is not None:
