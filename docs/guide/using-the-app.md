@@ -226,7 +226,7 @@ actions, and at the top of their page:
   Next actions says *Chased today* instead of how long you've been waiting.
 - **Ghosted** (the ghost) and **Not interested** (thumbs down): you've stopped expecting
   anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
-  *Not interested*, with the date, and **Reopen** undoes it. Marking them as waiting or
+  *Not interested*, with the date, and **Reopen** clears it. Marking them as waiting or
   replied again reopens it too.
 
 Each pops up a message with **Undo**, and goes on the Timeline. (For applications, **Ghosted**

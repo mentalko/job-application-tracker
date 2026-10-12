@@ -57,7 +57,7 @@ describe("chasing people", () => {
       ".mantine-Card-root",
     ) as HTMLElement;
 
-    fireEvent.click(within(section).getByRole("button", { name: "Chased Alex Morgan" }));
+    fireEvent.click(within(section).getByRole("button", { name: "Chased: Alex Morgan" }));
     await waitFor(() =>
       expect(calls.filter((c) => c.method === "PATCH").map((c) => c.body)).toEqual([{ chased_on: today }]),
     );
@@ -108,7 +108,7 @@ describe("chasing people", () => {
     renderAt("/people/c1");
     expect(await screen.findByText(/^Not interested · /)).toBeInTheDocument();
     // Closed: no chasing buttons until it's reopened.
-    expect(screen.queryByRole("button", { name: "Chased Alex Morgan" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Chased: Alex Morgan" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reopen" }));
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ closed_as: null }));
   });

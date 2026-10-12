@@ -200,6 +200,8 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
         data["closed_as"] = data["closed_on"] = None  # the conversation's open again
     elif "closed_as" in data:
         data["closed_on"] = None  # reopened
+    if "closed_on" in data and "closed_as" not in data and not contact.closed_as:
+        del data["closed_on"]  # a date for a conversation that isn't closed means nothing
     for key, value in data.items():
         setattr(contact, key, value)
     if body.details is not None:

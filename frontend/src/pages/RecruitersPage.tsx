@@ -38,6 +38,7 @@ import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { closedLabel } from "../components/PersonChase";
+import { formatDate } from "../utils/time";
 
 function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
   const create = useCreateAgency();
@@ -150,6 +151,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             {contact.closed_as && (
               <Badge size="sm" variant="light" color="gray" style={{ textTransform: "none" }}>
                 {closedLabel(contact.closed_as)}
+                {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
               </Badge>
             )}
             {contact.awaiting_reply_since && (

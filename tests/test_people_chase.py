@@ -8,6 +8,10 @@ def test_chasing_someone_means_waiting_again(client, seeded):
     assert [p["id"] for p in out["waiting_people"]] == [alex]
     titles = [i["title"] for i in client.get("/api/v1/timeline").json()["items"]]
     assert "Chased Alex Recruiter" in titles
+    # Not also "replied; waiting" for the same day.
+    assert "Replied to Alex Recruiter; waiting to hear back" not in titles
+    # A date with nothing closed is ignored.
+    assert client.patch(url, json={"closed_on": "2026-10-04"}).json()["closed_on"] is None
 
     # Chasing someone whose reply you'd still to read: you've read it, and you're waiting again.
     client.patch(url, json={"reply_to_read_since": "2026-10-02"})

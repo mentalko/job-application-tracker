@@ -1604,7 +1604,7 @@ export interface components {
             /** Chased On */
             chased_on?: string | null;
             /** Closed As */
-            closed_as?: string | null;
+            closed_as?: ("ghosted" | "not_interested") | null;
             /** Closed On */
             closed_on?: string | null;
             /** Company Id */

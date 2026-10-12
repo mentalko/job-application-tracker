@@ -18,7 +18,7 @@ const before = (c: Contact) => ({
   awaiting_reply_since: c.awaiting_reply_since ?? null,
   reply_to_read_since: c.reply_to_read_since ?? null,
   chased_on: c.chased_on ?? null,
-  closed_as: (c.closed_as ?? null) as "ghosted" | "not_interested" | null,
+  closed_as: c.closed_as ?? null,
   closed_on: c.closed_on ?? null,
 });
 
@@ -36,6 +36,7 @@ export function PersonChase({ contact }: { contact: Contact }) {
       {
         onSuccess: () => {
           const id = notifications.show({
+            autoClose: 8000, // long enough to reach Undo from the keyboard
             message: (
               <Group justify="space-between" wrap="nowrap" gap="xs">
                 <Text size="sm">{message}</Text>
@@ -64,7 +65,7 @@ export function PersonChase({ contact }: { contact: Contact }) {
           color="blue"
           disabled={update.isPending}
           onClick={() => act({ chased_on: today() }, `Chased ${contact.name}`)}
-          aria-label={`Chased ${contact.name}`}
+          aria-label={`Chased: ${contact.name}`}
         >
           <IconSend size={16} />
         </ActionIcon>

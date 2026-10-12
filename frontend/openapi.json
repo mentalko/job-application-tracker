@@ -1618,6 +1618,10 @@
           "closed_as": {
             "anyOf": [
               {
+                "enum": [
+                  "ghosted",
+                  "not_interested"
+                ],
                 "type": "string"
               },
               {

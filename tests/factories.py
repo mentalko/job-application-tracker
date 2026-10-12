@@ -39,7 +39,14 @@ def populate(session) -> dict[str, str]:
     agency = Agency(name="Northwind Talent")
     session.add_all([company, agency])
     session.flush()
-    recruiter = Contact(name="Alex Recruiter", agency_id=agency.id, title="Senior Consultant")
+    recruiter = Contact(
+        name="Alex Recruiter",
+        agency_id=agency.id,
+        title="Senior Consultant",
+        chased_on=date(2026, 9, 25),
+        closed_as="ghosted",
+        closed_on=date(2026, 10, 5),
+    )
     session.add(recruiter)
     session.flush()
     session.add_all(

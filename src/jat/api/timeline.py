@@ -338,7 +338,8 @@ def timeline(
                 c, id=f"contact:{c.id}", at=c.created_at, all_day=False, category="added", title=f"Added {c.name}"
             )
         )
-        if c.awaiting_reply_since:
+        # A chase restarts the waiting on the same day: "Chased X" says it, once.
+        if c.awaiting_reply_since and c.awaiting_reply_since != c.chased_on:
             items.append(
                 about_contact(
                     c,

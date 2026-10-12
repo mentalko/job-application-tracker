@@ -141,7 +141,7 @@ class ContactOut(Out):
     awaiting_reply_since: date | None = None
     reply_to_read_since: date | None = None
     chased_on: date | None = None
-    closed_as: str | None = None  # ghosted | not_interested
+    closed_as: ContactClosed | None = None
     closed_on: date | None = None
     created_at: datetime
     updated_at: datetime
