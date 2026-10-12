@@ -71,6 +71,12 @@ class Contact(IdMixin, TimestampMixin, Base):
     awaiting_reply_since: Mapped[date | None]
     # They've replied and you haven't read it properly yet, since this day.
     reply_to_read_since: Mapped[date | None]
+    # When you last chased them (sent a nudge); you're waiting again from then.
+    chased_on: Mapped[date | None]
+    # You've stopped expecting anything: "ghosted" or "not_interested", since `closed_on`.
+    # Off Next actions until you're waiting on them (or reading a reply) again.
+    closed_as: Mapped[str | None] = mapped_column(String(20))
+    closed_on: Mapped[date | None]
 
 
 class ContactDetail(IdMixin, Base):

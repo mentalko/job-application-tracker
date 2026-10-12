@@ -37,6 +37,8 @@ import { useAgencies, useApplications, useCompanies, useContacts } from "../api/
 import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
+import { closedLabel } from "../components/PersonChase";
+import { formatDate } from "../utils/time";
 
 function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
   const create = useCreateAgency();
@@ -123,7 +125,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             </ActionIcon>
           </Tooltip>
         </Group>
-        {(where || contact.awaiting_reply_since || contact.reply_to_read_since) && (
+        {(where || contact.awaiting_reply_since || contact.reply_to_read_since || contact.closed_as) && (
           <Group gap={4}>
             {where && (
               <Badge
@@ -144,6 +146,12 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             {contact.reply_to_read_since && (
               <Badge size="sm" variant="light" color="orange" style={{ textTransform: "none" }}>
                 Reply to read
+              </Badge>
+            )}
+            {contact.closed_as && (
+              <Badge size="sm" variant="light" color="gray" style={{ textTransform: "none" }}>
+                {closedLabel(contact.closed_as)}
+                {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
               </Badge>
             )}
             {contact.awaiting_reply_since && (

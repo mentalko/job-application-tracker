@@ -1603,6 +1603,45 @@
             ],
             "title": "Awaiting Reply Since"
           },
+          "chased_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chased On"
+          },
+          "closed_as": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ghosted",
+                  "not_interested"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed As"
+          },
+          "closed_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed On"
+          },
           "company_id": {
             "anyOf": [
               {
@@ -1701,6 +1740,45 @@
               }
             ],
             "title": "Awaiting Reply Since"
+          },
+          "chased_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chased On"
+          },
+          "closed_as": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ghosted",
+                  "not_interested"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed As"
+          },
+          "closed_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed On"
           },
           "company_id": {
             "anyOf": [

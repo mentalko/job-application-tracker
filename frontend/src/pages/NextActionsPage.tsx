@@ -33,6 +33,7 @@ import { MeetingLine, MeetingOutcome } from "../components/Meetings";
 import { RoleLine } from "../components/Roles";
 import { AddTodo, TodoLine } from "../components/Todos";
 import { ChaseActions } from "../components/ChaseActions";
+import { PersonChase, waitingOrChased } from "../components/PersonChase";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
@@ -202,7 +203,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
         <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"}>
           {person.reply_to_read_since
             ? repliedLabel(person.reply_to_read_since)
-            : waitingLabel(person.awaiting_reply_since!)}
+            : waitingOrChased(person, waitingLabel)}
         </Text>
         <PersonWaiting
           id={person.id}
@@ -211,6 +212,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
           compact
           who={person.name}
         />
+        <PersonChase contact={person} />
       </Group>
     </Group>
   );

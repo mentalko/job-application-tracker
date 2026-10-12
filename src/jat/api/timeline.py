@@ -338,7 +338,8 @@ def timeline(
                 c, id=f"contact:{c.id}", at=c.created_at, all_day=False, category="added", title=f"Added {c.name}"
             )
         )
-        if c.awaiting_reply_since:
+        # A chase restarts the waiting on the same day: "Chased X" says it, once.
+        if c.awaiting_reply_since and c.awaiting_reply_since != c.chased_on:
             items.append(
                 about_contact(
                     c,
@@ -347,6 +348,28 @@ def timeline(
                     all_day=True,
                     category="message",
                     title=f"Replied to {c.name}; waiting to hear back",
+                )
+            )
+        if c.chased_on:
+            items.append(
+                about_contact(
+                    c,
+                    id=f"contact-chased:{c.id}",
+                    at=_day(c.chased_on),
+                    all_day=True,
+                    category="message",
+                    title=f"Chased {c.name}",
+                )
+            )
+        if c.closed_as and c.closed_on:
+            items.append(
+                about_contact(
+                    c,
+                    id=f"contact-closed:{c.id}",
+                    at=_day(c.closed_on),
+                    all_day=True,
+                    category="other",
+                    title=f"{c.name}: {'ghosted' if c.closed_as == 'ghosted' else 'not interested'}",
                 )
             )
         if c.reply_to_read_since:

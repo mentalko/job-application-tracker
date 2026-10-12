@@ -64,7 +64,10 @@ export function useSetPersonReply() {
   return useMutation({
     mutationFn: async (args: {
       id: string;
-      body: { awaiting_reply_since?: string | null; reply_to_read_since?: string | null };
+      body: Pick<
+        Schemas["ContactPatch"],
+        "awaiting_reply_since" | "reply_to_read_since" | "chased_on" | "closed_as" | "closed_on"
+      >;
     }) =>
       unwrap(
         await api.PATCH("/api/v1/contacts/{contact_id}", {

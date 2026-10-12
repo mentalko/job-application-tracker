@@ -70,6 +70,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **Recruiters page as tiles**: everyone A to Z in small tiles with their agency or company
   as a chip and their contact details, a filter (at agencies, at companies, independent) and
   every agency as a chip (#58).
+- **Chased, Ghosted and Not interested for people**: chase a recruiter (waiting again from
+  today), or stop expecting anything so they leave Next actions; with Undo and Reopen (#59).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

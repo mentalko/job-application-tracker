@@ -218,6 +218,20 @@ until you press **Read it**; the applications list and board mark it *reply to r
 **I've replied, waiting** clears it too. A reply to read is never *gone quiet* or a follow-up to chase; moving the application to
 another stage clears it, and undoing the move puts it back.
 
+**Chasing people, or giving up on them.** For people (a recruiter you're talking to outside
+any one application), three small buttons sit next to *Waiting* or *Replies to read* on Next
+actions, and at the top of their page:
+
+- **Chased** (the paper plane): you sent a nudge. You're waiting on them again from today, and
+  Next actions says *Chased today* instead of how long you've been waiting.
+- **Ghosted** (the ghost) and **Not interested** (thumbs down): you've stopped expecting
+  anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
+  *Not interested*, with the date, and **Reopen** clears it. Marking them as waiting or
+  replied again reopens it too.
+
+Each pops up a message with **Undo**, and goes on the Timeline. (For applications, **Ghosted**
+is a stage: see [Next actions](#next-actions).)
+
 ### Emails
 
 Export an email from your mail client as a `.eml` file and drop it on the **Files** card.
@@ -251,7 +265,7 @@ first. Your data repo's history still has everything until you rewrite it.
 The **Recruiters** page lists everyone as small tiles, A to Z by name: agency recruiters,
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
-stand, and every email, phone number and link (click to email, call or open; long ones end in
+stand (or *Ghosted* / *Not interested*), and every email, phone number and link (click to email, call or open; long ones end in
 "…", and hovering shows them in full). The pencil edits a person; open their page to delete
 them.
 
