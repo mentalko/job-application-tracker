@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, Text, Tooltip } from "@mantine/core";
+import { Badge, Button, Group, Text, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconGhost2, IconRefresh, IconSend, IconThumbDown } from "@tabler/icons-react";
 import dayjs from "dayjs";
@@ -23,11 +23,12 @@ const before = (c: Contact) => ({
 });
 
 /**
- * Chase someone, or stop expecting anything from them: **Chased** (you sent a nudge; you're
+ * Chase someone, or stop expecting anything from them, as small labelled buttons (`compact` in
+ * lists): **Chased** (you sent a nudge; you're
  * waiting again from today), **Ghosted** or **Not interested** (they leave Next actions). Each
  * says what it did, with an Undo.
  */
-export function PersonChase({ contact }: { contact: Contact }) {
+export function PersonChase({ contact, compact }: { contact: Contact; compact?: boolean }) {
   const update = useSetPersonReply();
   const act = (body: Parameters<typeof update.mutate>[0]["body"], message: string) => {
     const was = before(contact);
@@ -57,36 +58,43 @@ export function PersonChase({ contact }: { contact: Contact }) {
       },
     );
   };
+  const size = compact ? "compact-xs" : "xs";
   return (
-    <Group gap={2} wrap="nowrap">
-      <Tooltip label="Chased: waiting again from today">
-        <ActionIcon
-          variant="subtle"
+    <Group gap={4} wrap="nowrap">
+      <Tooltip label="You nudged them: waiting again from today">
+        <Button
+          size={size}
+          variant="light"
           color="blue"
+          leftSection={<IconSend size={14} />}
           disabled={update.isPending}
           onClick={() => act({ chased_on: today() }, `Chased ${contact.name}`)}
           aria-label={`Chased: ${contact.name}`}
         >
-          <IconSend size={16} />
-        </ActionIcon>
+          Chased
+        </Button>
       </Tooltip>
-      <Tooltip label="Ghosted: stop waiting">
-        <ActionIcon
+      <Tooltip label="No reply: stop waiting on them">
+        <Button
+          size={size}
           variant="subtle"
           color="gray"
+          leftSection={<IconGhost2 size={14} />}
           disabled={update.isPending}
           onClick={() =>
             act({ closed_as: "ghosted", closed_on: today() }, `${contact.name}: ghosted, off Next actions`)
           }
           aria-label={`Ghosted: ${contact.name}`}
         >
-          <IconGhost2 size={16} />
-        </ActionIcon>
+          Ghosted
+        </Button>
       </Tooltip>
-      <Tooltip label="Not interested: stop waiting">
-        <ActionIcon
+      <Tooltip label="You're not interested: stop waiting on them">
+        <Button
+          size={size}
           variant="subtle"
           color="gray"
+          leftSection={<IconThumbDown size={14} />}
           disabled={update.isPending}
           onClick={() =>
             act(
@@ -96,8 +104,8 @@ export function PersonChase({ contact }: { contact: Contact }) {
           }
           aria-label={`Not interested: ${contact.name}`}
         >
-          <IconThumbDown size={16} />
-        </ActionIcon>
+          Not interested
+        </Button>
       </Tooltip>
     </Group>
   );

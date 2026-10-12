@@ -188,7 +188,8 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
 function PersonWaitingLine({ person }: { person: Contact }) {
   const where = person.title ?? "";
   return (
-    <Group justify="space-between" wrap="nowrap">
+    // The buttons move under the name when there isn't room for both (phones).
+    <Group justify="space-between" wrap="wrap" gap="xs">
       <div style={{ minWidth: 0 }}>
         <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
           {person.name}
@@ -199,7 +200,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
           </Text>
         )}
       </div>
-      <Group gap="xs" wrap="nowrap">
+      <Group gap="xs" wrap="wrap" justify="flex-end" style={{ marginLeft: "auto" }}>
         <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"}>
           {person.reply_to_read_since
             ? repliedLabel(person.reply_to_read_since)
@@ -212,7 +213,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
           compact
           who={person.name}
         />
-        <PersonChase contact={person} />
+        <PersonChase contact={person} compact />
       </Group>
     </Group>
   );
