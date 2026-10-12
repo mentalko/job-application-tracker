@@ -74,7 +74,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           Chased
         </Button>
       </Tooltip>
-      <Tooltip label="Stop waiting: off Next actions">
+      <Tooltip label="No reply: stop waiting on them">
         <Button
           size={size}
           variant="subtle"
@@ -89,7 +89,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           Ghosted
         </Button>
       </Tooltip>
-      <Tooltip label="Stop waiting: off Next actions">
+      <Tooltip label="You're not interested: stop waiting on them">
         <Button
           size={size}
           variant="subtle"
