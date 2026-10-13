@@ -29,6 +29,7 @@ import {
   ApplicationTimeline,
   LogActivity,
 } from "../components/ApplicationDrawer";
+import { AtAGlance } from "../components/AtAGlance";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
@@ -275,6 +276,7 @@ export function ApplicationPage() {
           <Grid.Col span={{ base: 12, md: 8 }}>
             <Stack>
               <ApplicationSummary app={app} />
+              <AtAGlance app={app} />
               {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />

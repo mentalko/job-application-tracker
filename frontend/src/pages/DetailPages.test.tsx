@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { mockApi, row, todo, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -89,6 +89,27 @@ describe("application page", () => {
       const patch = calls.find((c) => c.method === "PATCH");
       expect(patch?.body).toEqual({ archived: true });
     });
+  });
+
+  it("shows what needs attention and how long ago things happened", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/applications/a1": detail, // stale: no activity for 10 days
+      "/api/v1/contacts": contacts,
+      "/api/v1/roles": [],
+      "/api/v1/interviews": [],
+      "/api/v1/offers": [],
+      "/api/v1/todos": [todo({ id: "t1", text: "Send portfolio", due_on: null })],
+      "/api/v1/health": {},
+    });
+    renderAt("/applications/a1");
+    const card = (await screen.findByRole("heading", { name: "At a glance" })).closest<HTMLElement>(
+      ".mantine-Card-root",
+    )!;
+    expect(await within(card).findByText("To-do: Send portfolio")).toBeInTheDocument();
+    expect(within(card).getByText("Gone quiet (Applied goes quiet after 7 days)")).toBeInTheDocument();
+    expect(within(card).getByText("no activity for 10 days")).toBeInTheDocument();
+    expect(within(card).getByText("Applied")).toBeInTheDocument(); // a key date
   });
 });
 

@@ -74,6 +74,8 @@ brackets are pull requests.
 - **Chased, Ghosted and Not interested for people**: chase a recruiter (waiting again from
   today), or stop expecting anything so they leave Next actions; with Undo and Reopen (#59), as
   labelled buttons like the rest (#60).
+- **At a glance** on every application: what needs attention and for how long, what's coming
+  up, and key dates as "3 weeks ago" (#65).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

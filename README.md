@@ -89,11 +89,13 @@ interview round each one is at.
 
 ![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
 
-**Everything about an application in one place.** Interview rounds in your own words
-("Round 3 · System design test"), the CV version you sent, Markdown notes, links, files and
-exported emails, and the full timestamped history.
+**Everything about an application in one place.** *At a glance* says what it needs and
+how long ago things happened ("Gone quiet: no activity for 12 days", "Applied 3 weeks ago").
+Below that: interview rounds in your own words ("Round 3 · System design test"), the CV
+version you sent, Markdown notes, links, files and exported emails, and the full timestamped
+history.
 
-![An application page with interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
+![An application page: At a glance (what is coming up and key dates as "3 weeks ago"), then interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
 
 **Insights: where do your applications go?** A Sankey diagram of every application's path
 through the stages, filtered by date range and route, with counts on hover.
@@ -148,6 +150,7 @@ recruiters send roles that go somewhere.
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
 | 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
+| 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |
 | 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) | ✅ Available |
