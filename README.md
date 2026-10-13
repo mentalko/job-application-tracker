@@ -108,6 +108,12 @@ recruiters send roles that go somewhere.
 
 ![Stage-by-stage conversion and median time, direct vs recruiter outcomes and a recruiter scorecard](docs/screenshots/insights-stats.png)
 
+**Recruiter conversations: what happens before an application.** Calls held, the roles each
+recruiter pitched, which you applied for or passed on (and why), and where the applications
+went, as numbers, a Sankey diagram and a table per person or agency.
+
+![Recruiter conversations: calls held, roles pitched, applied or passed, a Sankey diagram of where pitched roles go, who pitches them, and why you passed](docs/screenshots/conversations.png)
+
 <table>
 <tr>
 <td width="50%"><b>Applications list</b> with filters, route, stage, round and staleness<br><img src="docs/screenshots/list.png" width="100%" alt="Applications list with filters"></td>
@@ -159,6 +165,7 @@ recruiters send roles that go somewhere.
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
+| 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
 | 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links | ✅ Available |
