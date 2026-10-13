@@ -55,7 +55,8 @@
 <script>
   const S = "../../docs/screenshots/";
   // Each scene: a caption, and which part of which screenshot to show (x, y, width in the
-  // screenshot's pixels; it's scaled to fill the frame's width).
+  // screenshot's pixels; it's scaled to fill the frame's width). Keep each entry starting
+  // "{ intro" or "{ title" on its own line: make_demo_gif.py counts them that way.
   const SCENES = [
     { intro: true },
     { title: "Know what to chase next", sub: "Replies to read, your to-dos, follow-ups and who's gone quiet, in one list",

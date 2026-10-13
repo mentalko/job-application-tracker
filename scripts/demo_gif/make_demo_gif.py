@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -32,8 +33,21 @@ def scene_count() -> int:
     return len(re.findall(r"^\s*\{ (?:intro|title)", body, re.M))
 
 
+def tools() -> tuple[list[str], list[str]]:
+    """ImageMagick's commands: `magick` (7) when there is one, else `convert` and `identify` (6)."""
+    missing = [t for t in ("google-chrome",) if not shutil.which(t)]
+    if shutil.which("magick"):
+        convert, identify = ["magick"], ["magick", "identify"]
+    else:
+        missing += [t for t in ("convert", "identify") if not shutil.which(t)]
+        convert, identify = ["convert"], ["identify"]
+    if missing:
+        sys.exit(f"Missing {', '.join(missing)}: install Google Chrome and ImageMagick first.")
+    return convert, identify
+
+
 def render(url: str, png: Path, profile: str) -> None:
-    subprocess.run(
+    result = subprocess.run(
         [
             "google-chrome",
             "--headless=new",
@@ -47,9 +61,11 @@ def render(url: str, png: Path, profile: str) -> None:
             f"--screenshot={png}",
             url,
         ],
-        check=True,
         capture_output=True,
+        text=True,
     )
+    if result.returncode != 0 or not png.exists():
+        sys.exit(f"Chrome couldn't render {url}:\n{result.stderr}")
 
 
 def main() -> int:
@@ -58,6 +74,8 @@ def main() -> int:
     parser.add_argument("--hold", type=int, default=HOLD, help="hundredths of a second per scene")
     args_in = parser.parse_args()
     out, hold = args_in.out.resolve(), args_in.hold
+    out.parent.mkdir(parents=True, exist_ok=True)
+    convert, identify = tools()
     n = scene_count()
     base = (HERE / "scene.html").as_uri()
     with tempfile.TemporaryDirectory() as tmp:
@@ -71,12 +89,12 @@ def main() -> int:
                 render(f"{base}?a={i}&b={(i + 1) % n}&p={p}", png, f"{tmp}/chrome")
                 frames.append((png, SLIDE_DELAY))
             print(f"scene {i + 1}/{n}", flush=True)
-        args = ["convert", "-loop", "0"]
+        args = [*convert, "-loop", "0"]
         for png, delay in frames:
             args += ["-delay", str(delay), str(png)]
         args += ["-resize", f"{WIDTH}x", "-colors", "192", "-layers", "Optimize", str(out)]
         subprocess.run(args, check=True)
-    count = subprocess.run(["identify", str(out)], capture_output=True, text=True).stdout.count("\n")
+    count = subprocess.run([*identify, str(out)], capture_output=True, text=True).stdout.count("\n")
     print(f"{out}: {count} frames, {out.stat().st_size // 1024} KB")
     return 0
 
