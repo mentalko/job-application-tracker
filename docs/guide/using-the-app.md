@@ -300,7 +300,8 @@ a new agency or company name and pick **+ Add "…"** to create it there and the
 **One person per email address and LinkedIn profile.** Adding someone (or adding a detail to
 someone) with an email address or LinkedIn profile another person already has is refused, and
 the message says who has it. Emails match whatever their case; LinkedIn profiles match however
-the link is written (with or without `https://`, `www.`, a trailing `/` or `?…` on the end).
+the link is written (with or without `https://`, `www.`, a trailing `/` or `?…` on the end),
+and an email written as `mailto:…` counts as the address.
 Phone numbers and other links can be shared. People who shared one before this rule can still
 be edited: merge them.
 
@@ -313,9 +314,12 @@ the interviews they were in, and your notes, links and files about them. Click a
 (people with the same name, email address or LinkedIn profile are listed first). Everything
 on the other record moves to this one: contact details it doesn't already have, calls, the
 roles they pitched, the applications and interviews they're on, and notes, links, files and
-to-dos about them. Where this person has no job title, agency or company, or isn't waiting on
-them, the other record's is used. Then the other record is deleted. When someone looks like
-a duplicate, their page says so in a yellow note with a one-click **Merge … into this one**.
+to-dos about them. This person's own details win: the other record's job title is used if
+this one has none, its agency or company if this one has neither, and its *waiting*, *reply
+to read*, *ghosted* or *not interested* state if this one has none of those; the later of the
+two *chased* dates stays. Then the other record is deleted. When someone looks like
+a duplicate, their page says so in a yellow note with a one-click **Merge into this one**, or
+**Not the same person** to stop suggesting that pair (remembered in this browser).
 Deleting a person instead takes their calls with them and leaves their roles, applications and
 the rest without them, so for duplicates, merge.
 

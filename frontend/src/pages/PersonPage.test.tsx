@@ -200,7 +200,7 @@ describe("people", () => {
     expect(within(alert).getByText(/has the same name/)).toBeInTheDocument();
     expect(within(alert).queryByText("Sam Patel")).not.toBeInTheDocument();
 
-    fireEvent.click(within(alert).getByRole("button", { name: "Merge riley chen into this one" }));
+    fireEvent.click(within(alert).getByRole("button", { name: "Merge riley chen (Contoso) into this one" }));
     const dialog = await screen.findByRole("dialog", { name: "Merge someone into Riley Chen" });
     expect(within(dialog).getByText(/Then riley chen is deleted/)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: "Merge into Riley Chen" }));
@@ -208,5 +208,30 @@ describe("people", () => {
       const merge = calls.find((c) => c.method === "POST" && c.path === "/api/v1/contacts/c9/merge");
       expect(merge?.body).toEqual({ from_id: "c10" });
     });
+  });
+
+  it("forgets a look-alike you say isn't the same person", async () => {
+    const namesake = { ...riley, id: "c12", name: "Riley Chen", company_id: null, details: [] };
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/contacts/c9/summary": {
+        contact: riley,
+        agency_name: null,
+        company_name: "Contoso",
+        applications: [],
+        interviews: [],
+      },
+      "/api/v1/notes": [],
+      "/api/v1/links": [],
+      "/api/v1/attachments": [],
+      "/api/v1/contacts": [riley, namesake],
+      "/api/v1/companies": [{ id: "co1", name: "Contoso" }],
+      "/api/v1/agencies": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/people/c9");
+    fireEvent.click(await screen.findByRole("button", { name: "Riley Chen is not the same person" }));
+    await waitFor(() => expect(screen.queryByText("Looks like a duplicate")).not.toBeInTheDocument());
+    expect(localStorage.getItem("jat.notTheSamePerson")).toContain("c12|c9");
   });
 });

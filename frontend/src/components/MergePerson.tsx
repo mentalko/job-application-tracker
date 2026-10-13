@@ -90,15 +90,21 @@ function MergeModal({
           Two records of the same person? Pick the other one: everything on it moves to <b>{person.name}</b>,
           and then it's deleted.
         </Text>
-        <Select
-          label="The other record"
-          placeholder="Choose a person"
-          searchable
-          data={data}
-          value={fromId}
-          onChange={setFromId}
-          nothingFoundMessage="No one by that name"
-        />
+        {data.length ? (
+          <Select
+            label="The other record"
+            placeholder="Choose a person"
+            searchable
+            data={data}
+            value={fromId}
+            onChange={setFromId}
+            nothingFoundMessage="No one by that name"
+          />
+        ) : (
+          <Text size="sm" c="dimmed">
+            There's no one else to merge in.
+          </Text>
+        )}
         {other && (
           <Alert variant="light" color="blue" icon={<IconArrowsJoin2 size={18} />}>
             <Text size="sm" fw={600} mb={4}>
@@ -170,12 +176,37 @@ export function MergePersonButton({ person }: { person: Contact }) {
   );
 }
 
+const NOT_SAME = "jat.notTheSamePerson";
+
+/** Pairs you've said aren't the same person (in this browser), as "a|b" with the ids sorted. */
+function readNotSame(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(NOT_SAME) ?? "[]") as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+const pair = (a: string, b: string) => [a, b].sort().join("|");
+
 /** On a person's page: a nudge when someone else looks like the same person. */
 export function PossibleDuplicates({ person }: { person: Contact }) {
   const { data: contacts } = useContacts();
   const where = useWhere();
   const [merging, setMerging] = useState<string | null>(null);
-  const likely = likelyDuplicates(person, contacts ?? []);
+  const [notSame, setNotSame] = useState(readNotSame);
+  const dismiss = (otherId: string) => {
+    const next = new Set(notSame).add(pair(person.id, otherId));
+    setNotSame(next);
+    try {
+      localStorage.setItem(NOT_SAME, JSON.stringify([...next]));
+    } catch {
+      // No storage (a private window): it's hidden until the page reloads.
+    }
+  };
+  const likely = likelyDuplicates(person, contacts ?? []).filter(
+    ({ contact }) => !notSame.has(pair(person.id, contact.id)),
+  );
   if (!likely.length) return null;
   return (
     <Alert variant="light" color="yellow" icon={<IconCopy size={18} />} title="Looks like a duplicate">
@@ -186,9 +217,25 @@ export function PossibleDuplicates({ person }: { person: Contact }) {
               <b>{contact.name}</b>
               {where(contact) ? ` · ${where(contact)}` : ""} has the {why}.
             </Text>
-            <Button size="compact-xs" variant="light" onClick={() => setMerging(contact.id)}>
-              Merge {contact.name} into this one
-            </Button>
+            <Group gap={6}>
+              <Button
+                size="compact-xs"
+                variant="light"
+                aria-label={`Merge ${contact.name}${where(contact) ? ` (${where(contact)})` : ""} into this one`}
+                onClick={() => setMerging(contact.id)}
+              >
+                Merge into this one
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="gray"
+                aria-label={`${contact.name}${where(contact) ? ` (${where(contact)})` : ""} is not the same person`}
+                onClick={() => dismiss(contact.id)}
+              >
+                Not the same person
+              </Button>
+            </Group>
           </Group>
         ))}
       </Stack>

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
+from urllib.parse import unquote
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -25,7 +26,10 @@ from jat.db.models import (
 )
 from jat.storage.notes import NoteStore
 
-_LINKEDIN = re.compile(r"^(?:https?://)?(?:[a-z]{2,3}\.)?(?:www\.)?linkedin\.com/(in|pub)/([^/?#]+)", re.I)
+# /in/<handle>, or an old-style /pub/<name>/<a>/<b>/<c> (all of it: the name alone isn't unique).
+_LINKEDIN = re.compile(
+    r"^(?:https?://)?(?:[a-z]{2,3}\.)?(?:www\.)?linkedin\.com/(?:in/([^/?#]+)|pub/([^?#]+?))/?(?:[?#].*)?$", re.I
+)
 
 
 def identity(kind: str, value: str) -> tuple[str, str] | None:
@@ -33,10 +37,13 @@ def identity(kind: str, value: str) -> tuple[str, str] | None:
     LinkedIn profile (written however: with or without https://, www., a trailing slash or
     ?tracking). Other details (phone numbers, sites) can be shared, so they don't count."""
     value = value.strip()
-    if kind == "email" and "@" in value:
-        return ("email", value.lower())
+    if kind == "email":
+        value = value.removeprefix("mailto:").removeprefix("MAILTO:").strip()
+        return ("email", value.lower()) if "@" in value else None
     if kind in ("linkedin", "url", "other") and (m := _LINKEDIN.match(value)):
-        return ("linkedin", f"linkedin.com/in/{m.group(2).lower()}")
+        if m.group(1):
+            return ("linkedin", f"linkedin.com/in/{unquote(m.group(1)).lower()}")
+        return ("linkedin", f"linkedin.com/pub/{unquote(m.group(2)).lower()}")
     return None
 
 
@@ -105,8 +112,10 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
 
     Everything that points at `gone` moves to `keep`: contact details (not ones `keep` already
     has), roles they pitched, applications they're the recruiter on or part of, interview
-    panels, calls, links, files, to-dos and notes. `keep`'s own fields win; any it doesn't have
-    (title, agency, company, waiting or to-read dates, chased, closed) come from `gone`.
+    panels, calls, links, files, to-dos and notes. `keep`'s own fields win: `gone`'s job title
+    is used if `keep` has none, its agency or company if `keep` has neither, and its waiting,
+    to-read or closed state if `keep` has none of those; the later of the two chased dates
+    stays.
     """
     if keep.id == gone.id:
         raise ValueError("Pick two different people to merge.")
@@ -115,24 +124,28 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
     mine = session.scalars(
         select(ContactDetail).where(ContactDetail.contact_id == keep.id).order_by(ContactDetail.position)
     ).all()
-    have = {(d.kind, identity(d.kind, d.value) or d.value.strip().lower()) for d in mine}
+
+    def key(d: ContactDetail) -> tuple[str, str]:
+        return identity(d.kind, d.value) or (d.kind, d.value.strip().lower())
+
+    have = {key(d) for d in mine}
     position = len(mine)
     theirs = session.scalars(
         select(ContactDetail).where(ContactDetail.contact_id == gone.id).order_by(ContactDetail.position)
     ).all()
     for d in theirs:
-        key = (d.kind, identity(d.kind, d.value) or d.value.strip().lower())
-        if key in have:
+        if key(d) in have:
             session.delete(d)
             continue
-        have.add(key)
+        have.add(key(d))
         d.contact_id = keep.id
         d.position = position
         position += 1
 
-    for name in ("title", "agency_id", "company_id"):
-        if getattr(keep, name) is None:
-            setattr(keep, name, getattr(gone, name))
+    if keep.title is None:
+        keep.title = gone.title
+    if keep.agency_id is None and keep.company_id is None:  # where they work: one or the other
+        keep.agency_id, keep.company_id = gone.agency_id, gone.company_id
     # Reply states: keep `keep`'s if it has any, else take `gone`'s (never both at once).
     if not (keep.awaiting_reply_since or keep.reply_to_read_since or keep.closed_as):
         keep.awaiting_reply_since = gone.awaiting_reply_since
@@ -166,13 +179,14 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
             update(model).where(model.entity_type == "contact", model.entity_id == gone.id).values(entity_id=keep.id)
         )
 
-    # Notes keep their links in the Markdown file itself.
+    # Notes keep their links in the Markdown file itself. Read every one first, so a note that
+    # can't be read stops the merge before anything is written. Their edit times stay; the notes
+    # index catches up on its next sync (everything that reads it syncs first).
     old, new = f"contact:{gone.id}", f"contact:{keep.id}"
-    for row in session.scalars(select(NoteIndex)):
-        if old in row.links:
-            note = notes.read(row.path)
-            note.links = list(dict.fromkeys(new if link == old else link for link in note.links))
-            notes.index(session, notes.save(note))
+    linked = [notes.read(row.path) for row in session.scalars(select(NoteIndex)) if old in row.links]
+    for note in linked:
+        note.links = list(dict.fromkeys(new if link == old else link for link in note.links))
+        notes.save(note, touch=False)
 
     # Moved first, then deleted: deleting `gone` would otherwise take its links with it.
     session.flush()

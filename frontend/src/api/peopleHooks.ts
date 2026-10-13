@@ -111,7 +111,17 @@ export function useMergeContact() {
       ),
     onSuccess: () => {
       refresh();
-      for (const key of [["links"], ["notes"], ["attachments"], ["interviews"], ["roles"]]) {
+      for (const key of [
+        ["links"],
+        ["notes"],
+        ["note"],
+        ["attachments"],
+        ["interviews"],
+        ["roles"],
+        ["insights"],
+        ["search"],
+        ["duplicates"],
+      ]) {
         void qc.invalidateQueries({ queryKey: key });
       }
     },
