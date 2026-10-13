@@ -12,22 +12,24 @@ const HEIGHT = 440;
 const LABEL_SPACE = 150; // room for the last column's labels on the right
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
-const plural = (n: number) => `${n} application${n === 1 ? "" : "s"}`;
 
-function nodeText(n: FlowNode) {
-  const still = n.current ? `, ${n.current} still there` : "";
-  return `${n.name}: ${plural(n.reached)} reached${still}`;
-}
-
-function linkText(l: Link) {
-  const source = l.source as Node;
-  const target = l.target as Node;
-  const share = source.reached ? Math.round((100 * l.value) / source.reached) : 0;
-  return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
-}
-
-/** Stage-to-stage flows, left to right. Outcomes (success and closed stages) sit in the last column. */
-export function SankeyChart({ flow }: { flow: Flow }) {
+/**
+ * Stage-to-stage flows, left to right. Outcomes (success and closed stages, or anything that
+ * isn't "active") sit in the last column. `unit` is what the flow counts: applications, or roles.
+ */
+export function SankeyChart({ flow, unit = "application" }: { flow: Flow; unit?: "application" | "role" }) {
+  const plural = (n: number) => `${n} ${unit}${n === 1 ? "" : "s"}`;
+  const nodeText = (n: FlowNode) => {
+    if (unit === "role") return `${n.name}: ${plural(n.reached)}`;
+    const still = n.current ? `, ${n.current} still there` : "";
+    return `${n.name}: ${plural(n.reached)} reached${still}`;
+  };
+  const linkText = (l: Link) => {
+    const source = l.source as Node;
+    const target = l.target as Node;
+    const share = source.reached ? Math.round((100 * l.value) / source.reached) : 0;
+    return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
+  };
   const { ref, width: measured } = useElementSize();
   const width = Math.max(measured || 900, 480);
   const [hover, setHover] = useState<string | null>(null);
@@ -68,7 +70,11 @@ export function SankeyChart({ flow }: { flow: Flow }) {
         height={HEIGHT}
         viewBox={`0 0 ${width} ${HEIGHT}`}
         role="img"
-        aria-label={`Sankey diagram of ${plural(flow.applications)} moving through the stages`}
+        aria-label={
+          unit === "role"
+            ? `Sankey diagram of ${plural(flow.applications)} pitched to you, by what happened to them`
+            : `Sankey diagram of ${plural(flow.applications)} moving through the stages`
+        }
         style={{ display: "block", maxWidth: "100%", height: "auto" }}
       >
         <g fill="none">

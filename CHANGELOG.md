@@ -76,6 +76,9 @@ brackets are pull requests.
   labelled buttons like the rest (#60).
 - **At a glance** on every application: what needs attention and for how long, what's coming
   up, and key dates as "3 weeks ago" (#65).
+- **Recruiter conversations** in Insights: calls, roles pitched, applied or passed, where
+  pitched roles went, time to decide, per person and per agency, and why you passed; weekly
+  activity counts calls and roles pitched (#66).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
 
+from ..domain import conversations as conv_svc
 from ..domain import insights as svc
 from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
@@ -141,6 +142,8 @@ class WeekOut(BaseModel):
     applied: int  # applications with their applied date in the week
     moves: int  # stage moves
     interviews: int  # interview rounds (not cancelled) starting in the week
+    calls: int  # calls and meetings with people in the week, marked Happened
+    pitched: int  # roles someone told you about, added in the week
 
 
 @router.get("/activity", response_model=list[WeekOut])
@@ -211,3 +214,135 @@ def recruiter_scorecard(
     """How each recruiter's and agency's roles have gone, for applications added in [since, until)."""
     recruiters, agencies = score_svc.scorecard(session, workflow, since=since, until=until)
     return ScorecardOut(recruiters=[_score_out(s) for s in recruiters], agencies=[_score_out(s) for s in agencies])
+
+
+class ConversationTally(BaseModel):
+    calls_held: int  # marked Happened
+    calls_booked: int  # still to come
+    calls_cancelled: int
+    last_call: datetime | None
+    pitched: int  # roles they told you about
+    applied: int  # of those, ones you applied for
+    passed: int  # ones you passed on
+    deciding: int  # neither yet
+    apply_rate: float | None  # applied / (applied + passed): of the roles you've decided on
+    interviewed: int  # applied roles that got an interview round (not cancelled)
+    offers: int  # applied roles with an offer (or a success stage)
+    in_progress: int  # applied roles still in an active stage
+    closed: int  # applied roles closed, other than ghosted
+    ghosted: int
+    median_decide_days: float | None  # adding a role to applying or passing
+
+
+class ConversationPerson(ConversationTally):
+    id: str
+    name: str
+    agency_id: str | None
+    agency_name: str | None
+    company_name: str | None  # an in-house recruiter's company
+    closed_as: str | None  # ghosted | not_interested
+
+
+class ConversationAgency(ConversationTally):
+    id: str
+    name: str
+    people: int
+
+
+class PassReasonOut(BaseModel):
+    role_id: str
+    role_title: str
+    company_name: str
+    person_name: str | None
+    reason: str
+    decided_on: date | None
+
+
+class ConversationsOut(BaseModel):
+    total: ConversationTally
+    people_talked_to: int  # people with a call held or a role pitched
+    flow: FlowOut  # pitched roles: applied, passed or deciding, and where applied ones went
+    people: list[ConversationPerson]  # most roles pitched first
+    agencies: list[ConversationAgency]
+    pass_reasons: list[PassReasonOut]  # newest first
+
+
+def _tally(t: conv_svc.Tally) -> dict:
+    decided = t.applied + t.passed
+    return dict(
+        calls_held=t.calls_held,
+        calls_booked=t.calls_booked,
+        calls_cancelled=t.calls_cancelled,
+        last_call=t.last_call,
+        pitched=t.pitched,
+        applied=t.applied,
+        passed=t.passed,
+        deciding=t.deciding,
+        apply_rate=round(t.applied / decided, 3) if decided else None,
+        interviewed=t.interviewed,
+        offers=t.outcomes["offer"],
+        in_progress=t.outcomes["in_progress"],
+        closed=t.outcomes["closed"],
+        ghosted=t.outcomes["ghosted"],
+        median_decide_days=t.median_decide_days,
+    )
+
+
+def _role_flow(t: conv_svc.Tally) -> FlowOut:
+    """Pitched roles as a Sankey diagram: pitched, then applied / passed / deciding, then outcomes."""
+    nodes = [
+        ("pitched", "Pitched to you", "active", "indigo", t.pitched),
+        ("applied", "Applied", "active", "blue", t.applied),
+        ("passed", "Passed", "outcome", "gray", t.passed),
+        ("deciding", "Still deciding", "outcome", "yellow", t.deciding),
+        ("in_progress", "In progress", "outcome", "cyan", t.outcomes["in_progress"]),
+        ("offer", "Offer", "outcome", "green", t.outcomes["offer"]),
+        ("closed", "Closed", "outcome", "red", t.outcomes["closed"]),
+        ("ghosted", "Ghosted", "outcome", "dark", t.outcomes["ghosted"]),
+    ]
+    links = [
+        FlowLink(source="pitched", target=target, value=n)
+        for target, n in (("applied", t.applied), ("passed", t.passed), ("deciding", t.deciding))
+        if n
+    ] + [FlowLink(source="applied", target=k, value=t.outcomes[k]) for k in conv_svc.OUTCOMES if t.outcomes[k]]
+    return FlowOut(
+        applications=t.pitched,
+        nodes=[
+            FlowNode(id=i, name=name, kind=kind, color=color, reached=n, current=0)
+            for i, name, kind, color, n in nodes
+            if n
+        ],
+        links=links,
+    )
+
+
+@router.get("/conversations", response_model=ConversationsOut)
+def recruiter_conversations(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """What happens before applications: calls with people, the roles they pitched, which you
+    applied for or passed on, and how those went. Calls count by when they happen, roles by
+    when they were added, in [since, until)."""
+    c = conv_svc.conversations(session, workflow, since=since, until=until)
+    return ConversationsOut(
+        total=ConversationTally(**_tally(c.total)),
+        people_talked_to=c.people_talked_to,
+        flow=_role_flow(c.total),
+        people=[
+            ConversationPerson(
+                **_tally(p),
+                id=p.id,
+                name=p.name,
+                agency_id=p.agency_id,
+                agency_name=p.agency_name,
+                company_name=p.company_name,
+                closed_as=p.closed_as,
+            )
+            for p in c.people
+        ],
+        agencies=[ConversationAgency(**_tally(a), id=a.id, name=a.name, people=a.people) for a in c.agencies],
+        pass_reasons=[PassReasonOut(**vars(r)) for r in c.pass_reasons],
+    )
