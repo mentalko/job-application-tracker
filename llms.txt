@@ -28,7 +28,10 @@ pages (with an "At a glance" card: what needs attention, for how long, and key d
 warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
 timeline, versioned CVs and cover letters, an Insights page (Sankey diagram of stage flows
 filtered by date and route; conversion and median time per stage; direct vs recruiter
-outcomes; weekly activity; a recruiter and agency scorecard), offers compared side by side
+outcomes; weekly activity; a recruiter and agency scorecard; and a Recruiter
+conversations tab: calls, roles pitched, applied or passed, where pitched roles went, time
+to decide, per person and agency, and why you passed, `GET /api/v1/insights/conversations`),
+offers compared side by side
 (salary, bonus, equity, pension and holiday, or day rate, IR35 and length, with a
 worth-a-year figure and reply deadlines in Next actions), git-backed snapshots, a one-click
 zip backup of the whole data directory (`GET /api/v1/backup/archive` or `jat archive`),

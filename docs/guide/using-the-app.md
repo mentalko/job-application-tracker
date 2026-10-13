@@ -355,7 +355,10 @@ so you can also write and edit them in any editor. Tables, checklists and links 
 
 ## Insights
 
-How the search is going, for all time or the last 30 or 90 days:
+How the search is going, for all time or the last 30 or 90 days. Two tabs: **Applications**
+and **Recruiter conversations**; **Weekly activity** sits under both.
+
+**Applications**
 
 - **Where applications go**: a Sankey diagram of applications flowing through the stages;
   filter by route, hover for counts.
@@ -364,7 +367,31 @@ How the search is going, for all time or the last 30 or 90 days:
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
 - **Recruiter scorecard**: per recruiter or agency, roles sent, how many got interviews,
   where they ended up, how long until the first update, and when you last heard from them.
-- **Weekly activity**: applications added and sent, stage moves and interviews per week.
+
+**Recruiter conversations**: what happens before an application. A *pitched role* is one with
+a person on it (someone told you about it: **Add roles from this call**, or a person set on
+the role); roles you found yourself aren't counted here.
+
+- **The numbers**: calls held (and booked ahead), people you talked to or were pitched by,
+  roles pitched, how many you applied for (and the apply rate: applied out of the roles
+  you've decided on), passed on and are still deciding about, interviews and offers that came
+  from pitched roles, ghosted applications from pitches, and the median time to decide (from
+  adding the role to applying or passing; a backdated application counts from its first
+  stage).
+- **Where pitched roles go**: a Sankey diagram from *Pitched to you* to *Applied*, *Passed*
+  or *Still deciding*, and from *Applied* to *In progress*, *Offer*, *Closed* or *Ghosted*
+  (a role's best application counts once).
+- **Who you talk to**: per person or per agency, calls held, the last call, roles pitched,
+  applied, passed, deciding, the apply rate, interviews, and where the applications went. A
+  person you've marked *Ghosted* or *Not interested* says so.
+- **Why you passed**: the reasons you gave when passing on pitched roles, newest first.
+
+Calls count in a date range by when they happen; roles by when you added them. A call
+counts as held once it's marked *Happened*; one still marked booked after its time waits on
+Next actions for you to say how it went.
+
+- **Weekly activity**: applications added and sent, stage moves, interviews, calls held and
+  roles pitched per week.
 
 ## Search
 

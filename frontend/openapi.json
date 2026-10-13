@@ -1898,6 +1898,439 @@
         "title": "ContactSummary",
         "type": "object"
       },
+      "ConversationAgency": {
+        "properties": {
+          "applied": {
+            "title": "Applied",
+            "type": "integer"
+          },
+          "apply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Rate"
+          },
+          "calls_booked": {
+            "title": "Calls Booked",
+            "type": "integer"
+          },
+          "calls_cancelled": {
+            "title": "Calls Cancelled",
+            "type": "integer"
+          },
+          "calls_held": {
+            "title": "Calls Held",
+            "type": "integer"
+          },
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "deciding": {
+            "title": "Deciding",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "in_progress": {
+            "title": "In Progress",
+            "type": "integer"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "last_call": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Call"
+          },
+          "median_decide_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Decide Days"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "integer"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "pitched": {
+            "title": "Pitched",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "calls_held",
+          "calls_booked",
+          "calls_cancelled",
+          "last_call",
+          "pitched",
+          "applied",
+          "passed",
+          "deciding",
+          "apply_rate",
+          "interviewed",
+          "offers",
+          "in_progress",
+          "closed",
+          "ghosted",
+          "median_decide_days",
+          "id",
+          "name",
+          "people"
+        ],
+        "title": "ConversationAgency",
+        "type": "object"
+      },
+      "ConversationPerson": {
+        "properties": {
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "applied": {
+            "title": "Applied",
+            "type": "integer"
+          },
+          "apply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Rate"
+          },
+          "calls_booked": {
+            "title": "Calls Booked",
+            "type": "integer"
+          },
+          "calls_cancelled": {
+            "title": "Calls Cancelled",
+            "type": "integer"
+          },
+          "calls_held": {
+            "title": "Calls Held",
+            "type": "integer"
+          },
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "closed_as": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed As"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "deciding": {
+            "title": "Deciding",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "in_progress": {
+            "title": "In Progress",
+            "type": "integer"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "last_call": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Call"
+          },
+          "median_decide_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Decide Days"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "integer"
+          },
+          "pitched": {
+            "title": "Pitched",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "calls_held",
+          "calls_booked",
+          "calls_cancelled",
+          "last_call",
+          "pitched",
+          "applied",
+          "passed",
+          "deciding",
+          "apply_rate",
+          "interviewed",
+          "offers",
+          "in_progress",
+          "closed",
+          "ghosted",
+          "median_decide_days",
+          "id",
+          "name",
+          "agency_id",
+          "agency_name",
+          "company_name",
+          "closed_as"
+        ],
+        "title": "ConversationPerson",
+        "type": "object"
+      },
+      "ConversationTally": {
+        "properties": {
+          "applied": {
+            "title": "Applied",
+            "type": "integer"
+          },
+          "apply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Rate"
+          },
+          "calls_booked": {
+            "title": "Calls Booked",
+            "type": "integer"
+          },
+          "calls_cancelled": {
+            "title": "Calls Cancelled",
+            "type": "integer"
+          },
+          "calls_held": {
+            "title": "Calls Held",
+            "type": "integer"
+          },
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "deciding": {
+            "title": "Deciding",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "in_progress": {
+            "title": "In Progress",
+            "type": "integer"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "last_call": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Call"
+          },
+          "median_decide_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Decide Days"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "integer"
+          },
+          "pitched": {
+            "title": "Pitched",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "calls_held",
+          "calls_booked",
+          "calls_cancelled",
+          "last_call",
+          "pitched",
+          "applied",
+          "passed",
+          "deciding",
+          "apply_rate",
+          "interviewed",
+          "offers",
+          "in_progress",
+          "closed",
+          "ghosted",
+          "median_decide_days"
+        ],
+        "title": "ConversationTally",
+        "type": "object"
+      },
+      "ConversationsOut": {
+        "properties": {
+          "agencies": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationAgency"
+            },
+            "title": "Agencies",
+            "type": "array"
+          },
+          "flow": {
+            "$ref": "#/components/schemas/FlowOut"
+          },
+          "pass_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/PassReasonOut"
+            },
+            "title": "Pass Reasons",
+            "type": "array"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationPerson"
+            },
+            "title": "People",
+            "type": "array"
+          },
+          "people_talked_to": {
+            "title": "People Talked To",
+            "type": "integer"
+          },
+          "total": {
+            "$ref": "#/components/schemas/ConversationTally"
+          }
+        },
+        "required": [
+          "total",
+          "people_talked_to",
+          "flow",
+          "people",
+          "agencies",
+          "pass_reasons"
+        ],
+        "title": "ConversationsOut",
+        "type": "object"
+      },
       "DocumentDetail": {
         "properties": {
           "created_at": {
@@ -4851,6 +5284,59 @@
         "title": "OfferPatch",
         "type": "object"
       },
+      "PassReasonOut": {
+        "properties": {
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_id",
+          "role_title",
+          "company_name",
+          "person_name",
+          "reason",
+          "decided_on"
+        ],
+        "title": "PassReasonOut",
+        "type": "object"
+      },
       "PersonApplication": {
         "properties": {
           "agency_id": {
@@ -7177,12 +7663,20 @@
             "title": "Applied",
             "type": "integer"
           },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
           "interviews": {
             "title": "Interviews",
             "type": "integer"
           },
           "moves": {
             "title": "Moves",
+            "type": "integer"
+          },
+          "pitched": {
+            "title": "Pitched",
             "type": "integer"
           },
           "start": {
@@ -7196,7 +7690,9 @@
           "added",
           "applied",
           "moves",
-          "interviews"
+          "interviews",
+          "calls",
+          "pitched"
         ],
         "title": "WeekOut",
         "type": "object"
@@ -9795,6 +10291,74 @@
           }
         },
         "summary": "Weekly Activity",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/conversations": {
+      "get": {
+        "description": "What happens before applications: calls with people, the roles they pitched, which you\napplied for or passed on, and how those went. Calls count by when they happen, roles by\nwhen they were added, in [since, until).",
+        "operationId": "recruiter_conversations_api_v1_insights_conversations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recruiter Conversations",
         "tags": [
           "insights"
         ]
