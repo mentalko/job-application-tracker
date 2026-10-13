@@ -78,7 +78,7 @@ def test_roles_from_a_recruiter_call(client, seeded):
     # On the timeline: who mentioned what.
     items = client.get("/api/v1/timeline", params={"contact_id": alex}).json()["items"]
     titles = [i["title"] for i in items]
-    assert "Alex Recruiter mentioned Platform Engineer at Fabrikam" in titles
+    assert "Alex Recruiter pitched Platform Engineer at Fabrikam" in titles
 
 
 def test_passed_on_the_timeline_and_validation(client, seeded):

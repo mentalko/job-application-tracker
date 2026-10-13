@@ -55,14 +55,6 @@ export const NAV: NavItem[] = [
     description: "Stale applications, follow-ups, upcoming interviews and deadlines.",
   },
   {
-    path: "/timeline",
-    group: "Today",
-    label: "Timeline",
-    icon: IconTimeline,
-    task: "timeline",
-    description: "Everything that happened, across every application, company, agency and person.",
-  },
-  {
     path: "/roles",
     group: "Your applications",
     label: "Roles",
@@ -133,5 +125,14 @@ export const NAV: NavItem[] = [
     icon: IconChartSankey,
     task: "sankey",
     description: "Sankey diagram of your funnel, conversion rates and recruiter scorecards.",
+  },
+  {
+    path: "/timeline",
+    group: "Review",
+    label: "Timeline",
+    icon: IconTimeline,
+    task: "timeline",
+    description:
+      "Everything that happened, by day or one row per role: calls, pitches, applications and outcomes.",
   },
 ];

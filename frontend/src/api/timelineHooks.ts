@@ -20,20 +20,22 @@ export const CATEGORIES: { value: TimelineCategory; label: string; one: string; 
   { value: "meeting", label: "Calls and meetings", one: "Call", color: "pink" },
   { value: "interview", label: "Interviews", one: "Interview", color: "violet" },
   { value: "offer", label: "Offers", one: "Offer", color: "teal" },
+  { value: "role", label: "Roles pitched or passed", one: "Role", color: "indigo" },
   { value: "note", label: "Notes", one: "Note", color: "yellow" },
   { value: "document", label: "Documents sent", one: "Document", color: "grape" },
   { value: "file", label: "Files", one: "File", color: "orange" },
-  { value: "added", label: "Added", one: "Added", color: "gray" },
+  { value: "added", label: "Companies and people added", one: "Added", color: "gray" },
   { value: "other", label: "Other", one: "Other", color: "dark" },
 ];
 
 export const categoryOf = (value: TimelineCategory) => CATEGORIES.find((c) => c.value === value)!;
 
 /** Everything that happened (and is booked ahead), newest first, across the whole search. */
-export function useTimeline(filters: TimelineFilters) {
+export function useTimeline(filters: TimelineFilters, enabled = true) {
   return useQuery({
     queryKey: ["timeline", filters],
     queryFn: async () => unwrap(await api.GET("/api/v1/timeline", { params: { query: filters } })),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }

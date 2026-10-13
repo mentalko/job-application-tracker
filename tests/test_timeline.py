@@ -117,3 +117,33 @@ def test_role_items_point_at_the_role(client, seeded):
     items = client.get("/api/v1/timeline").json()["items"]
     passed = [i for i in items if i["id"] == f"role-passed:{role['id']}"]
     assert [(i["role_id"], i["role_title"]) for i in passed] == [(role["id"], "Senior Backend Engineer")]
+
+
+def test_roles_have_their_own_category_and_application_items_carry_their_role(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    pitched = post(
+        client,
+        "/api/v1/roles",
+        {"company_id": seeded["company"]["id"], "title": "Platform Engineer", "contact_id": alex},
+    )
+    passed = post(
+        client,
+        "/api/v1/roles",
+        {
+            "company_id": seeded["company"]["id"],
+            "title": "Data Engineer",
+            "contact_id": alex,
+            "decision": "passed",
+            "decision_reason": "Mostly BI",
+        },
+    )
+    app = post(client, "/api/v1/applications", {"role_id": pitched["id"], "stage": "applied"})
+
+    roles = _timeline(client, category=["role"])
+    assert {(i["title"], i["role_id"]) for i in roles} == {
+        ("Alex Recruiter pitched Platform Engineer at Contoso", pitched["id"]),
+        ("Alex Recruiter pitched Data Engineer at Contoso", passed["id"]),
+        ("Passed on Data Engineer at Contoso", passed["id"]),
+    }
+    on_app = [i for i in _timeline(client) if i["application_id"] == app["id"]]
+    assert on_app and {i["role_id"] for i in on_app} == {pitched["id"]}
