@@ -386,10 +386,12 @@ the role); roles you found yourself aren't counted here.
   person you've marked *Ghosted* or *Not interested* says so.
 - **Why you passed**: the reasons you gave when passing on pitched roles, newest first.
 
-Calls count in a date range by when they happen; roles by when you added them.
+Calls count in a date range by when they happen; roles by when you added them. A call
+counts as held once it's marked *Happened*; one still marked booked after its time waits on
+Next actions for you to say how it went.
 
-- **Weekly activity**: applications added and sent, stage moves, interviews, calls and roles
-  pitched per week.
+- **Weekly activity**: applications added and sent, stage moves, interviews, calls held and
+  roles pitched per week.
 
 ## Search
 

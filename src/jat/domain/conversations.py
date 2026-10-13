@@ -2,7 +2,9 @@
 
 A lot of a search happens on calls: a recruiter pitches roles, and you apply for some and pass
 on others. This looks at that part:
-- **calls**: calls and meetings with people, by status (`held` means marked Happened);
+- **calls**: calls and meetings with people, by status: *held* means marked Happened,
+  *booked* is scheduled and still to come (a scheduled call that has passed waits on Next
+  actions to be marked, and isn't counted);
 - **pitched roles**: roles someone told you about (a role with a person). Each is *applied*
   (it has an application), *passed* (you passed, with no application) or *deciding*;
 - **where applied ones went**: the best outcome among a role's applications: an *offer* (an
@@ -141,7 +143,7 @@ def conversations(
         for t in (total, person(m.contact_id)):
             if m.status == "cancelled":
                 t.calls_cancelled += 1
-            elif m.status == "done" and starts <= now:
+            elif m.status == "done":  # marked Happened: trust it, whatever its time
                 t.calls_held += 1
                 t.last_call = max(t.last_call or starts, starts)
             elif m.status == "scheduled" and starts > now:
@@ -246,7 +248,9 @@ def conversations(
     def busiest(t: Tally, name: str):
         return (-t.pitched, -t.calls_held, name.lower())
 
-    reasons.sort(key=lambda p: p.decided_on or date.min, reverse=True)  # newest first, undated last
+    # Newest first, undated last; the same day by role title.
+    reasons.sort(key=lambda p: p.role_title.lower())
+    reasons.sort(key=lambda p: p.decided_on or date.min, reverse=True)
     return Conversations(
         total=total,
         people=sorted(people.values(), key=lambda p: busiest(p, p.name)),

@@ -13,6 +13,7 @@ import {
   Title,
 } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
+import dayjs from "dayjs";
 import { useState } from "react";
 
 import {
@@ -159,7 +160,9 @@ function WhoTable({ data }: { data: Conversations }) {
                   </Table.Td>
                   <Table.Td ta="right">{r.calls_held}</Table.Td>
                   <Table.Td>
-                    <Text size="sm">{r.last_call ? formatDate(r.last_call.slice(0, 10)) : "—"}</Text>
+                    <Text size="sm">
+                      {r.last_call ? formatDate(dayjs(r.last_call).format("YYYY-MM-DD")) : "—"}
+                    </Text>
                   </Table.Td>
                   <Table.Td ta="right">{r.pitched}</Table.Td>
                   <Table.Td ta="right">{r.applied}</Table.Td>

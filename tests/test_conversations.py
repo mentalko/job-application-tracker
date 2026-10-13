@@ -136,3 +136,33 @@ def test_time_to_decide_counts_backdated_history(app, client, seeded):
     db.close()
     total = client.get("/api/v1/insights/conversations").json()["total"]
     assert 1.9 < total["median_decide_days"] < 2.1
+
+
+def test_outcomes_best_application_until_and_unmarked_calls(client, seeded):
+    company = seeded["company"]["id"]
+    alex = seeded["recruiter"]["id"]
+    # A scheduled call whose time has passed hasn't been marked: not held, not booked.
+    post(client, "/api/v1/meetings", {"contact_id": alex, "status": "scheduled", "starts_at": _at(-2)})
+    # Marked Happened counts as held even if its time is ahead (you know best).
+    post(client, "/api/v1/meetings", {"contact_id": alex, "status": "done", "starts_at": _at(1)})
+
+    # One role, two applications (directly and through Alex): the better outcome counts, once.
+    both = _role(client, company, "Platform Engineer", alex)
+    rejected = _apply(client, both["id"])
+    client.post(f"/api/v1/applications/{rejected['id']}/move", json={"to_stage": "rejected"})
+    _apply(client, both["id"], stage="screen")
+    closed = _role(client, company, "Data Engineer", alex)
+    c = _apply(client, closed["id"])
+    client.post(f"/api/v1/applications/{c['id']}/move", json={"to_stage": "withdrawn"})
+    # Two passed the same day: by title.
+    _role(client, company, "Zeta Role", alex, decision="passed", decision_reason="No")
+    _role(client, company, "Alpha Role", alex, decision="passed", decision_reason="Nope")
+
+    out = client.get("/api/v1/insights/conversations").json()
+    total = out["total"]
+    assert (total["calls_held"], total["calls_booked"]) == (1, 0)
+    assert (total["pitched"], total["applied"], total["in_progress"], total["closed"]) == (4, 2, 1, 1)
+    assert [r["role_title"] for r in out["pass_reasons"]] == ["Alpha Role", "Zeta Role"]
+
+    before = client.get("/api/v1/insights/conversations", params={"until": _at(-1)}).json()["total"]
+    assert (before["pitched"], before["calls_held"]) == (0, 0)

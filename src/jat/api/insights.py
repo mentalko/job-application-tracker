@@ -142,7 +142,7 @@ class WeekOut(BaseModel):
     applied: int  # applications with their applied date in the week
     moves: int  # stage moves
     interviews: int  # interview rounds (not cancelled) starting in the week
-    calls: int  # calls and meetings with people (not cancelled) in the week
+    calls: int  # calls and meetings with people in the week, marked Happened
     pitched: int  # roles someone told you about, added in the week
 
 

@@ -173,7 +173,7 @@ def seed(path: Path) -> None:
                     )
             s.flush()
             role = Role(company_id=companies[company].id, title=title, work_mode="hybrid")
-            if recruiter:  # their pitch, the day before you applied through them
+            if recruiter:  # their pitch, added just before the application
                 role.contact_id = recruiter.id
                 role.created_at = days_ago((path_[0][1] if path_ else 5) + 3)
             s.add(role)
@@ -334,9 +334,7 @@ def seed(path: Path) -> None:
         sam_call = Meeting(
             contact_id=sam.id, kind="call", title="Contract roles", status="done", starts_at=days_ago(19)
         )
-        jordan_call = Meeting(
-            contact_id=jordan.id, kind="video", title="Intro", status="done", starts_at=days_ago(12)
-        )
+        jordan_call = Meeting(contact_id=jordan.id, kind="video", title="Intro", status="done", starts_at=days_ago(12))
         s.add_all([sam_call, jordan_call])
         s.flush()
         s.add_all(

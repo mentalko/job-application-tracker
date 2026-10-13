@@ -113,7 +113,7 @@ class Week:
     applied: int = 0  # applied_on in the week
     moves: int = 0  # stage moves (not undone)
     interviews: int = 0  # rounds starting in the week (not cancelled)
-    calls: int = 0  # calls and meetings with people in the week (not cancelled)
+    calls: int = 0  # calls and meetings with people in the week, marked Happened
     pitched: int = 0  # roles someone told you about, added in the week
 
 
@@ -165,9 +165,7 @@ def weekly_activity(session: Session, first: date, weeks: int, tz: tzinfo) -> li
             week.interviews += 1
 
     for starts in session.scalars(
-        select(Meeting.starts_at).where(
-            Meeting.status != "cancelled", Meeting.starts_at >= start, Meeting.starts_at < end
-        )
+        select(Meeting.starts_at).where(Meeting.status == "done", Meeting.starts_at >= start, Meeting.starts_at < end)
     ):
         if week := bucket(starts):
             week.calls += 1
