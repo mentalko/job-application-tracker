@@ -112,3 +112,4 @@ phases:
       - {id: people-chase, name: "Chased, Ghosted and Not interested for people, so they leave Next actions", owner: lead, status: done, estimate_h: 2, depends: [waiting, replies], prd: docs/prd/tracker.md}
       - {id: people-chase-labels, name: "Chased, Ghosted and Not interested as labelled buttons, like the others", owner: lead, status: done, estimate_h: 0.5, depends: [people-chase], prd: docs/prd/tracker.md}
       - {id: compaction-refresh-2, name: "Refresh the compaction prompt after #60: product map, state, decisions, gotchas", owner: lead, status: done, estimate_h: 0.5, depends: [compaction-refresh]}
+      - {id: social-preview, name: "Social preview image for the GitHub repo (1280x640, fictional demo data)", owner: lead, status: done, estimate_h: 0.5, depends: [readme-refresh-1]}
