@@ -47,7 +47,7 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
 
-![A quick tour: the Overview, the Timeline, a recruiter with calls and the roles they pitched, the Kanban board, offers side by side, Insights and search](docs/screenshots/demo.gif)
+![A quick tour: Next actions, the Kanban board, a recruiter with calls and the roles they pitched, a role's page, offers side by side, the Sankey funnel, the Timeline and search](docs/screenshots/demo.gif)
 
 **Overview, the home page.** Where things stand at a glance: what's active, what needs
 attention, who you're waiting on, interviews and calls coming up, offers to answer, the
