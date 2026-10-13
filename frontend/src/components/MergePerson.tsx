@@ -64,7 +64,7 @@ function MergeModal({
   const likely = likelyDuplicates(person, everyone);
   const likelyIds = new Set(likely.map((l) => l.contact.id));
   const label = (c: Contact, why?: string) =>
-    [c.name, where(c), why && `(${why})`].filter(Boolean).join(" · ");
+    `${[c.name, where(c)].filter(Boolean).join(" · ")}${why ? ` (${why})` : ""}`;
   const data = [
     ...(likely.length
       ? [

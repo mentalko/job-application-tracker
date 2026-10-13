@@ -297,10 +297,27 @@ them.
 **New agency** and **New person** are at the top right. In a person's form you can also type
 a new agency or company name and pick **+ Add "…"** to create it there and then.
 
+**One person per email address and LinkedIn profile.** Adding someone (or adding a detail to
+someone) with an email address or LinkedIn profile another person already has is refused, and
+the message says who has it. Emails match whatever their case; LinkedIn profiles match however
+the link is written (with or without `https://`, `www.`, a trailing `/` or `?…` on the end).
+Phone numbers and other links can be shared. People who shared one before this rule can still
+be edited: merge them.
+
 Each **person** has a page, a dossier: their job title and where they work, how to reach
 them, your calls and meetings with them, the roles they've mentioned, every application they're part of (and as what),
-the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Edit** and **Delete**
-are at the top.
+the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Edit**,
+**Merge…** and **Delete** are at the top.
+
+**Two records of the same person?** On the one to keep, press **Merge…** and pick the other
+(people with the same name, email address or LinkedIn profile are listed first). Everything
+on the other record moves to this one: contact details it doesn't already have, calls, the
+roles they pitched, the applications and interviews they're on, and notes, links, files and
+to-dos about them. Where this person has no job title, agency or company, or isn't waiting on
+them, the other record's is used. Then the other record is deleted. When someone looks like
+a duplicate, their page says so in a yellow note with a one-click **Merge … into this one**.
+Deleting a person instead takes their calls with them and leaves their roles, applications and
+the rest without them, so for duplicates, merge.
 
 ### Calls and meetings
 

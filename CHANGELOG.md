@@ -83,6 +83,10 @@ brackets are pull requests.
   the outcome; pitched and passed roles get their own kind (so they also show in the
   Overview's recent activity); bookkeeping (companies, agencies and people added) is hidden
   unless you ask; clearer filters; Timeline moves next to Insights (#67).
+- **Merge people**: fold a duplicate record into the person you keep (details, calls,
+  pitched roles, applications, interviews, notes, links, files and to-dos move over), with a
+  nudge when someone looks like a duplicate; and one person per email address and LinkedIn
+  profile (#68).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
