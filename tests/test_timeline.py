@@ -147,3 +147,22 @@ def test_roles_have_their_own_category_and_application_items_carry_their_role(cl
     }
     on_app = [i for i in _timeline(client) if i["application_id"] == app["id"]]
     assert on_app and {i["role_id"] for i in on_app} == {pitched["id"]}
+
+
+def test_a_call_carries_the_roles_that_came_up_on_it(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    call = post(
+        client,
+        "/api/v1/meetings",
+        {"contact_id": alex, "status": "done", "starts_at": "2026-10-01T10:00:00+00:00", "title": "Catch-up"},
+    )
+    roles = [
+        post(
+            client,
+            "/api/v1/roles",
+            {"company_id": seeded["company"]["id"], "title": t, "contact_id": alex, "meeting_id": call["id"]},
+        )
+        for t in ("Platform Engineer", "SRE")
+    ]
+    [item] = [i for i in _timeline(client, category=["meeting"]) if i["id"] == f"meeting:{call['id']}"]
+    assert sorted(item["role_ids"]) == sorted(r["id"] for r in roles)

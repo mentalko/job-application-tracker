@@ -118,4 +118,40 @@ describe("timeline", () => {
     fireEvent.click(screen.getByRole("button", { name: "None" }));
     expect(await screen.findByText("Tick at least one kind of thing to show.")).toBeInTheDocument();
   });
+
+  it("puts a call on the row of each role that came up on it", async () => {
+    const call = item({
+      id: "meeting:m1",
+      at: inDays(-5),
+      category: "meeting",
+      title: "Call with Alex Recruiter: Catch-up (done)",
+      application_id: null,
+      role_id: null,
+      role_title: null,
+      role_ids: ["r1", "r2"],
+      people: [{ id: "c1", name: "Alex Recruiter" }],
+    });
+    const pitch = item({
+      id: "role:r2",
+      at: inDays(-5),
+      category: "role",
+      title: "Alex Recruiter pitched SRE at Contoso",
+      application_id: null,
+      role_id: "r2",
+      role_title: "SRE",
+    });
+    mockApi({
+      "/api/v1/timeline": { items: [...ITEMS, pitch, call], now },
+      "/api/v1/companies": [],
+      "/api/v1/agencies": [],
+      "/api/v1/contacts": [],
+      "/api/v1/health": {},
+    });
+    renderTimeline();
+    fireEvent.click(await screen.findByText("Lanes"));
+    const applied = await screen.findByRole("list", { name: "Contoso · Backend Engineer" });
+    expect(within(applied).getAllByRole("button")).toHaveLength(3); // its two items and the call
+    const pitched = screen.getByRole("list", { name: "Contoso · SRE" });
+    expect(within(pitched).getAllByRole("button")).toHaveLength(2); // the pitch and the call
+  });
 });

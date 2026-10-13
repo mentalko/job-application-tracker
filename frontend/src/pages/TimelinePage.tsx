@@ -210,17 +210,24 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
   const add = (key: string | null | undefined, label: string, href: string, item: TimelineItem) => {
     if (!key) return;
     const lane = lanes.get(key) ?? { key, label, href, items: [] };
+    if (!lane.label) lane.label = label;
     lane.items.push(item);
     lanes.set(key, lane);
   };
   for (const item of items) {
-    if (by === "role")
-      add(item.role_id, `${item.company_name} · ${item.role_title}`, `/roles/${item.role_id}`, item);
+    if (by === "role") {
+      if (item.role_id)
+        add(item.role_id, `${item.company_name} · ${item.role_title}`, `/roles/${item.role_id}`, item);
+      // A call joins the row of every role that came up on it (labelled by the role's own items).
+      for (const id of item.role_ids ?? []) if (id !== item.role_id) add(id, "", `/roles/${id}`, item);
+    }
     if (by === "company")
       add(item.company_id, item.company_name ?? "", `/companies/${item.company_id}`, item);
     if (by === "agency") add(item.agency_id, item.agency_name ?? "", `/agencies/${item.agency_id}`, item);
     if (by === "person") for (const p of item.people) add(p.id, p.name, `/people/${p.id}`, item);
   }
+  // A role seen only through its call (Roles unticked): name the row after the call.
+  for (const lane of lanes.values()) if (!lane.label) lane.label = `From: ${lane.items[0]!.title}`;
   // Items arrive newest first, so a lane's first item is its latest: busiest-lately on top.
   return [...lanes.values()].sort(
     (a, b) => dayjs(b.items[0]!.at).valueOf() - dayjs(a.items[0]!.at).valueOf(),

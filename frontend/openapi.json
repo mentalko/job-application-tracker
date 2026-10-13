@@ -7269,6 +7269,14 @@
             ],
             "title": "Role Id"
           },
+          "role_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Role Ids",
+            "type": "array"
+          },
           "role_title": {
             "anyOf": [
               {

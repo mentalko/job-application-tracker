@@ -20,7 +20,7 @@ export const CATEGORIES: { value: TimelineCategory; label: string; one: string; 
   { value: "meeting", label: "Calls and meetings", one: "Call", color: "pink" },
   { value: "interview", label: "Interviews", one: "Interview", color: "violet" },
   { value: "offer", label: "Offers", one: "Offer", color: "teal" },
-  { value: "role", label: "Roles pitched or passed", one: "Role", color: "indigo" },
+  { value: "role", label: "Roles pitched or passed", one: "Role", color: "lime" },
   { value: "note", label: "Notes", one: "Note", color: "yellow" },
   { value: "document", label: "Documents sent", one: "Document", color: "grape" },
   { value: "file", label: "Files", one: "File", color: "orange" },
