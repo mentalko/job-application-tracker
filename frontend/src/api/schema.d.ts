@@ -3146,7 +3146,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "stage" | "message" | "meeting" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other";
+            category: "stage" | "message" | "meeting" | "interview" | "offer" | "role" | "note" | "file" | "document" | "added" | "other";
             /** Company Id */
             company_id?: string | null;
             /** Company Name */
@@ -3165,6 +3165,11 @@ export interface components {
             /** Role Title */
             role_title?: string | null;
             /**
+             * Roles
+             * @default []
+             */
+            roles: components["schemas"]["TimelineRole"][];
+            /**
              * Seq
              * @default 0
              */
@@ -3178,6 +3183,15 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** TimelineRole */
+        TimelineRole: {
+            /** Company Name */
+            company_name: string | null;
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
         };
         /**
          * TodoIn
@@ -6150,7 +6164,7 @@ export interface operations {
             query?: {
                 since?: string | null;
                 until?: string | null;
-                category?: ("stage" | "message" | "meeting" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other")[] | null;
+                category?: ("stage" | "message" | "meeting" | "interview" | "offer" | "role" | "note" | "file" | "document" | "added" | "other")[] | null;
                 company_id?: string | null;
                 agency_id?: string | null;
                 contact_id?: string | null;

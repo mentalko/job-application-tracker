@@ -1,8 +1,8 @@
 # Using the app
 
-A tour of every page. The sidebar has them all, in groups: *Today* (Overview, Next actions,
-Timeline), *Your applications* (Roles, Applications, Interviews, Offers), *People and
-companies*, *Files and notes* and *Review*. Along
+A tour of every page. The sidebar has them all, in groups: *Today* (Overview, Next actions),
+*Your applications* (Roles, Applications, Interviews, Offers), *People and companies*, *Files
+and notes* and *Review* (Insights, Timeline). Along
 the top, on every page:
 
 - the name, which takes you back to the [Overview](#overview-home);
@@ -145,27 +145,35 @@ for the salary band*.
 ## Timeline
 
 Everything that happened across the whole search, newest first, with interviews, calls and
-offer reply deadlines still ahead under *Coming up*. It includes:
+offer reply deadlines still ahead under *Coming up*. It's in the *Review* group, next to
+Insights. It includes:
 
+- calls and meetings with people (not ones that didn't happen);
+- roles people pitched to you, and the ones you passed on (with your reason);
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
   offers, files and documents sent;
 - each interview at its own time;
-- calls and meetings with people (not ones that didn't happen);
 - notes on people, companies and agencies;
 - people you're waiting to hear back from, and people whose reply you still need to read;
-- companies, agencies and people being added.
+- companies, agencies and people being added (bookkeeping, hidden unless you ask for it).
 
 Archived applications are included.
 
 - **Period**: the last 30 days, 3 months (the default) or year, or all time.
 - **About**: one company, agency or person. An application's entries count for its company,
   its agency and the people on it.
-- **Categories**: stage moves, messages, calls and meetings, interviews, offers, notes,
-  documents sent, files, added, other. Pick any number.
-- **List** groups entries by day. **Lanes** draws one row per application, company, agency or
-  person against time: dots for what happened (hollow for what's ahead) and a dashed line for
-  now. Hover a dot to see what it was; click it to open its application (or
-  the person, company or agency it's about). Bookmark
+- **Show**: tick the kinds of thing to show: stage moves, messages, calls and meetings,
+  interviews, offers, roles pitched or passed, notes, documents sent, files, companies,
+  agencies and people added, other. Everything but *Companies, agencies and people added* is
+  ticked to start with;
+  **Everything**, **Usual** and **None** set them in one go.
+- **List** groups entries by day. **Lanes** draws rows against time: dots for what happened
+  (hollow for what's ahead) and a dashed line for now. By default it's **one row per role**,
+  so a role's whole story reads left to right: the call it came up on, the pitch, then its
+  application's stage moves, interviews and offers, or passing on it. Switch to one row per
+  **person** (their calls and everything they're part of), **company** or **agency**. Click a
+  row's name to open it; hover a dot to see what it was, and click it to open its
+  application (or the role, person, company or agency it's about). Bookmark
   `/timeline?view=lanes` to open straight into lanes.
 
 ## Applications: list and board

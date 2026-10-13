@@ -25,9 +25,8 @@ describe("app shell", () => {
     for (const group of NAV_GROUPS) {
       expect(within(nav).getByRole("group", { name: group })).toBeInTheDocument();
     }
-    expect(within(nav).getByRole("group", { name: "Today" })).toHaveTextContent(
-      "OverviewNext actionsTimeline",
-    );
+    expect(within(nav).getByRole("group", { name: "Today" })).toHaveTextContent("OverviewNext actions");
+    expect(within(nav).getByRole("group", { name: "Review" })).toHaveTextContent("InsightsTimeline");
     expect(screen.getByRole("link", { name: "Job Application Tracker: overview" })).toHaveAttribute(
       "href",
       "/",

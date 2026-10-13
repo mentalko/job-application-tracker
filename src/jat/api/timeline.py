@@ -39,13 +39,23 @@ from .notes import _sync
 
 router = APIRouter(tags=["timeline"])
 
-Category = Literal["stage", "message", "meeting", "interview", "offer", "note", "file", "document", "added", "other"]
+# `role`: a role someone pitched, and passing on one; `added`: companies, agencies and people
+# being added (bookkeeping).
+Category = Literal[
+    "stage", "message", "meeting", "interview", "offer", "role", "note", "file", "document", "added", "other"
+]
 CATEGORIES: tuple[str, ...] = Category.__args__
 
 
 class TimelinePerson(BaseModel):
     id: str
     name: str
+
+
+class TimelineRole(BaseModel):
+    id: str
+    title: str
+    company_name: str | None
 
 
 class TimelineItem(BaseModel):
@@ -58,7 +68,8 @@ class TimelineItem(BaseModel):
     detail: str | None = None
     application_id: str | None = None
     role_title: str | None = None
-    role_id: str | None = None  # a role before applying (its page), on role items
+    role_id: str | None = None  # the role it's about: on role items and on every application's items
+    roles: list[TimelineRole] = []  # on a call: the roles that came up on it
     company_id: str | None = None
     company_name: str | None = None
     agency_id: str | None = None
@@ -166,6 +177,7 @@ def timeline(
         who = fields.pop("people", None) or [p for cid in people[app_id] if (p := person(cid))]
         return TimelineItem(
             application_id=a.id,
+            role_id=r.id,
             role_title=r.title,
             company_id=c.id,
             company_name=c.name,
@@ -246,7 +258,12 @@ def timeline(
                 )
             )
 
-    # Calls and meetings with people, at their time (cancelled ones didn't happen).
+    # Calls and meetings with people, at their time (cancelled ones didn't happen), with the
+    # roles that came up on them.
+    from_call: dict[str, list[TimelineRole]] = defaultdict(list)
+    for r in session.scalars(select(Role).where(Role.meeting_id.is_not(None)).order_by(Role.created_at, Role.id)):
+        co = companies.get(r.company_id)
+        from_call[r.meeting_id].append(TimelineRole(id=r.id, title=r.title, company_name=co.name if co else None))
     for m in session.scalars(select(Meeting).where(Meeting.status != "cancelled")):
         c = contacts.get(m.contact_id)
         if c is None:
@@ -258,6 +275,7 @@ def timeline(
             category="meeting",
             title=f"{meeting_label(m, c.name)} ({'booked' if m.status == 'scheduled' else m.status})",
             detail=m.notes or m.agenda,
+            roles=from_call[m.id],
         )
         if m.application_id in apps:
             item = on_app(m.application_id, **fields)
@@ -289,8 +307,8 @@ def timeline(
                     id=f"role:{r.id}",
                     at=r.created_at,
                     all_day=False,
-                    category="added",
-                    title=f"{who.name} mentioned {r.title} at {co.name if co else '?'}",
+                    category="role",
+                    title=f"{who.name} pitched {r.title} at {co.name if co else '?'}",
                     detail=r.description,
                     **base,
                 )
@@ -301,7 +319,7 @@ def timeline(
                     id=f"role-passed:{r.id}",
                     at=_day(r.decided_on),
                     all_day=True,
-                    category="other",
+                    category="role",
                     title=f"Passed on {r.title} at {co.name if co else '?'}",
                     detail=r.decision_reason,
                     **base,

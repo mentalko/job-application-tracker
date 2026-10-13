@@ -116,6 +116,7 @@ export const item = (overrides: Record<string, unknown> = {}) => ({
   title: "Call with Alex",
   detail: null,
   application_id: "a1",
+  role_id: "r1",
   role_title: "Backend Engineer",
   company_id: "co1",
   company_name: "Contoso",

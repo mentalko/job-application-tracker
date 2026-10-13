@@ -36,13 +36,18 @@ const PERIODS = [
   { value: "all", label: "All time" },
 ];
 
-type LaneBy = "application" | "company" | "agency" | "person";
+// A role's row runs from the pitch (and the call it came from) through its application to the
+// outcome, or to passing on it; a person's row has their calls and everything they're part of.
+type LaneBy = "role" | "person" | "company" | "agency";
 const LANE_BY: { value: LaneBy; label: string }[] = [
-  { value: "application", label: "Application" },
+  { value: "role", label: "Role" },
+  { value: "person", label: "Person" },
   { value: "company", label: "Company" },
   { value: "agency", label: "Agency" },
-  { value: "person", label: "Person" },
 ];
+
+// Companies, agencies and people being added is bookkeeping: off unless you ask for it.
+const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
 
 /** The calendar day an item belongs to, in your time zone (all-day items keep their date). */
 export const dayOf = (item: TimelineItem) =>
@@ -209,13 +214,13 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
     lanes.set(key, lane);
   };
   for (const item of items) {
-    if (by === "application")
-      add(
-        item.application_id,
-        `${item.company_name} · ${item.role_title}`,
-        `/applications/${item.application_id}`,
-        item,
-      );
+    if (by === "role") {
+      if (item.role_id)
+        add(item.role_id, `${item.company_name} · ${item.role_title}`, `/roles/${item.role_id}`, item);
+      // A call joins the row of every role that came up on it.
+      for (const r of item.roles ?? [])
+        if (r.id !== item.role_id) add(r.id, `${r.company_name} · ${r.title}`, `/roles/${r.id}`, item);
+    }
     if (by === "company")
       add(item.company_id, item.company_name ?? "", `/companies/${item.company_id}`, item);
     if (by === "agency") add(item.agency_id, item.agency_name ?? "", `/agencies/${item.agency_id}`, item);
@@ -230,7 +235,7 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
 const LANE_LIMIT = 30;
 
 function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; since?: string }) {
-  const [by, setBy] = useState<LaneBy>("application");
+  const [by, setBy] = useState<LaneBy>("role");
   const [all, setAll] = useState(false);
   const router = useRouter();
   const lanes = useMemo(() => lanesOf(items, by), [items, by]);
@@ -270,7 +275,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
       </Group>
       {lanes.length === 0 ? (
         <Text c="dimmed" size="sm">
-          Nothing here is linked to {by === "person" ? "a person" : `an ${by}`}.
+          Nothing here is linked to {by === "agency" ? "an agency" : `a ${by}`}.
         </Text>
       ) : (
         <Card withBorder padding="sm" style={{ overflowX: "auto" }}>
@@ -407,7 +412,7 @@ export function TimelinePage() {
   const search: Record<string, unknown> = useRouterState({ select: (s) => s.location.search });
   const [view, setView] = useState<"list" | "lanes">(search.view === "lanes" ? "lanes" : "list");
   const [period, setPeriod] = useState("90");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const [about, setAbout] = useState<string | null>(null);
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
@@ -418,14 +423,16 @@ export function TimelinePage() {
     [period],
   );
   const filters: TimelineFilters = { since };
-  if (categories.length) filters.category = categories as TimelineCategory[];
+  // Every kind ticked needs no filter; none ticked shows nothing (and says so).
+  if (categories.length < CATEGORIES.length) filters.category = categories as TimelineCategory[];
+  const nothingTicked = categories.length === 0;
   if (about) {
     const [kind, id] = about.split(":") as [string, string];
     if (kind === "company") filters.company_id = id;
     if (kind === "agency") filters.agency_id = id;
     if (kind === "contact") filters.contact_id = id;
   }
-  const { data, isLoading, isFetching } = useTimeline(filters);
+  const { data, isLoading, isFetching } = useTimeline(filters, !nothingTicked);
   const items = data?.items ?? [];
 
   const aboutOptions = [
@@ -443,7 +450,8 @@ export function TimelinePage() {
         <div>
           <Title order={2}>Timeline</Title>
           <Text c="dimmed" size="sm">
-            Everything that happened, across every application, company, agency and person.
+            Everything that happened: calls, roles pitched, applications, interviews and offers. Lanes show
+            one row per role, from the pitch to the outcome.
           </Text>
         </div>
         <SegmentedControl
@@ -478,26 +486,64 @@ export function TimelinePage() {
         />
         {isFetching && !isLoading && <Loader size="xs" />}
       </Group>
-      <Chip.Group multiple value={categories} onChange={setCategories}>
-        <Group gap={6}>
-          {CATEGORIES.map((c) => (
-            <Chip key={c.value} value={c.value} size="xs" color={c.color} variant="light">
-              {c.label}
-            </Chip>
-          ))}
+      <Stack gap={4}>
+        <Group gap="xs">
+          <Text size="sm" fw={500} id="timeline-show">
+            Show
+          </Text>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            onClick={() => setCategories(CATEGORIES.map((c) => c.value))}
+            disabled={categories.length === CATEGORIES.length}
+          >
+            Everything
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            onClick={() => setCategories(DEFAULT_CATEGORIES)}
+            disabled={
+              categories.length === DEFAULT_CATEGORIES.length &&
+              DEFAULT_CATEGORIES.every((c) => categories.includes(c))
+            }
+          >
+            Usual
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            onClick={() => setCategories([])}
+            disabled={nothingTicked}
+          >
+            None
+          </Button>
         </Group>
-      </Chip.Group>
+        <Chip.Group multiple value={categories} onChange={setCategories}>
+          <Group gap={6} role="group" aria-labelledby="timeline-show">
+            {CATEGORIES.map((c) => (
+              <Chip key={c.value} value={c.value} size="xs" color={c.color} variant="outline">
+                {c.label}
+              </Chip>
+            ))}
+          </Group>
+        </Chip.Group>
+      </Stack>
 
-      {isLoading ? (
+      {nothingTicked ? (
+        <Text c="dimmed" size="sm" py="xl" ta="center">
+          Tick at least one kind of thing to show.
+        </Text>
+      ) : isLoading ? (
         <Loader />
       ) : items.length === 0 ? (
         <Stack align="center" gap="xs" py="xl">
           <IconTimeline size={32} stroke={1.4} />
           <Text fw={600}>Nothing here yet</Text>
           <Text c="dimmed" size="sm">
-            {categories.length || about || period !== "all"
-              ? "Try a longer period or clear a filter."
-              : "Add an application and what happens to it shows up here."}
+            {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
+              ? "Try a longer period, tick more kinds, or clear a filter."
+              : "Add an application, or log a call with someone, and it shows up here."}
           </Text>
         </Stack>
       ) : view === "list" ? (

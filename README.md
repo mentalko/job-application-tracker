@@ -79,10 +79,11 @@ drop the job description on it and it follows the role onto your application.
 
 ![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos and the job description PDF](docs/screenshots/role.png)
 
-**Timeline of everything.** Every stage move, message, call, interview, offer and note across
-every application, company, agency and person, as a list by day or as lanes against time.
+**Timeline of everything.** Calls, roles pitched and passed, stage moves, messages,
+interviews, offers and notes, as a list by day or as lanes against time: one row per role, so
+each one reads from the call it came up on to its outcome.
 
-![The Timeline as lanes: one row per application, with dots for stage moves, messages, interviews and offers](docs/screenshots/timeline.png)
+![The Timeline as lanes: one row per role, with dots for calls, pitches, stage moves, interviews and offers](docs/screenshots/timeline.png)
 
 **Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
 interview round each one is at.
@@ -155,7 +156,7 @@ went, as numbers, a Sankey diagram and a table per person or agency.
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
-| 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
+| 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about | ✅ Available |
 | 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |

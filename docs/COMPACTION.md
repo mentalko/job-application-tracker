@@ -124,9 +124,10 @@ section 10: the resume steps and one line saying the next action.
 ### 3. Product map (what exists, so you can find things)
 
 - **Menu** (`frontend/src/nav.ts`, groups in `NAV_GROUPS`): *Today*: Overview `/`, Next
-  actions `/next-actions`, Timeline `/timeline`. *Your applications*: Roles `/roles`,
-  Applications `/applications` (list/board, `?view=board`), Interviews, Offers. *People and
-  companies*: Recruiters, Companies. *Files and notes*: Documents, Notes. *Review*: Insights.
+  actions `/next-actions`. *Your applications*: Roles `/roles`, Applications
+  `/applications` (list/board, `?view=board`), Interviews, Offers. *People and companies*:
+  Recruiters, Companies. *Files and notes*: Documents, Notes. *Review*: Insights (tabs:
+  Applications, Recruiter conversations), Timeline `/timeline` (lanes one row per role).
   Detail pages: `/applications/$id`, `/roles/$id`, `/companies/$id`, `/agencies/$id`,
   `/people/$id`, `/search?q=`.
 - **Header** (`components/Layout.tsx`): wordmark → `/`; **New application**; search (`/`);
