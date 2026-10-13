@@ -97,6 +97,28 @@ export function useSaveContact() {
   });
 }
 
+/** Fold another record of the same person (`fromId`) into `id`; the other record is deleted. */
+export function useMergeContact() {
+  const refresh = useRefreshPeople();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; fromId: string }) =>
+      unwrap(
+        await api.POST("/api/v1/contacts/{contact_id}/merge", {
+          params: { path: { contact_id: args.id } },
+          body: { from_id: args.fromId },
+        }),
+      ),
+    onSuccess: () => {
+      refresh();
+      for (const key of [["links"], ["notes"], ["attachments"], ["interviews"], ["roles"]]) {
+        void qc.invalidateQueries({ queryKey: key });
+      }
+    },
+    onError: notifyError,
+  });
+}
+
 export type Relation = Schemas["ApplicationContactIn"]["relation"];
 
 /** How a person is involved in an application (the "As" choices). */

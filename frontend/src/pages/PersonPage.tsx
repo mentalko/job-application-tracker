@@ -27,6 +27,7 @@ import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
+import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { PersonChase, PersonClosed } from "../components/PersonChase";
@@ -90,15 +91,17 @@ export function PersonPage() {
           >
             Edit
           </Button>
+          <MergePersonButton person={contact} />
           <DeleteButton
             kind="contact"
             id={contact.id}
             name={contact.name}
-            confirm={`Delete ${contact.name}? They come off the applications and interviews they're on, and their calls are deleted; the applications themselves stay.`}
+            confirm={`Delete ${contact.name}? They come off the applications and interviews they're on, and their calls are deleted; the applications themselves stay. Two records of the same person? Use Merge instead: it keeps everything.`}
             onDeleted={() => router.history.push("/recruiters")}
           />
         </Group>
       </Group>
+      <PossibleDuplicates person={contact} />
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack>
