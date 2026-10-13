@@ -1,0 +1,124 @@
+import { Box, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, Title } from "@mantine/core";
+import { IconAlertCircle, IconCalendarEvent, IconCircleCheck } from "@tabler/icons-react";
+
+import type { ApplicationDetail } from "../api/client";
+import { stageLookup, useWorkflow } from "../api/hooks";
+import { useInterviews } from "../api/interviewHooks";
+import { useOffers } from "../api/offerHooks";
+import { useTodos } from "../api/todoHooks";
+import { glance, type GlanceItem } from "../utils/attention";
+import { useNow, useToday } from "../utils/useToday";
+
+function Row({ item }: { item: GlanceItem }) {
+  return (
+    <Group justify="space-between" wrap="nowrap" gap="sm" align="flex-start">
+      <Group gap={8} wrap="nowrap" align="flex-start" style={{ minWidth: 0 }}>
+        <Box
+          mt={7}
+          w={8}
+          h={8}
+          style={{ flex: "none", borderRadius: "50%", background: `var(--mantine-color-${item.tone}-6)` }}
+        />
+        <Text size="sm">{item.label}</Text>
+      </Group>
+      <Text
+        size="sm"
+        c={item.tone === "red" ? "red" : "dimmed"}
+        fw={item.tone === "red" ? 600 : 400}
+        ta="right"
+      >
+        {item.when}
+      </Text>
+    </Group>
+  );
+}
+
+/**
+ * What this application needs and how long ago things happened: the same rules as Next
+ * actions, for one application, plus its key dates as "3 weeks ago".
+ */
+export function AtAGlance({ app }: { app: ApplicationDetail }) {
+  const { data: workflow } = useWorkflow();
+  const { data: interviews } = useInterviews({ application_id: app.id });
+  const { data: offers } = useOffers({ application_id: app.id, latest: false });
+  const { data: todos } = useTodos({ entity_type: "application", entity_id: app.id });
+  const today = useToday();
+  const now = useNow();
+  const g = glance({
+    app,
+    stage: stageLookup(workflow).get(app.stage),
+    interviews: interviews ?? [],
+    offers: offers ?? [],
+    todos: todos ?? [],
+    today,
+    now,
+  });
+
+  return (
+    <Card withBorder>
+      <Stack gap="sm">
+        <Title order={4}>At a glance</Title>
+        {g.open ? (
+          g.attention.length ? (
+            <Stack gap={6}>
+              <Group gap={6}>
+                <ThemeIcon size="sm" variant="light" color="red">
+                  <IconAlertCircle size={14} />
+                </ThemeIcon>
+                <Text size="sm" fw={600}>
+                  Needs attention
+                </Text>
+              </Group>
+              {g.attention.map((item) => (
+                <Row key={item.key} item={item} />
+              ))}
+            </Stack>
+          ) : (
+            <Group gap={6}>
+              <ThemeIcon size="sm" variant="light" color="green">
+                <IconCircleCheck size={14} />
+              </ThemeIcon>
+              <Text size="sm" c="dimmed">
+                Nothing needs doing right now.
+              </Text>
+            </Group>
+          )
+        ) : (
+          <Text size="sm" c="dimmed">
+            {app.archived ? "Archived" : `${app.stage_name}`}: nothing to chase.
+          </Text>
+        )}
+        {g.comingUp.length > 0 && (
+          <Stack gap={6}>
+            <Group gap={6}>
+              <ThemeIcon size="sm" variant="light" color="blue">
+                <IconCalendarEvent size={14} />
+              </ThemeIcon>
+              <Text size="sm" fw={600}>
+                Coming up
+              </Text>
+            </Group>
+            {g.comingUp.map((item) => (
+              <Row key={item.key} item={item} />
+            ))}
+          </Stack>
+        )}
+        <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm" verticalSpacing="xs" aria-label="Key dates">
+          {g.dates.map((d) => (
+            <div key={d.label}>
+              <Text size="xs" c="dimmed">
+                {d.label}
+              </Text>
+              <Text size="sm" fw={600}>
+                {d.ago}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {d.value}
+              </Text>
+            </div>
+          ))}
+        </SimpleGrid>
+      </Stack>
+    </Card>
+  );
+}
