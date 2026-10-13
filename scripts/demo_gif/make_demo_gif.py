@@ -35,10 +35,17 @@ def scene_count() -> int:
 def render(url: str, png: Path, profile: str) -> None:
     subprocess.run(
         [
-            "google-chrome", "--headless=new", "--no-sandbox", f"--user-data-dir={profile}",
-            "--window-size=1280,720", "--hide-scrollbars", "--force-device-scale-factor=1",
-            "--allow-file-access-from-files", "--virtual-time-budget=4000",
-            f"--screenshot={png}", url,
+            "google-chrome",
+            "--headless=new",
+            "--no-sandbox",
+            f"--user-data-dir={profile}",
+            "--window-size=1280,720",
+            "--hide-scrollbars",
+            "--force-device-scale-factor=1",
+            "--allow-file-access-from-files",
+            "--virtual-time-budget=4000",
+            f"--screenshot={png}",
+            url,
         ],
         check=True,
         capture_output=True,
