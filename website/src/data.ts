@@ -3,6 +3,8 @@
 
 export const REPO = "https://github.com/waddington/job-application-tracker";
 export const SITE_URL = "https://waddington.github.io/job-application-tracker/";
+// The user guide lives on GitHub; the site links to it.
+export const GUIDE = `${REPO}/blob/main/docs/guide/`;
 export const TITLE = "Job Application Tracker: the open-source, self-hosted job search tracker";
 export const DESCRIPTION =
   "A free, open-source, self-hosted job application tracker for software engineers. Kanban board, recruiter CRM, interview rounds, follow-up reminders, offers side by side and a Sankey funnel. Local-first: your data stays on your machine.";
@@ -70,7 +72,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is it ready?",
-    a: "It's in early development (0.1.0): every planned feature is built and merged, but it hasn't been tested in real use yet, so expect rough edges. Issues and pull requests are very welcome.",
+    a: "Yes. Every planned feature is built, and it's in daily use for a real job search. The version is still 0.1.0 only because it hasn't been bumped to 1.0 yet. Issues and pull requests are very welcome.",
   },
   {
     q: "Is it multi-user?",

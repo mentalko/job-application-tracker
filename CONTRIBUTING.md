@@ -1,8 +1,7 @@
 # Contributing
 
-Thanks for thinking about it. Job Application Tracker is in early development (0.1.0): every
-planned feature is built, but it hasn't had much real use yet, so bug reports, ideas and pull
-requests all help.
+Thanks for thinking about it. Job Application Tracker is ready and in daily use (version
+0.1.0, not yet bumped to 1.0). Bug reports, ideas and pull requests all help.
 
 ## Ways to help
 
@@ -10,8 +9,8 @@ requests all help.
   with what you did, what you expected and what happened. Screenshots help.
 - **Suggest a feature.** [Describe the problem](https://github.com/waddington/job-application-tracker/issues/new?template=feature_request.yml)
   it would solve in your own job search, not just the button you'd add.
-- **Improve the docs.** Every page of the [user guide](docs/guide/README.md) has an *Edit page*
-  link on the website.
+- **Improve the docs.** The [user guide](docs/guide/README.md) is plain Markdown in
+  `docs/guide/`.
 - **Send a pull request.** For anything bigger than a small fix, open an issue first so we can
   agree on the approach.
 - **Star the repo.** It helps other job seekers find it.
@@ -53,8 +52,8 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 | `src/jat/` | The backend: FastAPI app, SQLAlchemy models, Alembic migrations, the `jat` CLI |
 | `tests/` | Backend tests (pytest) |
 | `frontend/` | The web UI: React, TypeScript, Mantine, TanStack Router and Query |
-| `docs/guide/` | The user guide (also published as the website's docs) |
-| `website/` | The project website: Astro, with the guide as Starlight docs |
+| `docs/guide/` | The user guide |
+| `website/` | The project website: one Astro landing page |
 | `scripts/` | Demo data (`seed_demo.py`) and the README's demo GIF |
 | `docs/prd/`, `docs/rfc/`, `docs/ROADMAP.yaml` | The product plan, design decisions and roadmap |
 
@@ -82,9 +81,9 @@ pnpm --dir frontend gen:api
 
 ## The website
 
-The site at <https://waddington.github.io/job-application-tracker/> lives in `website/`. Its
-docs are generated from `docs/guide/`, `CONTRIBUTING.md` and `CHANGELOG.md`, so edit those
-files, not the copies.
+The site at <https://waddington.github.io/job-application-tracker/> lives in `website/`: one
+landing page that links to the guide here on GitHub. It copies the screenshots from
+`docs/screenshots/`, so retaken screenshots show up there too.
 
 ```bash
 pnpm --dir website install

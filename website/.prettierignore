@@ -2,4 +2,3 @@ dist/
 .astro/
 node_modules/
 pnpm-lock.yaml
-src/content/docs/docs/

@@ -8,21 +8,17 @@ on:
     branches: [main]
     paths:
       - "website/**"
-      - "docs/guide/**"
       - "docs/screenshots/**"
       - "docs/social-preview.png"
       - "frontend/public/**"
-      - "CONTRIBUTING.md"
-      - "CHANGELOG.md"
       - "llms.txt"
       - ".github/workflows/website.yml"
   pull_request:
     paths:
       - "website/**"
-      - "docs/guide/**"
       - "docs/screenshots/**"
-      - "CONTRIBUTING.md"
-      - "CHANGELOG.md"
+      - "docs/social-preview.png"
+      - "frontend/public/**"
       - "llms.txt"
       - ".github/workflows/website.yml"
   workflow_dispatch:

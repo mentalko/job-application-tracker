@@ -1,6 +1,6 @@
 ---
 import Logo from "./Logo.astro";
-import { REPO } from "../data";
+import { GUIDE, REPO } from "../data";
 
 interface Props {
   stars: number | null;
@@ -19,7 +19,7 @@ const base = import.meta.env.BASE_URL;
       <a href="#features">Features</a>
       <a href="#how">How it works</a>
       <a href="#quickstart">Quick start</a>
-      <a href={`${base}docs/`}>Docs</a>
+      <a href={`${GUIDE}README.md`}>Docs</a>
     </div>
     <a class="star" href={REPO} data-magnetic>
       <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">

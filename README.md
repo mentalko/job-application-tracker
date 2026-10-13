@@ -9,12 +9,12 @@ should I chase today?"* page, a timeline of everything and a Sankey diagram of y
 funnel.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
+![Status: in daily use](https://img.shields.io/badge/status-in%20daily%20use-brightgreen)
 ![Local-first](https://img.shields.io/badge/data-100%25%20local-brightgreen)
 ![No tracking](https://img.shields.io/badge/telemetry-none-brightgreen)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](#-contributing)
 
-**[🌐 Website](https://waddington.github.io/job-application-tracker/) · [📖 Docs](https://waddington.github.io/job-application-tracker/docs/) · [🤝 Contributing](CONTRIBUTING.md)**
+**[🌐 Website](https://waddington.github.io/job-application-tracker/) · [📖 User guide](docs/guide/README.md) · [🤝 Contributing](CONTRIBUTING.md)**
 
 ⭐ **Star the repo to follow along. It's being built in the open, one PR at a time.**
 
@@ -122,8 +122,9 @@ recruiters send roles that go somewhere.
 
 ## ✨ Features
 
-> 🚧 **Early development (0.1.0).** Every planned feature is built but hasn't been tested in
-> real use yet, so expect rough edges. See the [changelog](CHANGELOG.md). Tracking,
+> ✅ **Ready and in daily use (0.1.0).** Every planned feature is built and being used for a
+> real job search; the version just hasn't been bumped to 1.0 yet. See the
+> [changelog](CHANGELOG.md). Tracking,
 > recruiters and person pages, calls and meetings, roles to decide, to-dos, interview rounds, notes,
 > links, files and emails, CV versions, the Overview, *Next actions* and *Timeline* pages,
 > waiting to hear back, insights (Sankey diagram, funnel stats, recruiter scorecards), offer
@@ -185,7 +186,7 @@ job-board feeds. It tracks the applications *you* make.
 
 ## 🚀 Getting started
 
-> 📖 **The [user guide](docs/guide/README.md)** ([also on the website](https://waddington.github.io/job-application-tracker/docs/)) covers everything below in more depth: where
+> 📖 **The [user guide](docs/guide/README.md)** covers everything below in more depth: where
 > your data lives and how the app finds it, backups and restoring, using it on a second
 > computer, customising stages, every command, and troubleshooting.
 

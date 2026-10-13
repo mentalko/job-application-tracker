@@ -1,6 +1,7 @@
 ---
+import { GUIDE } from "../data";
+
 // The commands are the README's and the install guide's, word for word. Keep them in step.
-const base = import.meta.env.BASE_URL;
 
 type Line = { cmd?: string; out?: string; note?: string };
 const tabs: { id: string; label: string; lines: Line[] }[] = [
@@ -139,7 +140,7 @@ const needs = [
     </div>
 
     <p class="more reveal">
-      The <a href={`${base}docs/`}>user guide</a> covers the rest: where your data lives, backups and
+      The <a href={`${GUIDE}README.md`}>user guide</a> covers the rest: where your data lives, backups and
       restoring, a second computer, your own stages and every command.
     </p>
   </div>

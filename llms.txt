@@ -12,8 +12,8 @@
 > scorecard. It never scrapes job boards or contacts
 > anyone, and all data stays in one local directory outside the code.
 
-Status: early development (0.1.0); every planned feature is built but not yet tested in real
-use (see CHANGELOG.md). Available now: an Overview home page (counts, pipeline, what needs
+Status: ready and in daily use (version 0.1.0, not yet bumped to 1.0); every planned feature
+is built (see CHANGELOG.md). Available now: an Overview home page (counts, pipeline, what needs
 attention, what's coming up, recent activity, a numbered "How it works"), a Timeline across
 every application, company, agency and person (by day or as lanes; `GET /api/v1/timeline`),
 a Next actions page at `/next-actions` (your own to-dos, on their own or about a person,
@@ -42,7 +42,7 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
 `/api/v1/insights/` (`flow`, `stats`, `activity`, `scorecard`).
 
 ## Docs
-- [Website](https://waddington.github.io/job-application-tracker/): landing page, and the user guide as docs at https://waddington.github.io/job-application-tracker/docs/
+- [Website](https://waddington.github.io/job-application-tracker/): the project's landing page
 - [README](README.md): overview, screenshots, features, getting started, FAQ
 - [User guide](docs/guide/README.md): install, where data lives (`--data-dir` / `JAT_DATA_DIR`),
   backups, restore, second computer, every page, customising stages, commands, troubleshooting

@@ -1,17 +1,16 @@
 ---
 import { Image } from "astro:assets";
-import { ROTATING } from "../data";
+import { GUIDE, REPO, ROTATING } from "../data";
 import { shot } from "../shots";
 
-const base = import.meta.env.BASE_URL;
 const clone = "git clone https://github.com/waddington/job-application-tracker.git";
 ---
 
 <section class="hero">
   <div class="wrap hero-text">
-    <a class="pill reveal" href={`${base}docs/changelog/`}>
+    <a class="pill reveal" href={`${REPO}/blob/main/CHANGELOG.md`}>
       <span class="dot"></span>
-      <span>v0.1.0 · open source · fresh out of the oven</span>
+      <span>Open source · in daily use · Apache-2.0</span>
       <span class="arrow">→</span>
     </a>
 
@@ -33,7 +32,7 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
     </p>
 
     <div class="ctas reveal" style="--d:.24s">
-      <a class="btn btn-primary" href={`${base}docs/install/`} data-magnetic>
+      <a class="btn btn-primary" href={`${GUIDE}install.md`} data-magnetic>
         Get started, it's free <span class="arrow">→</span>
       </a>
       <a class="btn btn-ghost" href="#quickstart" data-magnetic>

@@ -3,7 +3,8 @@
 ## Unreleased (0.1.0)
 
 Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P7)
-is built and merged, but not yet tested in real use. Numbers in brackets are pull requests.
+is built, merged and in daily use; the version hasn't been bumped to 1.0 yet. Numbers in
+brackets are pull requests.
 
 ### Tracking
 - **Applications list** with search and filters (stage, route, agency, "needs chasing",
@@ -84,9 +85,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - A local project dashboard for the build itself (`python3 -m tools.pm`) (#4).
 - The README's demo GIF is built from the screenshots by `scripts/demo_gif/make_demo_gif.py`:
   a styled scene per feature, 1.5 seconds each, with slides between (#63).
-- **A website** (https://waddington.github.io/job-application-tracker/): an animated landing page and the user guide as searchable docs,
-  built with Astro from `website/` and published to GitHub Pages; plus a contributing guide
-  and issue templates (#64).
+- **A website** (https://waddington.github.io/job-application-tracker/): an animated landing page built with Astro from `website/` and
+  published to GitHub Pages; plus a contributing guide and issue templates (#64).
 
 ### Left out on purpose
 No job-board searching or scraping, no quick-add from URLs, no MCP server and no `.ics`
