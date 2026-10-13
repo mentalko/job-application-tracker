@@ -56,24 +56,24 @@ const needs = [
   <div class="wrap">
     <div class="center head">
       <p class="eyebrow reveal">Quick start</p>
-      <h2 class="h2 reveal" id="qs-h">From <span class="serif grad">git clone</span> to tracking in two minutes.</h2>
+      <h2 class="h2 reveal" id="qs-h">
+        From <span class="serif grad">git clone</span> to tracking in two minutes.
+      </h2>
       <p class="lede reveal">
-        Fair warning: this is a tool for developers. There's no installer and no hosted version. If you're happy in
-        a terminal, you'll be fine.
+        Fair warning: this is a tool for developers. There's no installer and no hosted version. If you're
+        happy in a terminal, you'll be fine.
       </p>
     </div>
 
     <ul class="needs reveal" aria-label="What you need">
-      {
-        needs.map((n) => (
-          <li>
-            <a href={n.href} rel="noopener">
-              <b>{n.name}</b>
-              <span>{n.why}</span>
-            </a>
-          </li>
-        ))
-      }
+      {needs.map((n) => (
+        <li>
+          <a href={n.href} rel="noopener">
+            <b>{n.name}</b>
+            <span>{n.why}</span>
+          </a>
+        </li>
+      ))}
     </ul>
     <p class="os reveal">Linux or macOS. Windows isn't supported (the app uses Unix file locking).</p>
 
@@ -81,66 +81,66 @@ const needs = [
       <div class="term-glow" aria-hidden="true"></div>
       <div class="term">
         <div class="term-bar">
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="dots" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
           <div role="tablist" aria-label="Quick start steps">
-            {
-              tabs.map((t, i) => (
-                <button
-                  type="button"
-                  role="tab"
-                  id={`tab-${t.id}`}
-                  aria-controls={`panel-${t.id}`}
-                  aria-selected={i === 0 ? "true" : "false"}
-                  tabindex={i === 0 ? 0 : -1}
-                >
-                  {t.label}
-                </button>
-              ))
-            }
-          </div>
-        </div>
-        {
-          tabs.map((t, i) => (
-            <div
-              class="panel"
-              role="tabpanel"
-              id={`panel-${t.id}`}
-              aria-labelledby={`tab-${t.id}`}
-              hidden={i !== 0}
-              data-type
-            >
+            {tabs.map((t, i) => (
               <button
                 type="button"
-                class="copy-all"
-                data-copy={t.lines
-                  .filter((l) => l.cmd)
-                  .map((l) => l.cmd)
-                  .join("\n")}
-                aria-label="Copy"
+                role="tab"
+                id={`tab-${t.id}`}
+                aria-controls={`panel-${t.id}`}
+                aria-selected={i === 0 ? "true" : "false"}
+                tabindex={i === 0 ? 0 : -1}
               >
-                Copy
+                {t.label}
               </button>
-              <div class="pre">
-                {t.lines.map((l) =>
-                  l.cmd ? (
-                    <div class="line">
-                      <span class="ps">$ </span>
-                      <span class="cmd">{l.cmd}</span>
-                    </div>
-                  ) : (
-                    <div class={`line out ${l.note ? "note" : "ok"}`}>{l.note ?? l.out}</div>
-                  ),
-                )}
-              </div>
+            ))}
+          </div>
+        </div>
+        {tabs.map((t, i) => (
+          <div
+            class="panel"
+            role="tabpanel"
+            id={`panel-${t.id}`}
+            aria-labelledby={`tab-${t.id}`}
+            hidden={i !== 0}
+            data-type
+          >
+            <button
+              type="button"
+              class="copy-all"
+              data-copy={t.lines
+                .filter((l) => l.cmd)
+                .map((l) => l.cmd)
+                .join("\n")}
+              aria-label="Copy"
+            >
+              Copy
+            </button>
+            <div class="pre">
+              {t.lines.map((l) =>
+                l.cmd ? (
+                  <div class="line">
+                    <span class="ps">$ </span>
+                    <span class="cmd">{l.cmd}</span>
+                  </div>
+                ) : (
+                  <div class={`line out ${l.note ? "note" : "ok"}`}>{l.note ?? l.out}</div>
+                ),
+              )}
             </div>
-          ))
-        }
+          </div>
+        ))}
       </div>
     </div>
 
     <p class="more reveal">
-      The <a href={`${base}docs/`}>user guide</a> covers the rest: where your data lives, backups and restoring, a
-      second computer, your own stages and every command.
+      The <a href={`${base}docs/`}>user guide</a> covers the rest: where your data lives, backups and
+      restoring, a second computer, your own stages and every command.
     </p>
   </div>
 </section>

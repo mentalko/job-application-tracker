@@ -10,28 +10,30 @@ const words = text.split(" ");
 
 <section class="section manifesto" aria-labelledby="problem">
   <div class="wrap">
-    <p class="eyebrow reveal" id="problem">The problem</p>
+    <p class="eyebrow reveal" id="problem">
+      The problem
+    </p>
     <p class="words" data-words>
-      {words.map((w) => <span class={`w ${hot.has(w) ? "hot" : ""}`}>{w} </span>)}
+      {words.map((w) => (
+        <span class={`w ${hot.has(w) ? "hot" : ""}`}>{w} </span>
+      ))}
     </p>
     <p class="answer reveal">
       So here's a <span class="serif grad">CRM for your job hunt.</span>
     </p>
 
     <dl class="stats">
-      {
-        STATS.map((s, i) => (
-          <div class="stat reveal" style={`--d:${i * 0.08}s`}>
-            <dt>{s.label}</dt>
-            <dd>
-              <span data-count={s.value} data-suffix={s.suffix}>
-                {s.value}
-                {s.suffix}
-              </span>
-            </dd>
-          </div>
-        ))
-      }
+      {STATS.map((s, i) => (
+        <div class="stat reveal" style={`--d:${i * 0.08}s`}>
+          <dt>{s.label}</dt>
+          <dd>
+            <span data-count={s.value} data-suffix={s.suffix}>
+              {s.value}
+              {s.suffix}
+            </span>
+          </dd>
+        </div>
+      ))}
     </dl>
   </div>
 </section>

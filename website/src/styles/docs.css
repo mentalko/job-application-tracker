@@ -1,5 +1,10 @@
-/* Starlight's docs in the site's colours. */
+/* Starlight's docs in the site's colours and fonts. */
+@view-transition {
+  navigation: auto;
+}
 :root {
+  --sl-font: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
   --sl-color-accent-low: #1b2559;
   --sl-color-accent: #4c6ef5;
   --sl-color-accent-high: #c5d0ff;

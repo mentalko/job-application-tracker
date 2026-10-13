@@ -3,7 +3,16 @@
 // screenshots, social card, favicon and llms.txt are copied in. Everything it writes is
 // git-ignored. `pnpm dev` and `pnpm build` run it first; `pnpm dev` also re-runs it when a
 // source file changes (see watch() below).
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  watch,
+  writeFileSync,
+} from "node:fs";
 import { spawn } from "node:child_process";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,17 +23,55 @@ const REPO = "https://github.com/waddington/job-application-tracker";
 const BASE = "/job-application-tracker";
 const OUT = join(SITE, "src/content/docs/docs");
 
-// Each page: where it comes from, its URL slug under /docs/, and its sidebar title.
+// Each page: where it comes from, its URL slug under /docs/, its meta description (for search
+// results), and a sidebar label if it differs from the page's title.
 const PAGES = [
-  ["docs/guide/README.md", "index", "User guide"],
-  ["docs/guide/install.md", "install"],
-  ["docs/guide/your-data.md", "your-data"],
-  ["docs/guide/using-the-app.md", "using-the-app"],
-  ["docs/guide/customising.md", "customising"],
-  ["docs/guide/commands.md", "commands"],
-  ["docs/guide/troubleshooting.md", "troubleshooting"],
-  ["CONTRIBUTING.md", "contributing"],
-  ["CHANGELOG.md", "changelog"],
+  [
+    "docs/guide/README.md",
+    "index",
+    "The user guide for Job Application Tracker, the open-source, self-hosted job application tracker: install it, look after your data, and use every page.",
+    "User guide",
+  ],
+  [
+    "docs/guide/install.md",
+    "install",
+    "Install Job Application Tracker with uv and pnpm, try it with demo data, set up a private data repo, and update to a newer version.",
+  ],
+  [
+    "docs/guide/your-data.md",
+    "your-data",
+    "Where your job-search data lives, how the app finds it, automatic snapshots, pushing to a private repo, zip backups, restoring, and using a second computer.",
+  ],
+  [
+    "docs/guide/using-the-app.md",
+    "using-the-app",
+    "A tour of every page: Overview, Next actions, to-dos, Timeline, the Kanban board, roles to decide, recruiters and calls, interviews, offers, insights and search.",
+  ],
+  [
+    "docs/guide/customising.md",
+    "customising",
+    "Customise Job Application Tracker: your own stages, staleness thresholds, strict Jira-style transitions, snapshot timing, address and port.",
+  ],
+  [
+    "docs/guide/commands.md",
+    "commands",
+    "Every jat command (init, serve, push, archive, export, restore, snapshot, migrate, info), its settings and environment variables, and the local JSON API.",
+  ],
+  [
+    "docs/guide/troubleshooting.md",
+    "troubleshooting",
+    "Fixes for common Job Application Tracker problems: no data directory, failed pushes, restoring on another computer, conflicts and the frontend not being built.",
+  ],
+  [
+    "CONTRIBUTING.md",
+    "contributing",
+    "Contribute to Job Application Tracker: report bugs, suggest features, set up a development environment, run the checks and send a pull request.",
+  ],
+  [
+    "CHANGELOG.md",
+    "changelog",
+    "What's new in Job Application Tracker: every feature and change, with the pull request that brought it.",
+  ],
 ];
 const SLUG = Object.fromEntries(PAGES.map(([src, slug]) => [src, slug]));
 
@@ -57,7 +104,7 @@ function describe(body) {
   return text.length > 158 ? text.slice(0, 155).replace(/\s+\S*$/, "") + "…" : text;
 }
 
-function syncPage([src, slug, sidebar], order) {
+function syncPage([src, slug, description, sidebar], order) {
   const file = join(ROOT, src);
   if (!existsSync(file)) return;
   const text = readFileSync(file, "utf8");
@@ -67,14 +114,16 @@ function syncPage([src, slug, sidebar], order) {
   // Markdown links and images, outside code blocks.
   body = body
     .split(/(```[\s\S]*?```)/)
-    .map((part, i) => (i % 2 ? part : part.replace(/(!?\[[^\]]*\]\()([^)\s]+)(\))/g, (_, a, t, b) => a + rewrite(src, t) + b)))
+    .map((part, i) =>
+      i % 2 ? part : part.replace(/(!?\[[^\]]*\]\()([^)\s]+)(\))/g, (_, a, t, b) => a + rewrite(src, t) + b),
+    )
     .join("");
   // Bare "(#12)" pull request numbers in the changelog become links.
   if (src === "CHANGELOG.md") body = body.replace(/#(\d+)\b/g, `[#$1](${REPO}/pull/$1)`);
   const fm = [
     "---",
     `title: ${JSON.stringify(title)}`,
-    `description: ${JSON.stringify(describe(body))}`,
+    `description: ${JSON.stringify(description || describe(body))}`,
     `editUrl: ${JSON.stringify(`${REPO}/edit/main/${src}`)}`,
     "sidebar:",
     `  order: ${order}`,

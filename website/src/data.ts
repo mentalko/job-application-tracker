@@ -10,8 +10,26 @@ export const DESCRIPTION =
 export const ROTATING = ["application", "recruiter", "interview round", "follow-up", "offer", "ghosting"];
 
 export const MARQUEE = [
-  ["Kanban board", "Recruiter CRM", "Interview rounds", "Sankey funnel", "Offers side by side", "Next actions", "Timeline", "To-dos"],
-  ["Markdown notes", "CV versions", ".eml import", "Full-text search", "Duplicate warnings", "Git snapshots", "Roles to decide", "Recruiter scorecard"],
+  [
+    "Kanban board",
+    "Recruiter CRM",
+    "Interview rounds",
+    "Sankey funnel",
+    "Offers side by side",
+    "Next actions",
+    "Timeline",
+    "To-dos",
+  ],
+  [
+    "Markdown notes",
+    "CV versions",
+    ".eml import",
+    "Full-text search",
+    "Duplicate warnings",
+    "Git snapshots",
+    "Roles to decide",
+    "Recruiter scorecard",
+  ],
 ];
 
 export const STATS = [
@@ -60,4 +78,17 @@ export const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-export const STACK = ["Python 3.12", "uv", "FastAPI", "SQLAlchemy", "Alembic", "SQLite", "React 19", "TypeScript", "Mantine", "TanStack", "d3-sankey", "Vite"];
+export const STACK = [
+  "Python 3.12",
+  "uv",
+  "FastAPI",
+  "SQLAlchemy",
+  "Alembic",
+  "SQLite",
+  "React 19",
+  "TypeScript",
+  "Mantine",
+  "TanStack",
+  "d3-sankey",
+  "Vite",
+];

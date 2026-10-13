@@ -54,12 +54,36 @@ const big = [
 ];
 
 const small = [
-  { icon: "📝", title: "Notes are real .md files", body: "Edit them in the app or in your own editor. They're just Markdown on disk." },
-  { icon: "📨", title: "Drop in emails", body: "Exported .eml files land on the timeline at the time they were sent." },
-  { icon: "🔎", title: "Search everything", body: "Press / to search applications, people, debriefs, notes, files and links." },
-  { icon: "📄", title: "CV versions", body: "Every tailored CV and cover letter, and which one each company got." },
-  { icon: "⚠️", title: "Duplicate warnings", body: "Know before two agencies put you forward for the same job." },
-  { icon: "🔁", title: "Your workflow", body: "Your own stages, any-to-any moves, or strict Jira-style transitions." },
+  {
+    icon: "📝",
+    title: "Notes are real .md files",
+    body: "Edit them in the app or in your own editor. They're just Markdown on disk.",
+  },
+  {
+    icon: "📨",
+    title: "Drop in emails",
+    body: "Exported .eml files land on the timeline at the time they were sent.",
+  },
+  {
+    icon: "🔎",
+    title: "Search everything",
+    body: "Press / to search applications, people, debriefs, notes, files and links.",
+  },
+  {
+    icon: "📄",
+    title: "CV versions",
+    body: "Every tailored CV and cover letter, and which one each company got.",
+  },
+  {
+    icon: "⚠️",
+    title: "Duplicate warnings",
+    body: "Know before two agencies put you forward for the same job.",
+  },
+  {
+    icon: "🔁",
+    title: "Your workflow",
+    body: "Your own stages, any-to-any moves, or strict Jira-style transitions.",
+  },
 ];
 ---
 
@@ -71,37 +95,38 @@ const small = [
         Built for how tech hiring <span class="serif grad">actually</span> works.
       </h2>
       <p class="lede reveal">
-        Not another spreadsheet template. A proper app with a recruiter CRM, a real stage workflow and a
-        page that tells you what to do next.
+        Not another spreadsheet template. A proper app with a recruiter CRM, a real stage workflow and a page
+        that tells you what to do next.
       </p>
     </div>
 
     <div class="bento">
-      {
-        big.map((f, i) => (
-          <article class={`card spotlight tile ${f.cls} reveal`} style={`--d:${(i % 3) * 0.08}s`}>
-            <div class="copy">
-              <span class="tag">{f.tag}</span>
-              <h3>{f.title}</h3>
-              <p>{f.body}</p>
-            </div>
-            <div class="pic">
-              <Image src={shot(f.img)} alt={f.alt} widths={[600, 900, 1400]} sizes="(max-width: 760px) 100vw, 800px" />
-            </div>
-          </article>
-        ))
-      }
-      {
-        small.map((f, i) => (
-          <article class="card spotlight mini reveal" style={`--d:${(i % 3) * 0.08}s`}>
-            <span class="icon" aria-hidden="true">
-              {f.icon}
-            </span>
+      {big.map((f, i) => (
+        <article class={`card spotlight tile ${f.cls} reveal`} style={`--d:${(i % 3) * 0.08}s`}>
+          <div class="copy">
+            <span class="tag">{f.tag}</span>
             <h3>{f.title}</h3>
             <p>{f.body}</p>
-          </article>
-        ))
-      }
+          </div>
+          <div class="pic">
+            <Image
+              src={shot(f.img)}
+              alt={f.alt}
+              widths={[600, 900, 1400]}
+              sizes="(max-width: 760px) 100vw, 800px"
+            />
+          </div>
+        </article>
+      ))}
+      {small.map((f, i) => (
+        <article class="card spotlight mini reveal" style={`--d:${(i % 3) * 0.08}s`}>
+          <span class="icon" aria-hidden="true">
+            {f.icon}
+          </span>
+          <h3>{f.title}</h3>
+          <p>{f.body}</p>
+        </article>
+      ))}
     </div>
   </div>
 </section>

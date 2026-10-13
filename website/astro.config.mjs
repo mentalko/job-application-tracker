@@ -17,7 +17,28 @@ export default defineConfig({
       logo: { src: "./src/assets/logo.svg" },
       favicon: "/favicon.svg",
       social: [{ icon: "github", label: "GitHub", href: REPO }],
-      customCss: ["./src/styles/docs.css"],
+      customCss: [
+        "@fontsource-variable/inter",
+        "@fontsource-variable/jetbrains-mono",
+        "./src/styles/docs.css",
+      ],
+      head: [
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image",
+            content: "https://waddington.github.io/job-application-tracker/og.png",
+          },
+        },
+        { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content: "https://waddington.github.io/job-application-tracker/og.png",
+          },
+        },
+      ],
       lastUpdated: false,
       sidebar: [
         {

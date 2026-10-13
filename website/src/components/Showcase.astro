@@ -53,35 +53,38 @@ const steps = [
   <div class="wrap">
     <div class="head">
       <p class="eyebrow reveal">How it works</p>
-      <h2 class="h2 reveal" id="how-h">A day in your <span class="serif grad">job hunt</span>.</h2>
+      <h2 class="h2 reveal" id="how-h">
+        A day in your <span class="serif grad">job hunt</span>.
+      </h2>
     </div>
 
     <div class="show" data-showcase>
       <ol class="steps">
-        {
-          steps.map((s, i) => (
-            <li class={`step ${i === 0 ? "active" : ""}`} data-step={i}>
-              <span class="when">{s.when}</span>
-              <h3>{s.title}</h3>
-              <p>{s.body}</p>
-              <div class="inline-pic">
-                <Image src={shot(s.img)} alt={s.alt} widths={[600, 900]} sizes="100vw" class="shot" />
-              </div>
-            </li>
-          ))
-        }
+        {steps.map((s, i) => (
+          <li class={`step ${i === 0 ? "active" : ""}`} data-step={i}>
+            <span class="when">{s.when}</span>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+            <div class="inline-pic">
+              <Image src={shot(s.img)} alt={s.alt} widths={[600, 900]} sizes="100vw" class="shot" />
+            </div>
+          </li>
+        ))}
       </ol>
       <div class="sticky" aria-hidden="true">
         <div class="frame browser">
-          <div class="browser-bar"><i></i><i></i><i></i><span>127.0.0.1:8770</span></div>
+          <div class="browser-bar">
+            <i></i>
+            <i></i>
+            <i></i>
+            <span>127.0.0.1:8770</span>
+          </div>
           <div class="pics">
-            {
-              steps.map((s, i) => (
-                <div class={`pic ${i === 0 ? "active" : ""}`} data-pic={i}>
-                  <Image src={shot(s.img)} alt="" widths={[700, 1100, 1400]} sizes="700px" />
-                </div>
-              ))
-            }
+            {steps.map((s, i) => (
+              <div class={`pic ${i === 0 ? "active" : ""}`} data-pic={i}>
+                <Image src={shot(s.img)} alt="" widths={[700, 1100, 1400]} sizes="700px" />
+              </div>
+            ))}
           </div>
         </div>
       </div>

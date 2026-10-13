@@ -9,7 +9,9 @@ const base = import.meta.env.BASE_URL;
     <div class="split">
       <div>
         <p class="eyebrow reveal">Local-first, for real</p>
-        <h2 class="h2 reveal" id="arch-h">Your job hunt is <span class="serif grad">nobody else's</span> business.</h2>
+        <h2 class="h2 reveal" id="arch-h">
+          Your job hunt is <span class="serif grad">nobody else's</span> business.
+        </h2>
         <p class="lede reveal">
           Salaries, recruiters' names, interview notes and the CV you tailored at 1am: none of it should live
           on someone else's server. Here it lives in one folder you own, in formats you can read without the
@@ -17,43 +19,53 @@ const base = import.meta.env.BASE_URL;
         </p>
         <ul class="points">
           <li class="reveal">
-            <b>Runs on 127.0.0.1.</b> No accounts, no cloud, no telemetry. It never sends email or fetches from
-            the web.
+            <b>Runs on 127.0.0.1.</b> No accounts, no cloud, no telemetry. It never sends email or fetches
+            from the web.
           </li>
           <li class="reveal">
-            <b>Plain files.</b> SQLite for speed, a JSON Lines export you can diff, real Markdown notes and your
-            files as they are.
+            <b>Plain files.</b> SQLite for speed, a JSON Lines export you can diff, real Markdown notes and
+            your files as they are.
           </li>
           <li class="reveal">
-            <b>Backups for free.</b> Make the folder a private git repo: the app commits a snapshot after each burst
-            of changes, and <code>jat push</code> sends them off-machine.
+            <b>Backups for free.</b> Make the folder a private git repo: the app commits a snapshot after each
+            burst of changes, and <code>jat push</code> sends them off-machine.
           </li>
         </ul>
-        <a class="btn btn-ghost reveal" href={`${base}docs/your-data/`}>How your data is stored <span class="arrow">→</span></a>
+        <a class="btn btn-ghost reveal" href={`${base}docs/your-data/`}>
+          How your data is stored <span class="arrow">→</span>
+        </a>
       </div>
 
       <div class="diagram reveal" aria-label="How it fits together">
         <div class="box">
-        <div class="machine" aria-hidden="true">your machine</div>
-        <div class="node browser-node">
-          <span class="k">Your browser</span>
-          <b>127.0.0.1:8770</b>
-          <small>React · Mantine · d3-sankey</small>
+          <div class="machine" aria-hidden="true">
+            your machine
+          </div>
+          <div class="node browser-node">
+            <span class="k">Your browser</span>
+            <b>127.0.0.1:8770</b>
+            <small>React · Mantine · d3-sankey</small>
+          </div>
+          <div class="wire" aria-hidden="true">
+            <span></span>
+          </div>
+          <div class="node app-node">
+            <span class="k">jat serve</span>
+            <b>FastAPI + SQLite</b>
+            <small>Python 3.12 · run with uv</small>
+          </div>
+          <div class="wire" aria-hidden="true">
+            <span></span>
+          </div>
+          <div class="node data-node">
+            <span class="k">Your data folder</span>
+            <b>~/job-search-data</b>
+            <small>export/*.jsonl · notes/*.md · files/</small>
+          </div>
         </div>
-        <div class="wire" aria-hidden="true"><span></span></div>
-        <div class="node app-node">
-          <span class="k">jat serve</span>
-          <b>FastAPI + SQLite</b>
-          <small>Python 3.12 · run with uv</small>
+        <div class="wire dashed" aria-hidden="true">
+          <span></span>
         </div>
-        <div class="wire" aria-hidden="true"><span></span></div>
-        <div class="node data-node">
-          <span class="k">Your data folder</span>
-          <b>~/job-search-data</b>
-          <small>export/*.jsonl · notes/*.md · files/</small>
-        </div>
-        </div>
-        <div class="wire dashed" aria-hidden="true"><span></span></div>
         <div class="node git-node">
           <span class="k">jat push</span>
           <b>Your private git repo</b>
@@ -64,7 +76,9 @@ const base = import.meta.env.BASE_URL;
 
     <div class="stack reveal" aria-label="Built with">
       <span class="label">Built with</span>
-      {STACK.map((s) => <span class="chip">{s}</span>)}
+      {STACK.map((s) => (
+        <span class="chip">{s}</span>
+      ))}
     </div>
   </div>
 </section>

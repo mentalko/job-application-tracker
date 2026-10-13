@@ -16,7 +16,9 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
   <div class="wrap">
     <div class="center head">
       <p class="eyebrow reveal">Why not a spreadsheet?</p>
-      <h2 class="h2 reveal" id="compare-h">Spreadsheets don't <span class="serif grad">nudge</span> you.</h2>
+      <h2 class="h2 reveal" id="compare-h">
+        Spreadsheets don't <span class="serif grad">nudge</span> you.
+      </h2>
       <p class="lede reveal">
         And hosted trackers want your data, your email and a subscription. This one wants nothing.
       </p>
@@ -26,25 +28,25 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
       <table>
         <thead>
           <tr>
-            <th scope="col"><span class="sr-only">Feature</span></th>
+            <th scope="col">
+              <span class="sr-only">Feature</span>
+            </th>
             <th scope="col">Spreadsheet or Notion</th>
             <th scope="col">Hosted trackers (Huntr, Teal…)</th>
-            <th scope="col" class="us">Job Application Tracker</th>
+            <th scope="col" class="us">
+              Job Application Tracker
+            </th>
           </tr>
         </thead>
         <tbody>
-          {
-            rows.map(([label, a, b, c]) => (
-              <tr>
-                <th scope="row">{label}</th>
-                <td class={cls(a)}>{mark(a)}</td>
-                <td class={cls(b)}>{mark(b)}</td>
-                <td class={`us ${cls(c)}`}>
-                  {c === "yes" ? "✓" : `✓ ${c}`}
-                </td>
-              </tr>
-            ))
-          }
+          {rows.map(([label, a, b, c]) => (
+            <tr>
+              <th scope="row">{label}</th>
+              <td class={cls(a)}>{mark(a)}</td>
+              <td class={cls(b)}>{mark(b)}</td>
+              <td class={`us ${cls(c)}`}>{c === "yes" ? "✓" : `✓ ${c}`}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -86,6 +88,18 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
   tbody th {
     text-align: left;
     font-weight: 500;
+  }
+  /* On a phone the table scrolls sideways; the row labels stay put. */
+  @media (max-width: 700px) {
+    tbody th,
+    thead th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #0d0f1c;
+      min-width: 150px;
+      box-shadow: 8px 0 16px -8px rgb(0 0 0 / 0.8);
+    }
   }
   td {
     color: var(--muted);

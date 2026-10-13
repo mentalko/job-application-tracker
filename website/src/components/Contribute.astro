@@ -38,31 +38,31 @@ const ways = [
   <div class="wrap">
     <div class="center head">
       <p class="eyebrow reveal">Open source</p>
-      <h2 class="h2 reveal" id="contrib-h">Built in the open. <span class="serif grad">Build it with us.</span></h2>
+      <h2 class="h2 reveal" id="contrib-h">
+        Built in the open. <span class="serif grad">Build it with us.</span>
+      </h2>
       <p class="lede reveal">
-        Every feature landed as a reviewed pull request, more than sixty so far. It's early, it hasn't had much real
-        use yet, and that's exactly where your issues and ideas help most.
+        Every feature landed as a reviewed pull request, more than sixty so far. It's early, it hasn't had
+        much real use yet, and that's exactly where your issues and ideas help most.
       </p>
     </div>
     <div class="ways">
-      {
-        ways.map((w, i) => (
-          <a class="card spotlight way reveal" href={w.href} style={`--d:${i * 0.08}s`}>
-            <span class="icon" aria-hidden="true">
-              {w.icon}
-            </span>
-            <h3>{w.title}</h3>
-            <p>{w.body}</p>
-            <span class="go">
-              {w.cta} <span class="arrow">→</span>
-            </span>
-          </a>
-        ))
-      }
+      {ways.map((w, i) => (
+        <a class="card spotlight way reveal" href={w.href} style={`--d:${i * 0.08}s`}>
+          <span class="icon" aria-hidden="true">
+            {w.icon}
+          </span>
+          <h3>{w.title}</h3>
+          <p>{w.body}</p>
+          <span class="go">
+            {w.cta} <span class="arrow">→</span>
+          </span>
+        </a>
+      ))}
     </div>
     <p class="fine reveal">
-      Please use made-up names and companies in issues, tests and screenshots: it's a job-search tool, and real people
-      deserve privacy.
+      Please use made-up names and companies in issues, tests and screenshots: it's a job-search tool, and
+      real people deserve privacy.
     </p>
   </div>
 </section>
