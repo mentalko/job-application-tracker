@@ -8,6 +8,7 @@ CRM, calls and the roles they pitch, interview rounds, Markdown notes, CV versio
 should I chase today?"* page, a timeline of everything and a Sankey diagram of your whole
 funnel.
 
+[![Website](https://img.shields.io/badge/website-waddington.github.io-d9480f)](https://waddington.github.io/job-application-tracker/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status: in daily use](https://img.shields.io/badge/status-in%20daily%20use-brightgreen)
 ![Local-first](https://img.shields.io/badge/data-100%25%20local-brightgreen)
