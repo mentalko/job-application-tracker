@@ -103,7 +103,9 @@ describe("application page", () => {
       "/api/v1/health": {},
     });
     renderAt("/applications/a1");
-    const card = (await screen.findByRole("heading", { name: "At a glance" })).closest("div")!;
+    const card = (await screen.findByRole("heading", { name: "At a glance" })).closest<HTMLElement>(
+      ".mantine-Card-root",
+    )!;
     expect(await within(card).findByText("To-do: Send portfolio")).toBeInTheDocument();
     expect(within(card).getByText("Gone quiet (Applied goes quiet after 7 days)")).toBeInTheDocument();
     expect(within(card).getByText("no activity for 10 days")).toBeInTheDocument();

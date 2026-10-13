@@ -148,6 +148,60 @@ describe("glance", () => {
       expect(g.dates.length).toBeGreaterThan(0);
     }
   });
+
+  it("still lists your to-dos on a closed application, as Next actions does", () => {
+    const g = run({
+      app: app({ stage_kind: "closed" }),
+      todos: [
+        todo({ id: "t1", text: "Ask for feedback", due_on: null }) as unknown as Todo,
+        todo({ id: "t2", text: "Thank them", due_on: "2026-10-13" }) as unknown as Todo,
+      ],
+    });
+    expect(g.open).toBe(false);
+    // Dated (due by today) before undated.
+    expect(g.attention.map((i) => [i.label, i.when])).toEqual([
+      ["To-do: Thank them", "due today"],
+      ["To-do: Ask for feedback", "no date"],
+    ]);
+  });
+
+  it("follows the newest offer, and leaves a far-off reply date for later", () => {
+    const declinedLater = [
+      { id: "o1", status: "pending", respond_by: "2026-10-15", created_at: "2026-10-01T00:00:00Z" },
+      { id: "o2", status: "declined", respond_by: "2026-10-15", created_at: "2026-10-05T00:00:00Z" },
+    ] as Offer[];
+    expect(run({ offers: declinedLater }).attention).toEqual([]);
+    const farOff = [
+      { id: "o3", status: "pending", respond_by: "2026-11-10", created_at: "2026-10-05T00:00:00Z" },
+    ] as Offer[];
+    const g = run({ offers: farOff });
+    expect(g.attention).toEqual([]);
+    expect(g.comingUp.map((i) => [i.label, i.when])).toEqual([
+      ["Reply to the offer by 10 Nov 2026", "in 4 weeks"],
+    ]);
+  });
+
+  it("says a follow-up due today is due today", () => {
+    expect(run({ app: app({ follow_up_on: TODAY }) }).attention.map((i) => [i.label, i.when])).toEqual([
+      ["Follow up", "due today"],
+    ]);
+  });
+
+  it("treats a take-home deadline like a booked time", () => {
+    const g = run({ interviews: [round({ deadline_at: "2026-10-12T17:00:00" })] });
+    expect(g.attention.map((i) => [i.label, i.when])).toEqual([
+      ["How did Round 2 · System design go?", "yesterday"],
+    ]);
+  });
+
+  it("doesn't date last activity by something logged for later", () => {
+    // Logging the email ahead moved last_activity_at into the future.
+    const g = run({ app: app({ last_activity_at: "2026-10-30T12:00:00" }) });
+    expect(g.dates.find((d) => d.label === "Last activity")).toMatchObject({
+      value: "6 Oct 2026",
+      ago: "7 days ago",
+    });
+  });
 });
 
 describe("since and until", () => {

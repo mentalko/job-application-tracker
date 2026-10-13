@@ -188,13 +188,16 @@ Everything about one application:
 
 - **Move to…**, **Undo last move**, and its stage, current round and tags.
 - **At a glance**: what this application needs, by the same rules as
-  [Next actions](#next-actions) (a reply to read, to-dos, an offer to answer, a round waiting
-  for an outcome, a follow-up due, gone quiet, waiting to hear back), each with how long it's
-  been ("for 12 days", "overdue by 2 days"); then what's coming up (booked rounds, later
-  to-dos and follow-ups, a snooze); then its key dates as "3 weeks ago": added, applied,
-  moved to its current stage, the last call, email or message, the last interview, and the
-  last activity. A closed or archived application has nothing to chase, but keeps its dates.
-  The quick view (clicking a row in the list or a card on the board) shows it too.
+  [Next actions](#next-actions) (a reply to read, to-dos due by today or undated, an offer to
+  answer in the next two weeks, a round waiting for an outcome, a follow-up due, gone quiet,
+  waiting to hear back), each with how long it's been ("for 12 days", "overdue by 2 days");
+  then what's coming up (booked rounds and ones not booked yet, later to-dos and follow-ups,
+  an offer due later, a snooze); then its key dates as "3 weeks ago": added, applied, moved to
+  its current stage, the last call, email or message, the last interview, and the last
+  activity (things logged for a later date count once they happen). A closed or archived
+  application has nothing to chase, though your own to-dos on it still show, as they do on
+  Next actions. The quick view (clicking a row in the list or a card on the board) shows it
+  too.
 - **Details**: applied date, follow-up date, snooze, tags, and **Archived**.
 - **Interviews**: numbered rounds in your own words ("Round 2 · Engineering manager chat"),
   with type, time or deadline, format and link, interviewers, prep, debrief, questions asked,

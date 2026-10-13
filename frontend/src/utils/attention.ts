@@ -99,35 +99,34 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
   const attention: GlanceItem[] = [];
   const comingUp: GlanceItem[] = [];
 
+  if (open && app.reply_to_read_since) {
+    attention.push({
+      key: "to-read",
+      label: "They've replied: read it",
+      when: lasting(app.reply_to_read_since, today),
+      tone: "red",
+    });
+  }
+
+  // Your own to-dos, whatever the stage (Next actions lists every open one): due by today,
+  // then undated; later ones are coming up.
+  const openTodos = todos.filter((t) => !t.done_at);
+  for (const todo of openTodos.filter((t) => t.due_on)) {
+    const dueOn = todo.due_on as string;
+    const d = due(dueOn, today);
+    const item = { key: `todo-${todo.id}`, label: `To-do: ${todo.text}`, when: d.when };
+    if (dueOn <= today) attention.push({ ...item, tone: d.overdue ? "red" : "orange" });
+    else comingUp.push({ ...item, tone: "gray" });
+  }
+  for (const todo of openTodos.filter((t) => !t.due_on)) {
+    attention.push({ key: `todo-${todo.id}`, label: `To-do: ${todo.text}`, when: "no date", tone: "blue" });
+  }
+
   if (open) {
-    if (app.reply_to_read_since) {
-      attention.push({
-        key: "to-read",
-        label: "They've replied: read it",
-        when: lasting(app.reply_to_read_since, today),
-        tone: "red",
-      });
-    }
-
-    for (const todo of todos) {
-      if (todo.done_at) continue;
-      if (!todo.due_on) {
-        attention.push({
-          key: `todo-${todo.id}`,
-          label: `To-do: ${todo.text}`,
-          when: "no date",
-          tone: "blue",
-        });
-        continue;
-      }
-      const d = due(todo.due_on, today);
-      const item = { key: `todo-${todo.id}`, label: `To-do: ${todo.text}`, when: d.when };
-      if (todo.due_on <= today) attention.push({ ...item, tone: d.overdue ? "red" : "orange" });
-      else comingUp.push({ ...item, tone: "gray" });
-    }
-
     // The newest offer counts; a pending one with a reply date needs an answer.
-    const offer = [...offers].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const offer = [...offers].sort(
+      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id.localeCompare(a.id),
+    )[0];
     if (offer?.status === "pending" && offer.respond_by) {
       const d = due(offer.respond_by, today);
       const item = {
@@ -225,21 +224,24 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
   const added = app.events.find((e) => e.kind === "stage_change" && e.from_stage === null);
   at("Added", dayOf(added?.occurred_at ?? app.created_at));
   if (app.applied_on) at("Applied", app.applied_on);
-  const enteredStage = app.events
-    .filter((e) => e.kind === "stage_change" && e.to_stage === app.stage && Date.parse(e.occurred_at) <= now)
-    .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))[0];
+  // Only what has happened: a call logged ahead of time doesn't count until then.
+  const past = app.events
+    .filter((e) => Date.parse(e.occurred_at) <= now)
+    .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
+  const enteredStage = past.find((e) => e.kind === "stage_change" && e.to_stage === app.stage);
   if (enteredStage) at(`Moved to ${app.stage_name}`, dayOf(enteredStage.occurred_at));
-  const contact = app.events
-    .filter((e) => CONTACT_KINDS.has(e.kind) && Date.parse(e.occurred_at) <= now)
-    .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))[0];
-  if (contact) at(`Last ${contact.kind === "call" ? "call" : contact.kind}`, dayOf(contact.occurred_at));
+  const contact = past.find((e) => CONTACT_KINDS.has(e.kind));
+  if (contact) at(`Last ${contact.kind}`, dayOf(contact.occurred_at));
   const lastRound = interviews
     .filter((r) => r.status === "done" && (r.starts_at ?? r.deadline_at))
     .map((r) => (r.starts_at ?? r.deadline_at) as string)
     .sort()
     .pop();
   if (lastRound) at("Last interview", dayOf(lastRound));
-  at("Last activity", dayOf(app.last_activity_at));
+  // last_activity_at takes the latest of everything, so something logged for later moves it
+  // ahead; then the latest event that has happened stands in.
+  const lastActivity = Date.parse(app.last_activity_at) <= now ? app.last_activity_at : past[0]?.occurred_at;
+  if (lastActivity) at("Last activity", dayOf(lastActivity));
   dates.sort((a, b) => a.day.localeCompare(b.day)); // stable: same-day dates keep this order
 
   return { open, attention, comingUp, dates };
