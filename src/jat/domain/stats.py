@@ -16,7 +16,7 @@ from statistics import median
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jat.db.models import Application, Event, Interview
+from jat.db.models import Application, Event, Interview, Meeting, Role
 
 from .applications import STAGE_CHANGE, _effective_moves
 from .insights import closed_stages, fold_forward, stage_path, stage_rank
@@ -113,6 +113,8 @@ class Week:
     applied: int = 0  # applied_on in the week
     moves: int = 0  # stage moves (not undone)
     interviews: int = 0  # rounds starting in the week (not cancelled)
+    calls: int = 0  # calls and meetings with people in the week (not cancelled)
+    pitched: int = 0  # roles someone told you about, added in the week
 
 
 def week_starts(first: date, weeks: int, tz: tzinfo) -> list[datetime]:
@@ -161,4 +163,18 @@ def weekly_activity(session: Session, first: date, weeks: int, tz: tzinfo) -> li
     ):
         if starts is not None and (week := bucket(starts)):
             week.interviews += 1
+
+    for starts in session.scalars(
+        select(Meeting.starts_at).where(
+            Meeting.status != "cancelled", Meeting.starts_at >= start, Meeting.starts_at < end
+        )
+    ):
+        if week := bucket(starts):
+            week.calls += 1
+
+    for created in session.scalars(
+        select(Role.created_at).where(Role.contact_id.is_not(None), Role.created_at >= start, Role.created_at < end)
+    ):
+        if week := bucket(created):
+            week.pitched += 1
     return result

@@ -650,6 +650,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recruiter Conversations
+         * @description What happens before applications: calls with people, the roles they pitched, which you
+         *     applied for or passed on, and how those went. Calls count by when they happen, roles by
+         *     when they were added, in [since, until).
+         */
+        get: operations["recruiter_conversations_api_v1_insights_conversations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/flow": {
         parameters: {
             query?: never;
@@ -1671,6 +1693,136 @@ export interface components {
             /** Interviews */
             interviews: components["schemas"]["InterviewOut"][];
         };
+        /** ConversationAgency */
+        ConversationAgency: {
+            /** Applied */
+            applied: number;
+            /** Apply Rate */
+            apply_rate: number | null;
+            /** Calls Booked */
+            calls_booked: number;
+            /** Calls Cancelled */
+            calls_cancelled: number;
+            /** Calls Held */
+            calls_held: number;
+            /** Closed */
+            closed: number;
+            /** Deciding */
+            deciding: number;
+            /** Ghosted */
+            ghosted: number;
+            /** Id */
+            id: string;
+            /** In Progress */
+            in_progress: number;
+            /** Interviewed */
+            interviewed: number;
+            /** Last Call */
+            last_call: string | null;
+            /** Median Decide Days */
+            median_decide_days: number | null;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+            /** Passed */
+            passed: number;
+            /** People */
+            people: number;
+            /** Pitched */
+            pitched: number;
+        };
+        /** ConversationPerson */
+        ConversationPerson: {
+            /** Agency Id */
+            agency_id: string | null;
+            /** Agency Name */
+            agency_name: string | null;
+            /** Applied */
+            applied: number;
+            /** Apply Rate */
+            apply_rate: number | null;
+            /** Calls Booked */
+            calls_booked: number;
+            /** Calls Cancelled */
+            calls_cancelled: number;
+            /** Calls Held */
+            calls_held: number;
+            /** Closed */
+            closed: number;
+            /** Closed As */
+            closed_as: string | null;
+            /** Company Name */
+            company_name: string | null;
+            /** Deciding */
+            deciding: number;
+            /** Ghosted */
+            ghosted: number;
+            /** Id */
+            id: string;
+            /** In Progress */
+            in_progress: number;
+            /** Interviewed */
+            interviewed: number;
+            /** Last Call */
+            last_call: string | null;
+            /** Median Decide Days */
+            median_decide_days: number | null;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+            /** Passed */
+            passed: number;
+            /** Pitched */
+            pitched: number;
+        };
+        /** ConversationTally */
+        ConversationTally: {
+            /** Applied */
+            applied: number;
+            /** Apply Rate */
+            apply_rate: number | null;
+            /** Calls Booked */
+            calls_booked: number;
+            /** Calls Cancelled */
+            calls_cancelled: number;
+            /** Calls Held */
+            calls_held: number;
+            /** Closed */
+            closed: number;
+            /** Deciding */
+            deciding: number;
+            /** Ghosted */
+            ghosted: number;
+            /** In Progress */
+            in_progress: number;
+            /** Interviewed */
+            interviewed: number;
+            /** Last Call */
+            last_call: string | null;
+            /** Median Decide Days */
+            median_decide_days: number | null;
+            /** Offers */
+            offers: number;
+            /** Passed */
+            passed: number;
+            /** Pitched */
+            pitched: number;
+        };
+        /** ConversationsOut */
+        ConversationsOut: {
+            /** Agencies */
+            agencies: components["schemas"]["ConversationAgency"][];
+            flow: components["schemas"]["FlowOut"];
+            /** Pass Reasons */
+            pass_reasons: components["schemas"]["PassReasonOut"][];
+            /** People */
+            people: components["schemas"]["ConversationPerson"][];
+            /** People Talked To */
+            people_talked_to: number;
+            total: components["schemas"]["ConversationTally"];
+        };
         /** DocumentDetail */
         DocumentDetail: {
             /**
@@ -2491,6 +2643,21 @@ export interface components {
             /** Status */
             status?: ("pending" | "accepted" | "declined" | "withdrawn") | null;
         };
+        /** PassReasonOut */
+        PassReasonOut: {
+            /** Company Name */
+            company_name: string;
+            /** Decided On */
+            decided_on: string | null;
+            /** Person Name */
+            person_name: string | null;
+            /** Reason */
+            reason: string;
+            /** Role Id */
+            role_id: string;
+            /** Role Title */
+            role_title: string;
+        };
         /** PersonApplication */
         PersonApplication: {
             /** Agency Id */
@@ -3113,10 +3280,20 @@ export interface components {
             added: number;
             /** Applied */
             applied: number;
+            /**
+             * Calls
+             * @default 0
+             */
+            calls: number;
             /** Interviews */
             interviews: number;
             /** Moves */
             moves: number;
+            /**
+             * Pitched
+             * @default 0
+             */
+            pitched: number;
             /**
              * Start
              * Format: date
@@ -4811,6 +4988,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WeekOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recruiter_conversations_api_v1_insights_conversations_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationsOut"];
                 };
             };
             /** @description Validation Error */
