@@ -3,16 +3,7 @@
 // screenshots, social card, favicon and llms.txt are copied in. Everything it writes is
 // git-ignored. `pnpm dev` and `pnpm build` run it first; `pnpm dev` also re-runs it when a
 // source file changes (see watch() below).
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  watch,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -133,20 +124,31 @@ function syncPage([src, slug, description, sidebar], order) {
     `<!-- Generated from ${src} by website/scripts/sync.mjs. Edit that file, not this one. -->`,
     "",
   ];
-  writeFileSync(join(OUT, `${slug}.md`), fm.join("\n") + body);
+  writeIfChanged(join(OUT, `${slug}.md`), fm.join("\n") + body);
+}
+
+// Write only what changed. Deleting and rewriting everything makes `astro dev` drop the
+// pages from its content store until it restarts.
+function writeIfChanged(file, content) {
+  if (existsSync(file) && readFileSync(file).equals(Buffer.from(content))) return;
+  writeFileSync(file, content);
 }
 
 function copy(from, to) {
   const src = join(ROOT, from);
   if (!existsSync(src)) return;
   mkdirSync(dirname(join(SITE, to)), { recursive: true });
-  copyFileSync(src, join(SITE, to));
+  writeIfChanged(join(SITE, to), readFileSync(src));
 }
 
 function syncAll() {
-  rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
   PAGES.forEach((page, i) => syncPage(page, i));
+  // Remove pages whose source is gone, and nothing else.
+  const wanted = new Set(
+    PAGES.filter(([src]) => existsSync(join(ROOT, src))).map(([, slug]) => `${slug}.md`),
+  );
+  for (const name of readdirSync(OUT)) if (!wanted.has(name)) rmSync(join(OUT, name));
   const shots = join(ROOT, "docs/screenshots");
   for (const name of readdirSync(shots)) {
     if (name.endsWith(".png")) copy(`docs/screenshots/${name}`, `src/assets/screenshots/${name}`);
