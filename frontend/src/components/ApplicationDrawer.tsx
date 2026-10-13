@@ -38,6 +38,7 @@ import {
   useWorkflow,
 } from "../api/hooks";
 import { ago, formatDate, formatDateTime } from "../utils/time";
+import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
 import { StageBadge } from "./StageBadge";
@@ -262,6 +263,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
       ) : (
         <Stack>
           <ApplicationSummary app={app} />
+          <AtAGlance app={app} />
           <Button
             component={Link}
             to={`/applications/${app.id}`}
