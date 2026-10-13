@@ -46,7 +46,7 @@ const base = import.meta.env.BASE_URL;
     border-bottom: 1px solid transparent;
   }
   .nav:global(.scrolled) {
-    background: rgb(5 6 15 / 0.62);
+    background: color-mix(in oklab, var(--bg) 62%, transparent);
     backdrop-filter: blur(16px) saturate(1.4);
     border-bottom-color: var(--border);
   }

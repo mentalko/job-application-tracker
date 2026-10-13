@@ -77,7 +77,14 @@ const year = new Date().getFullYear();
     height: min(760px, 90vw);
     translate: -50% -50%;
     border-radius: 50%;
-    background: conic-gradient(from var(--angle), #4c6ef5, #845ef7, #f06595, #3bc9db, #4c6ef5);
+    background: conic-gradient(
+      from var(--angle),
+      var(--brand),
+      var(--violet),
+      var(--pink),
+      var(--cyan),
+      var(--brand)
+    );
     filter: blur(140px);
     opacity: 0.28;
     animation: spin 14s linear infinite;
@@ -101,7 +108,7 @@ const year = new Date().getFullYear();
   }
   .foot {
     border-top: 1px solid var(--border);
-    background: rgb(5 6 15 / 0.7);
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
     backdrop-filter: blur(10px);
   }
   .foot-inner {

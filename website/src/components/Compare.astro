@@ -96,16 +96,16 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
       position: sticky;
       left: 0;
       z-index: 1;
-      background: #0d0f1c;
+      background: var(--bg-2);
       min-width: 150px;
-      box-shadow: 8px 0 16px -8px rgb(0 0 0 / 0.8);
+      box-shadow: 8px 0 16px -8px color-mix(in oklab, var(--shadow) 80%, transparent);
     }
   }
   td {
     color: var(--muted);
   }
   .no {
-    color: #ff8787;
+    color: var(--no);
     font-size: 18px;
   }
   .yes {
@@ -113,8 +113,12 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
     font-size: 18px;
   }
   .us {
-    background: linear-gradient(180deg, rgb(92 124 250 / 0.14), rgb(132 94 247 / 0.1));
-    color: #b2f2bb;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--brand) 14%, transparent),
+      color-mix(in oklab, var(--violet) 10%, transparent)
+    );
+    color: var(--green);
     font-weight: 600;
   }
   thead .us {

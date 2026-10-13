@@ -16,12 +16,18 @@ const { size = 28 } = Astro.props;
 >
   <defs>
     <linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5c7cfa"></stop>
-      <stop offset="1" stop-color="#7048e8"></stop>
+      <stop offset="0" style="stop-color: var(--brand)"></stop>
+      <stop offset="1" style="stop-color: var(--violet)"></stop>
     </linearGradient>
   </defs>
   <rect width="24" height="24" rx="6" fill="url(#logo-g)"></rect>
-  <g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <g
+    fill="none"
+    style="stroke: var(--on-brand)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
     <circle cx="12" cy="12" r="8"></circle>
     <circle cx="12" cy="12" r="4.5"></circle>
     <circle cx="12" cy="12" r="1"></circle>
@@ -31,6 +37,6 @@ const { size = 28 } = Astro.props;
 <style>
   .logo {
     flex: none;
-    filter: drop-shadow(0 0 12px rgb(92 124 250 / 0.6));
+    filter: drop-shadow(0 0 12px color-mix(in oklab, var(--brand) 60%, transparent));
   }
 </style>

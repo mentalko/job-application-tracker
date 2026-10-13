@@ -68,11 +68,14 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-palette="paper">
   <head>
     <meta charset="utf-8" />
     <script is:inline>
       document.documentElement.classList.add("js");
+      // ?palette=paper (or forest, ember, indigo) previews another colour scheme.
+      const palette = new URLSearchParams(location.search).get("palette");
+      if (palette) document.documentElement.dataset.palette = palette;
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{TITLE}</title>
@@ -82,8 +85,7 @@ const jsonLd = {
       content="job application tracker, job tracker, job search tracker, self-hosted, open source, local-first, recruiter CRM, interview tracker, offer comparison, kanban, Huntr alternative, Teal alternative"
     />
     <link rel="canonical" href={SITE_URL} />
-    <meta name="theme-color" content="#05060f" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#f6f1e7" />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
     <link rel="sitemap" href={`${base}sitemap-index.xml`} />
@@ -115,6 +117,13 @@ const jsonLd = {
     </div>
     <slot />
     <p class="sr-only" aria-live="polite" id="announce"></p>
+    {import.meta.env.DEV && (
+      <div class="palette-switch" aria-label="Preview a colour scheme (dev only)">
+        {["indigo", "paper", "forest", "ember"].map((p) => (
+          <a href={`?palette=${p}`}>{p}</a>
+        ))}
+      </div>
+    )}
     <script>
       import "../scripts/motion";
     </script>

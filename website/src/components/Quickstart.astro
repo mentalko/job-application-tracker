@@ -173,7 +173,7 @@ const needs = [
       transform 0.3s var(--ease);
   }
   .needs a:hover {
-    border-color: rgb(102 217 232 / 0.5);
+    border-color: color-mix(in oklab, var(--cyan) 50%, transparent);
     transform: translateY(-3px);
   }
   .needs b {
@@ -197,24 +197,32 @@ const needs = [
   .term-glow {
     position: absolute;
     inset: 20px;
-    background: linear-gradient(120deg, #4c6ef5, #845ef7, #22b8cf);
+    background: linear-gradient(120deg, var(--brand), var(--violet), var(--cyan));
     filter: blur(70px);
     opacity: 0.35;
     z-index: -1;
   }
   .term {
+    /* Always dark, whatever the palette: its own light-on-dark colours. */
+    --text: #f2ede4;
+    --muted: #a8a196;
+    --faint: #7a7368;
+    --surface-2: rgb(255 255 255 / 0.07);
+    --border: rgb(255 255 255 / 0.1);
+    --border-strong: rgb(255 255 255 / 0.16);
+    color: var(--text);
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--border-strong);
-    background: #0b0d18;
-    box-shadow: 0 40px 100px -30px rgb(0 0 0 / 0.9);
+    background: var(--term);
+    box-shadow: 0 40px 100px -30px color-mix(in oklab, var(--shadow) 90%, transparent);
   }
   .term-bar {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 10px 14px;
-    background: #12142a;
+    background: var(--term-bar);
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
   }
@@ -320,7 +328,7 @@ const needs = [
   }
   .copy-all:global(.copied) {
     color: var(--green);
-    border-color: rgb(81 207 102 / 0.5);
+    border-color: color-mix(in oklab, var(--green) 50%, transparent);
   }
   .more {
     text-align: center;
@@ -329,7 +337,7 @@ const needs = [
     max-width: 620px;
   }
   .more a {
-    color: #a5b4fc;
+    color: var(--accent-soft);
   }
   @media (max-width: 900px) {
     .needs {

@@ -48,15 +48,15 @@ const words = text.split(" ");
     max-width: 1100px;
   }
   :global(.js) .w {
-    color: rgb(255 255 255 / 0.13);
+    color: color-mix(in oklab, var(--text) 13%, transparent);
     transition: color 0.35s;
   }
   :global(.js) .w:global(.lit) {
     color: var(--text);
   }
   :global(.js) .w.hot:global(.lit) {
-    color: #ffa8c5;
-    text-shadow: 0 0 30px rgb(240 101 149 / 0.5);
+    color: var(--pink);
+    text-shadow: 0 0 30px color-mix(in oklab, var(--pink) 50%, transparent);
   }
   .answer {
     margin: 40px 0 0;
@@ -87,7 +87,7 @@ const words = text.split(" ");
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1;
-    background: linear-gradient(180deg, #fff, #8e94b8);
+    background: linear-gradient(180deg, var(--text), var(--muted));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
