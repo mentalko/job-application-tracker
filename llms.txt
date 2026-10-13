@@ -42,6 +42,7 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
 `/api/v1/insights/` (`flow`, `stats`, `activity`, `scorecard`).
 
 ## Docs
+- [Website](https://waddington.github.io/job-application-tracker/): landing page, and the user guide as docs at https://waddington.github.io/job-application-tracker/docs/
 - [README](README.md): overview, screenshots, features, getting started, FAQ
 - [User guide](docs/guide/README.md): install, where data lives (`--data-dir` / `JAT_DATA_DIR`),
   backups, restore, second computer, every page, customising stages, commands, troubleshooting
@@ -50,6 +51,7 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
 - [Roadmap](docs/ROADMAP.yaml): phases P0–P7 with task status
 - [Changelog](CHANGELOG.md): what's built so far, with pull request numbers
 - [Planning process](docs/planning/README.md)
+- [Contributing](CONTRIBUTING.md): development setup, checks, the website (`website/`, Astro)
 
 ## Optional
 - [License](LICENSE): Apache-2.0, with [NOTICE](NOTICE) crediting Kai Waddington

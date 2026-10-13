@@ -14,6 +14,8 @@ funnel.
 ![No tracking](https://img.shields.io/badge/telemetry-none-brightgreen)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](#-contributing)
 
+**[🌐 Website](https://waddington.github.io/job-application-tracker/) · [📖 Docs](https://waddington.github.io/job-application-tracker/docs/) · [🤝 Contributing](CONTRIBUTING.md)**
+
 ⭐ **Star the repo to follow along. It's being built in the open, one PR at a time.**
 
 </div>
@@ -183,7 +185,7 @@ job-board feeds. It tracks the applications *you* make.
 
 ## 🚀 Getting started
 
-> 📖 **The [user guide](docs/guide/README.md)** covers everything below in more depth: where
+> 📖 **The [user guide](docs/guide/README.md)** ([also on the website](https://waddington.github.io/job-application-tracker/docs/)) covers everything below in more depth: where
 > your data lives and how the app finds it, backups and restoring, using it on a second
 > computer, customising stages, every command, and troubleshooting.
 
@@ -289,9 +291,12 @@ test"), and the board shows the current one.
 
 ## 🤝 Contributing
 
-Issues, ideas and PRs are welcome. The roadmap in [`docs/ROADMAP.yaml`](docs/ROADMAP.yaml)
-shows what's next, and [`docs/planning/README.md`](docs/planning/README.md) explains how work is
-planned. Please use made-up data in issues, tests and screenshots.
+Issues, ideas and PRs are welcome: [CONTRIBUTING.md](CONTRIBUTING.md) covers setting up for
+development, the checks and the website. [Report a bug](https://github.com/waddington/job-application-tracker/issues/new?template=bug_report.yml)
+or [suggest a feature](https://github.com/waddington/job-application-tracker/issues/new?template=feature_request.yml).
+The roadmap in [`docs/ROADMAP.yaml`](docs/ROADMAP.yaml) shows what's next, and
+[`docs/planning/README.md`](docs/planning/README.md) explains how work is planned. Please use
+made-up data in issues, tests and screenshots.
 
 If this looks useful, **⭐ star the repo**. It helps other job seekers find it.
 

@@ -84,6 +84,9 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - A local project dashboard for the build itself (`python3 -m tools.pm`) (#4).
 - The README's demo GIF is built from the screenshots by `scripts/demo_gif/make_demo_gif.py`:
   a styled scene per feature, 1.5 seconds each, with slides between (#63).
+- **A website** (https://waddington.github.io/job-application-tracker/): an animated landing page and the user guide as searchable docs,
+  built with Astro from `website/` and published to GitHub Pages; plus a contributing guide
+  and issue templates (#64).
 
 ### Left out on purpose
 No job-board searching or scraping, no quick-add from URLs, no MCP server and no `.ics`
