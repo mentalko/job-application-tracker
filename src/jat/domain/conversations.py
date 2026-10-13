@@ -9,7 +9,8 @@ on others. This looks at that part:
   offer logged, or a success stage), *in progress* (an active stage), *ghosted* (a
   `reopen_from` stage, Ghosted by default) or *closed* (any other closed stage);
 - **time to decide**: days from adding a pitched role to applying (its first application
-  being added) or passing (the day you passed);
+  being added: its first stage event, so backdated history counts) or passing (the day you
+  passed);
 - per **person** and per **agency** (a person's agency), and **why you passed**.
 
 Roles and calls count in a period by when they were added and when they happen. Roles you
@@ -27,8 +28,9 @@ from statistics import median
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jat.db.models import Agency, Application, Company, Contact, Interview, Meeting, Offer, Role
+from jat.db.models import Agency, Application, Company, Contact, Event, Interview, Meeting, Offer, Role
 
+from .applications import STAGE_CHANGE
 from .workflow import Workflow
 
 OUTCOMES = ("offer", "in_progress", "closed", "ghosted")  # best first
@@ -164,6 +166,17 @@ def conversations(
         )
     )
     offered = set(session.scalars(select(Offer.application_id).where(Offer.application_id.in_(app_ids))))
+    # When each application was added: its first stage event, so backdated history counts.
+    added: dict[str, datetime] = {}
+    for app_id, at in session.execute(
+        select(Event.application_id, Event.occurred_at).where(
+            Event.application_id.in_(app_ids), Event.kind == STAGE_CHANGE, Event.from_stage.is_(None)
+        )
+    ):
+        added[app_id] = min(added.get(app_id, _aware(at)), _aware(at))
+
+    def added_at(a: Application) -> datetime:
+        return added.get(a.id, _aware(a.created_at))
 
     def outcome(a: Application) -> str:
         kind = kinds.get(a.stage, "active")
@@ -175,13 +188,13 @@ def conversations(
 
     reasons: list[PassReason] = []
     for r in roles:
-        mine = sorted(apps.get(r.id, []), key=lambda a: _aware(a.created_at))
+        mine = sorted(apps.get(r.id, []), key=added_at)
         targets = (total, person(r.contact_id))
         for t in targets:
             t.pitched += 1
         if mine:
             best = min((outcome(a) for a in mine), key=OUTCOMES.index)
-            days = (_aware(mine[0].created_at) - _aware(r.created_at)).total_seconds() / 86_400
+            days = (added_at(mine[0]) - _aware(r.created_at)).total_seconds() / 86_400
             for t in targets:
                 t.applied += 1
                 t.outcomes[best] += 1

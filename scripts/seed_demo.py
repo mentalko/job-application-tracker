@@ -173,6 +173,9 @@ def seed(path: Path) -> None:
                     )
             s.flush()
             role = Role(company_id=companies[company].id, title=title, work_mode="hybrid")
+            if recruiter:  # their pitch, the day before you applied through them
+                role.contact_id = recruiter.id
+                role.created_at = days_ago((path_[0][1] if path_ else 5) + 3)
             s.add(role)
             s.flush()
             first_day = path_[0][1] + 2 if path_ else 5
@@ -324,6 +327,39 @@ def seed(path: Path) -> None:
                     starts_at=days_ago(-1),
                     meeting_url="https://meet.example.com/catch-up",
                     agenda="- Day rates for platform roles\n- Anything fully remote?",
+                ),
+            ]
+        )
+        sam, jordan = recruiters["Sam Patel"], recruiters["Jordan Lee"]
+        sam_call = Meeting(
+            contact_id=sam.id, kind="call", title="Contract roles", status="done", starts_at=days_ago(19)
+        )
+        jordan_call = Meeting(
+            contact_id=jordan.id, kind="video", title="Intro", status="done", starts_at=days_ago(12)
+        )
+        s.add_all([sam_call, jordan_call])
+        s.flush()
+        s.add_all(
+            [
+                Role(
+                    company_id=companies["Adventure Works"].id,
+                    title="Contract SRE",
+                    employment_type="contract",
+                    ir35="inside",
+                    decision="passed",
+                    decision_reason="Inside IR35, and five days in the office",
+                    decided_on=date.today() - timedelta(days=17),
+                    contact_id=sam.id,
+                    meeting_id=sam_call.id,
+                    created_at=days_ago(19),
+                ),
+                Role(
+                    company_id=companies["Tailspin Toys"].id,
+                    title="Senior Frontend Engineer",
+                    work_mode="hybrid",
+                    contact_id=jordan.id,
+                    meeting_id=jordan_call.id,
+                    created_at=days_ago(12),
                 ),
             ]
         )

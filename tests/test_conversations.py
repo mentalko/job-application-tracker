@@ -115,3 +115,24 @@ def test_weekly_activity_counts_calls_and_pitched_roles(client, seeded):
     _role(client, seeded["company"]["id"], "Staff Engineer")  # not pitched
     this_week = client.get("/api/v1/insights/activity", params={"weeks": 1}).json()[0]
     assert (this_week["calls"], this_week["pitched"]) == (1, 1)
+
+
+def test_time_to_decide_counts_backdated_history(app, client, seeded):
+    """An application entered after the fact dates from its first stage event, not its row."""
+    import sqlite3
+
+    role = _role(client, seeded["company"]["id"], "Platform Engineer", seeded["recruiter"]["id"])
+    a = _apply(client, role["id"])
+    db = sqlite3.connect(app.state.snapshots.data_dir / "tracker.sqlite3")
+
+    def back(table: str, column: str, where: str, arg: str, days: int) -> None:
+        for rowid, value in db.execute(f"SELECT rowid, {column} FROM {table} WHERE {where}", (arg,)).fetchall():
+            moved = datetime.fromisoformat(value) - timedelta(days=days)
+            db.execute(f"UPDATE {table} SET {column} = ? WHERE rowid = ?", (moved.isoformat(), rowid))
+
+    with db:
+        back("roles", "created_at", "id = ?", role["id"], 12)
+        back("events", "occurred_at", "application_id = ? AND from_stage IS NULL", a["id"], 10)
+    db.close()
+    total = client.get("/api/v1/insights/conversations").json()["total"]
+    assert 1.9 < total["median_decide_days"] < 2.1
