@@ -92,6 +92,10 @@ pnpm --dir website build     # the static site in website/dist
 pnpm --dir website preview   # serve that build locally
 ```
 
+Colours come from palettes in `website/src/styles/landing.css`; the site uses `paper`. In
+`pnpm dev` only, a switcher in the bottom-left corner (or `?palette=forest`, `ember`,
+`indigo`) previews the others. The built site leaves both out.
+
 ## Pull requests
 
 - One logical change per pull request, with tests for new behaviour.

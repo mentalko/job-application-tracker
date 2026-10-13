@@ -73,10 +73,15 @@ const jsonLd = {
     <meta charset="utf-8" />
     <script is:inline>
       document.documentElement.classList.add("js");
-      // ?palette=paper (or forest, ember, indigo) previews another colour scheme.
-      const palette = new URLSearchParams(location.search).get("palette");
-      if (palette) document.documentElement.dataset.palette = palette;
     </script>
+    {
+      /* Dev server only (`pnpm dev`): ?palette=paper, forest, ember or indigo previews another
+         colour scheme. The published site is always paper. */
+      import.meta.env.DEV && <script is:inline>
+        const palette = new URLSearchParams(location.search).get("palette");
+        if (palette) document.documentElement.dataset.palette = palette;
+      </script>
+    }
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{TITLE}</title>
     <meta name="description" content={DESCRIPTION} />
