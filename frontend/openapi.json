@@ -4211,6 +4211,20 @@
         "title": "MeetingPatch",
         "type": "object"
       },
+      "MergeIn": {
+        "additionalProperties": false,
+        "properties": {
+          "from_id": {
+            "title": "From Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_id"
+        ],
+        "title": "MergeIn",
+        "type": "object"
+      },
       "MoveIn": {
         "additionalProperties": false,
         "properties": {
@@ -9883,6 +9897,59 @@
           }
         },
         "summary": "Update Contact",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/v1/contacts/{contact_id}/merge": {
+      "post": {
+        "description": "Fold another record of the same person (`from_id`) into this one, then delete it.\n\nIts contact details (not ones this person already has), roles, applications, interview\npanels, calls, links, files, to-dos and notes all move here. This person's own fields win;\nany they don't have come from the other record.",
+        "operationId": "merge_contact_api_v1_contacts__contact_id__merge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Merge Contact",
         "tags": [
           "contacts"
         ]

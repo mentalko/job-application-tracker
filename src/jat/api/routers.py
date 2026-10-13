@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, aliased
 
@@ -24,6 +24,7 @@ from ..db.models import (
 from ..domain import applications as svc
 from ..domain import duplicates as dup
 from ..domain import interviews as interviews_svc
+from ..domain import people as people_svc
 from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
@@ -152,6 +153,12 @@ def _validate_contact(session: Session, data: dict) -> None:
     require(session, Company, data.get("company_id"), "company_id")
 
 
+def _unique_details(session: Session, details: list[S.ContactDetailIn], contact: Contact | None = None) -> None:
+    """One person per email address and LinkedIn profile: 409 naming who already has it."""
+    if message := people_svc.check_unique(session, [(d.kind, d.value) for d in details], contact=contact):
+        raise HTTPException(409, message)
+
+
 @contacts.get("", response_model=list[S.ContactOut])
 def list_contacts(session: SessionDep, q: str | None = None, agency_id: str | None = None):
     stmt = select(Contact)
@@ -171,6 +178,7 @@ def get_contact(contact_id: str, session: SessionDep):
 def create_contact(body: S.ContactIn, session: SessionDep):
     data = body.model_dump(mode="json", exclude={"details"})
     _validate_contact(session, data)
+    _unique_details(session, body.details)
     contact = Contact(**data)
     session.add(contact)
     session.flush()
@@ -184,6 +192,8 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
     contact = get_or_404(session, Contact, contact_id)
     data = body.model_dump(mode="json", exclude_unset=True, exclude={"details"})
     _validate_contact(session, data)
+    if body.details is not None:
+        _unique_details(session, body.details, contact)
     for key in ("awaiting_reply_since", "reply_to_read_since", "chased_on", "closed_on"):
         if key in data:
             data[key] = getattr(body, key)  # a date, not its JSON string
@@ -208,6 +218,24 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
         _set_details(session, contact, body.details)
     session.flush()
     return _contact_out(session, contact)
+
+
+@contacts.post("/{contact_id}/merge", response_model=S.ContactOut)
+def merge_contact(contact_id: str, body: S.MergeIn, request: Request, session: SessionDep):
+    """Fold another record of the same person (`from_id`) into this one, then delete it.
+
+    Its contact details (not ones this person already has), roles, applications, interview
+    panels, calls, links, files, to-dos and notes all move here. This person's own fields win;
+    any they don't have come from the other record.
+    """
+    from .notes import _sync  # notes imports this module
+
+    keep = get_or_404(session, Contact, contact_id)
+    gone = get_or_404(session, Contact, body.from_id)
+    if keep.id == gone.id:
+        raise HTTPException(422, "Pick someone else to merge in: that's the same person.")
+    people_svc.merge(session, keep, gone, _sync(request))
+    return _contact_out(session, session.get(Contact, contact_id))
 
 
 @contacts.delete("/{contact_id}", status_code=204)
