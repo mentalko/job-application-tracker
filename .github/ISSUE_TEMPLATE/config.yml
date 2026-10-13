@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: User guide
+    url: https://waddington.github.io/job-application-tracker/docs/
+    about: Installing, your data, backups, every page and every command.
+  - name: Troubleshooting
+    url: https://waddington.github.io/job-application-tracker/docs/troubleshooting/
+    about: Common problems and how to fix them.

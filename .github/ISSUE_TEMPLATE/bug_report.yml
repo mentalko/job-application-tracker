@@ -1,0 +1,45 @@
+name: Bug report
+description: Something broke, or didn't do what you expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting it. **Please use made-up names and companies** in everything below
+        (Contoso, Fabrikam, Alex Morgan, example.com…): never paste your real job-search data.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+      placeholder: |
+        1. Opened Next actions
+        2. Clicked "Chased" on a recruiter
+        3. Expected them to move to Waiting; instead…
+    validations:
+      required: true
+  - type: textarea
+    id: errors
+    attributes:
+      label: Errors or screenshots
+      description: Anything from the terminal running `jat serve`, the browser console, or a screenshot (with demo data).
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The output of `git rev-parse --short HEAD` in your checkout.
+      placeholder: 6369175
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Other
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Firefox 133, Chrome 141…
