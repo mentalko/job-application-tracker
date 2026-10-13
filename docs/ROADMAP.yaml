@@ -114,4 +114,4 @@ phases:
       - {id: compaction-refresh-2, name: "Refresh the compaction prompt after #60: product map, state, decisions, gotchas", owner: lead, status: done, estimate_h: 0.5, depends: [compaction-refresh]}
       - {id: social-preview, name: "Social preview image for the GitHub repo (1280x640, fictional demo data)", owner: lead, status: done, estimate_h: 0.5, depends: [readme-refresh-1]}
       - {id: demo-gif, name: "A faster, styled demo GIF built by a script from the screenshots", owner: lead, status: done, estimate_h: 1, depends: [social-preview]}
-      - {id: website, name: "A GitHub Pages site: a flashy landing page plus the user guide as docs, with SEO and a contributing guide", owner: lead, status: building, estimate_h: 4, depends: [social-preview, demo-gif], prd: docs/prd/tracker.md}
+      - {id: website, name: "A GitHub Pages site: a flashy landing page linking to the guide on GitHub, with SEO, a contributing guide, and \"ready and in daily use\" wording", owner: lead, status: building, estimate_h: 4, depends: [social-preview, demo-gif], prd: docs/prd/tracker.md}

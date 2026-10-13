@@ -49,9 +49,10 @@ section 10: the resume steps and one line saying the next action.
   a line what's now live. If the backend changed (a migration, new API), the tracker must be
   restarted: restart it if this session runs it, otherwise tell Kai to Ctrl+C and rerun
   `uv run jat serve` in their terminal. A frontend-only change needs just a page refresh.
-- **Version and status.** "we'll leave it as 0.1.0 for now, i havent tested it at all". Don't
-  bump the version or tag a release. Docs say "early development (0.1.0), built but not yet
-  tested in real use".
+- **Version and status.** "it is ready, im using it. i just havent bumped a version number to
+  the first major release" (2026-10-13, replacing the earlier "i havent tested it at all").
+  Don't bump the version or tag a release unless Kai asks. Docs say "ready and in daily use
+  (0.1.0, not yet bumped to 1.0)".
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Northwind Talent, Northwind Pay, Blue Yonder Recruitment,
   Alex Morgan, Riley Chen, Sam Patel, Jordan Lee, Casey Brooks, Morgan Ellis, Taylor Quinn,
