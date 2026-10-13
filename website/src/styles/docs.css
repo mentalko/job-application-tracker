@@ -1,0 +1,11 @@
+/* Starlight's docs in the site's colours. */
+:root {
+  --sl-color-accent-low: #1b2559;
+  --sl-color-accent: #4c6ef5;
+  --sl-color-accent-high: #c5d0ff;
+}
+:root[data-theme="light"] {
+  --sl-color-accent-low: #dbe4ff;
+  --sl-color-accent: #3b5bdb;
+  --sl-color-accent-high: #1b2559;
+}
