@@ -1,0 +1,33 @@
+name: Feature idea
+description: Something that would make your job search easier to keep track of.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are very welcome. The project deliberately won't scrape job boards, fetch data from
+        the web, contact anyone or add telemetry, so ideas that need those are out of scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What happens in your job search that the tracker doesn't help with today?
+      placeholder: A recruiter sends me the same role through two agencies and I lose track of…
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: How you imagine it working. Sketches and screenshots of other tools are welcome.
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do now
+      description: Any workaround you use today (a note, a spreadsheet, a to-do…).
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to build this myself, with some pointers.

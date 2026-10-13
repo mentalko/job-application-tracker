@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: User guide
+    url: https://github.com/waddington/job-application-tracker/blob/main/docs/guide/README.md
+    about: Installing, your data, backups, every page and every command.
+  - name: Troubleshooting
+    url: https://github.com/waddington/job-application-tracker/blob/main/docs/guide/troubleshooting.md
+    about: Common problems and how to fix them.

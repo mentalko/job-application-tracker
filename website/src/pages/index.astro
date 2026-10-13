@@ -1,0 +1,43 @@
+---
+import Landing from "../layouts/Landing.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import Marquee from "../components/Marquee.astro";
+import Manifesto from "../components/Manifesto.astro";
+import Bento from "../components/Bento.astro";
+import Showcase from "../components/Showcase.astro";
+import Compare from "../components/Compare.astro";
+import Architecture from "../components/Architecture.astro";
+import Quickstart from "../components/Quickstart.astro";
+import Faq from "../components/Faq.astro";
+import Finale from "../components/Finale.astro";
+
+// The star count, read once at build time (no request from visitors' browsers). If GitHub
+// can't be reached, the button just says "Star".
+let stars: number | null = null;
+try {
+  const res = await fetch("https://api.github.com/repos/waddington/job-application-tracker", {
+    headers: { Accept: "application/vnd.github+json" },
+    signal: AbortSignal.timeout(4000),
+  });
+  if (res.ok) stars = (await res.json()).stargazers_count ?? null;
+} catch {
+  stars = null;
+}
+---
+
+<Landing>
+  <Nav stars={stars} />
+  <main>
+    <Hero />
+    <Marquee />
+    <Manifesto />
+    <Bento />
+    <Showcase />
+    <Compare />
+    <Architecture />
+    <Quickstart />
+    <Faq />
+  </main>
+  <Finale />
+</Landing>

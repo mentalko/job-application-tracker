@@ -1,0 +1,275 @@
+---
+import { Image } from "astro:assets";
+import { shot } from "../shots";
+
+const big = [
+  {
+    cls: "a",
+    img: "next-actions",
+    tag: "Next actions",
+    title: "Know exactly who to chase today.",
+    body: "Replies to read, your own to-dos, follow-ups due, offers to answer and everything that's gone quiet. Follow up, snooze or mark Ghosted in one click.",
+    alt: "Next actions: replies to read, to-dos, offers to answer, waiting to hear back and follow-ups",
+  },
+  {
+    cls: "c",
+    img: "board",
+    tag: "Kanban board",
+    title: "Every application, one drag away.",
+    body: "Drag between stages, see the interview round on each card and who's gone quiet in red. Undo a move you didn't mean.",
+    alt: "Kanban board of applications by stage, with interview round badges",
+  },
+  {
+    cls: "d",
+    img: "person",
+    tag: "Recruiter CRM",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and every application they're part of.",
+    alt: "A recruiter's page with a booked call, a past call and the roles they mentioned",
+  },
+  {
+    cls: "e",
+    img: "insights",
+    tag: "Sankey funnel",
+    title: "See where it all leaks.",
+    body: "Every application's path, from applied to offer (or to ghosted).",
+    alt: "A Sankey diagram of a job search funnel",
+  },
+  {
+    cls: "f",
+    img: "offers",
+    tag: "Offers",
+    title: "Salary vs day rate, settled.",
+    body: "Bonus, equity, pension and IR35, side by side with a worth-a-year figure.",
+    alt: "Two offers compared: a salary package and a contract day rate",
+  },
+  {
+    cls: "g",
+    img: "timeline",
+    tag: "Timeline",
+    title: "Everything that happened.",
+    body: "Stage moves, messages, calls, rounds and offers, by day or as lanes.",
+    alt: "The Timeline as lanes, one row per application",
+  },
+];
+
+const small = [
+  {
+    icon: "📝",
+    title: "Notes are real .md files",
+    body: "Edit them in the app or in your own editor. They're just Markdown on disk.",
+  },
+  {
+    icon: "📨",
+    title: "Drop in emails",
+    body: "Exported .eml files land on the timeline at the time they were sent.",
+  },
+  {
+    icon: "🔎",
+    title: "Search everything",
+    body: "Press / to search applications, people, debriefs, notes, files and links.",
+  },
+  {
+    icon: "📄",
+    title: "CV versions",
+    body: "Every tailored CV and cover letter, and which one each company got.",
+  },
+  {
+    icon: "⚠️",
+    title: "Duplicate warnings",
+    body: "Know before two agencies put you forward for the same job.",
+  },
+  {
+    icon: "🔁",
+    title: "Your workflow",
+    body: "Your own stages, any-to-any moves, or strict Jira-style transitions.",
+  },
+];
+---
+
+<section class="section" id="features" aria-labelledby="features-h">
+  <div class="wrap">
+    <div class="head center">
+      <p class="eyebrow reveal">Features</p>
+      <h2 class="h2 reveal" id="features-h">
+        Built for how tech hiring <span class="serif grad">actually</span> works.
+      </h2>
+      <p class="lede reveal">
+        Not another spreadsheet template. A proper app with a recruiter CRM, a real stage workflow and a page
+        that tells you what to do next.
+      </p>
+    </div>
+
+    <div class="bento">
+      {big.map((f, i) => (
+        <article class={`card spotlight tile ${f.cls} reveal`} style={`--d:${(i % 3) * 0.08}s`}>
+          <div class="copy">
+            <span class="tag">{f.tag}</span>
+            <h3>{f.title}</h3>
+            <p>{f.body}</p>
+          </div>
+          <div class="pic">
+            <Image
+              src={shot(f.img)}
+              alt={f.alt}
+              widths={[600, 900, 1400]}
+              sizes="(max-width: 760px) 100vw, 800px"
+            />
+          </div>
+        </article>
+      ))}
+      {small.map((f, i) => (
+        <article class="card spotlight mini reveal" style={`--d:${(i % 3) * 0.08}s`}>
+          <span class="icon" aria-hidden="true">
+            {f.icon}
+          </span>
+          <h3>{f.title}</h3>
+          <p>{f.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .head {
+    margin-bottom: 64px;
+  }
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 18px;
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    min-height: 440px;
+  }
+  .a {
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+  .c,
+  .d {
+    grid-column: span 2;
+  }
+  .e,
+  .f,
+  .g {
+    grid-column: span 2;
+  }
+  .mini {
+    grid-column: span 2;
+    padding: 28px;
+  }
+  .copy {
+    padding: 30px 30px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+  h3 {
+    margin: 0 0 8px;
+    font-size: 23px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 650;
+  }
+  .a h3 {
+    font-size: clamp(26px, 3vw, 36px);
+  }
+  .card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+  .pic {
+    flex: 1;
+    position: relative;
+    margin: 26px 0 0 30px;
+    min-height: 200px;
+  }
+  .pic :global(img) {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: calc(100% + 30px);
+    max-width: none;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+    border-top-left-radius: 12px;
+    border: 1px solid var(--border-strong);
+    border-right: 0;
+    border-bottom: 0;
+    box-shadow: 0 -20px 60px -20px color-mix(in oklab, var(--shadow) 80%, transparent);
+    transition: transform 0.8s var(--ease);
+    transform-origin: left top;
+  }
+  /* Smaller tiles skip the app's sidebar (about a sixth of each screenshot's width). */
+  .tile:not(.a) .pic :global(img) {
+    --w: calc((100% + 30px) * 1.22);
+    width: var(--w);
+    height: auto;
+    left: calc(var(--w) * -0.16);
+    border-radius: 0;
+    border: 0;
+  }
+  .tile:not(.a) .pic {
+    overflow: hidden;
+    border-top-left-radius: 12px;
+    border: 1px solid var(--border-strong);
+    border-right: 0;
+    border-bottom: 0;
+    background: #fff;
+  }
+  .tile:hover .pic :global(img) {
+    transform: scale(1.04) translate(-6px, -6px);
+  }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+  .mini h3 {
+    font-size: 19px;
+  }
+  @media (max-width: 1000px) {
+    .a,
+    .c,
+    .d,
+    .e,
+    .f,
+    .g {
+      grid-column: span 3;
+      grid-row: auto;
+    }
+    .a {
+      grid-column: span 6;
+    }
+    .mini {
+      grid-column: span 3;
+    }
+  }
+  @media (max-width: 640px) {
+    .bento > :global(*) {
+      grid-column: span 6 !important;
+    }
+    .tile {
+      min-height: 400px;
+    }
+  }
+</style>
