@@ -48,8 +48,8 @@ const STEPS: { title: string; body: ReactNode }[] = [
     title: "Look back",
     body: (
       <>
-        <b>Timeline</b> shows everything that happened, one row per role from the first call to the outcome;{" "}
-        <b>Insights</b> shows how the search is going.
+        <b>Timeline</b> shows everything that happened, by day or one row per role from the first call to the
+        outcome; <b>Insights</b> shows how the search is going.
       </>
     ),
   },

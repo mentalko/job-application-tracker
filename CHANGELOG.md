@@ -80,8 +80,9 @@ brackets are pull requests.
   pitched roles went, time to decide, per person and per agency, and why you passed; weekly
   activity counts calls and roles pitched (#66).
 - **Timeline follows roles**: lanes default to one row per role, from the call and the pitch to
-  the outcome; pitched and passed roles get their own kind; bookkeeping (companies and people
-  added) is hidden unless you ask; clearer filters; Timeline moves next to Insights (#67).
+  the outcome; pitched and passed roles get their own kind (so they also show in the
+  Overview's recent activity); bookkeeping (companies, agencies and people added) is hidden
+  unless you ask; clearer filters; Timeline moves next to Insights (#67).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

@@ -165,4 +165,7 @@ def test_a_call_carries_the_roles_that_came_up_on_it(client, seeded):
         for t in ("Platform Engineer", "SRE")
     ]
     [item] = [i for i in _timeline(client, category=["meeting"]) if i["id"] == f"meeting:{call['id']}"]
-    assert sorted(item["role_ids"]) == sorted(r["id"] for r in roles)
+    assert item["roles"] == [
+        {"id": roles[0]["id"], "title": "Platform Engineer", "company_name": "Contoso"},
+        {"id": roles[1]["id"], "title": "SRE", "company_name": "Contoso"},
+    ]

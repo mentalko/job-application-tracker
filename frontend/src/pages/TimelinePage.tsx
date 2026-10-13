@@ -210,7 +210,6 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
   const add = (key: string | null | undefined, label: string, href: string, item: TimelineItem) => {
     if (!key) return;
     const lane = lanes.get(key) ?? { key, label, href, items: [] };
-    if (!lane.label) lane.label = label;
     lane.items.push(item);
     lanes.set(key, lane);
   };
@@ -218,16 +217,15 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
     if (by === "role") {
       if (item.role_id)
         add(item.role_id, `${item.company_name} · ${item.role_title}`, `/roles/${item.role_id}`, item);
-      // A call joins the row of every role that came up on it (labelled by the role's own items).
-      for (const id of item.role_ids ?? []) if (id !== item.role_id) add(id, "", `/roles/${id}`, item);
+      // A call joins the row of every role that came up on it.
+      for (const r of item.roles ?? [])
+        if (r.id !== item.role_id) add(r.id, `${r.company_name} · ${r.title}`, `/roles/${r.id}`, item);
     }
     if (by === "company")
       add(item.company_id, item.company_name ?? "", `/companies/${item.company_id}`, item);
     if (by === "agency") add(item.agency_id, item.agency_name ?? "", `/agencies/${item.agency_id}`, item);
     if (by === "person") for (const p of item.people) add(p.id, p.name, `/people/${p.id}`, item);
   }
-  // A role seen only through its call (Roles unticked): name the row after the call.
-  for (const lane of lanes.values()) if (!lane.label) lane.label = `From: ${lane.items[0]!.title}`;
   // Items arrive newest first, so a lane's first item is its latest: busiest-lately on top.
   return [...lanes.values()].sort(
     (a, b) => dayjs(b.items[0]!.at).valueOf() - dayjs(a.items[0]!.at).valueOf(),
@@ -490,7 +488,7 @@ export function TimelinePage() {
       </Group>
       <Stack gap={4}>
         <Group gap="xs">
-          <Text size="sm" fw={500}>
+          <Text size="sm" fw={500} id="timeline-show">
             Show
           </Text>
           <Button
@@ -522,7 +520,7 @@ export function TimelinePage() {
           </Button>
         </Group>
         <Chip.Group multiple value={categories} onChange={setCategories}>
-          <Group gap={6} role="group" aria-label="Kinds of thing to show">
+          <Group gap={6} role="group" aria-labelledby="timeline-show">
             {CATEGORIES.map((c) => (
               <Chip key={c.value} value={c.value} size="xs" color={c.color} variant="outline">
                 {c.label}
@@ -543,9 +541,9 @@ export function TimelinePage() {
           <IconTimeline size={32} stroke={1.4} />
           <Text fw={600}>Nothing here yet</Text>
           <Text c="dimmed" size="sm">
-            {categories.length < CATEGORIES.length || about || period !== "all"
-              ? "Try a longer period or clear a filter."
-              : "Add an application and what happens to it shows up here."}
+            {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
+              ? "Try a longer period, tick more kinds, or clear a filter."
+              : "Add an application, or log a call with someone, and it shows up here."}
           </Text>
         </Stack>
       ) : view === "list" ? (

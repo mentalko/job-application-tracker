@@ -163,8 +163,9 @@ Archived applications are included.
 - **About**: one company, agency or person. An application's entries count for its company,
   its agency and the people on it.
 - **Show**: tick the kinds of thing to show: stage moves, messages, calls and meetings,
-  interviews, offers, roles pitched or passed, notes, documents sent, files, companies and
-  people added, other. Everything but *Companies and people added* is ticked to start with;
+  interviews, offers, roles pitched or passed, notes, documents sent, files, companies,
+  agencies and people added, other. Everything but *Companies, agencies and people added* is
+  ticked to start with;
   **Everything**, **Usual** and **None** set them in one go.
 - **List** groups entries by day. **Lanes** draws rows against time: dots for what happened
   (hollow for what's ahead) and a dashed line for now. By default it's **one row per role**,

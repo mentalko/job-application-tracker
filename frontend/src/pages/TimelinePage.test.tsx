@@ -62,12 +62,13 @@ describe("timeline", () => {
     const first = new URL(calls.find((c) => c.path.startsWith("/api/v1/timeline"))!.path, "http://localhost");
     expect(first.searchParams.get("since")).toBeTruthy();
 
+    // Unticking a kind asks for the rest without it.
     fireEvent.click(screen.getByRole("checkbox", { name: "Interviews" }));
-    await waitFor(() =>
-      expect(
-        calls.some((c) => c.path.startsWith("/api/v1/timeline") && c.path.includes("category=interview")),
-      ).toBe(true),
-    );
+    await waitFor(() => {
+      const last = calls.filter((c) => c.path.startsWith("/api/v1/timeline")).at(-1)!.path;
+      expect(last).toContain("category=stage");
+      expect(last).not.toContain("category=interview");
+    });
   });
 
   it("draws a lane per role (by default), company or person", async () => {
@@ -109,7 +110,7 @@ describe("timeline", () => {
     const first = timelineCalls()[0]!.path;
     expect(first).toContain("category=role");
     expect(first).not.toContain("category=added");
-    expect(screen.getByRole("checkbox", { name: "Companies and people added" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Companies, agencies and people added" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Roles pitched or passed" })).toBeChecked();
 
     fireEvent.click(screen.getByRole("button", { name: "Everything" }));
@@ -117,6 +118,10 @@ describe("timeline", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "None" }));
     expect(await screen.findByText("Tick at least one kind of thing to show.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Usual" }));
+    await screen.findByText("Applied → Screen");
+    expect(screen.getByRole("checkbox", { name: "Companies, agencies and people added" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Interviews" })).toBeChecked();
   });
 
   it("puts a call on the row of each role that came up on it", async () => {
@@ -128,7 +133,10 @@ describe("timeline", () => {
       application_id: null,
       role_id: null,
       role_title: null,
-      role_ids: ["r1", "r2"],
+      roles: [
+        { id: "r1", title: "Backend Engineer", company_name: "Contoso" },
+        { id: "r2", title: "SRE", company_name: "Contoso" },
+      ],
       people: [{ id: "c1", name: "Alex Recruiter" }],
     });
     const pitch = item({

@@ -7269,14 +7269,6 @@
             ],
             "title": "Role Id"
           },
-          "role_ids": {
-            "default": [],
-            "items": {
-              "type": "string"
-            },
-            "title": "Role Ids",
-            "type": "array"
-          },
           "role_title": {
             "anyOf": [
               {
@@ -7287,6 +7279,14 @@
               }
             ],
             "title": "Role Title"
+          },
+          "roles": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TimelineRole"
+            },
+            "title": "Roles",
+            "type": "array"
           },
           "seq": {
             "default": 0,
@@ -7324,6 +7324,36 @@
           "name"
         ],
         "title": "TimelinePerson",
+        "type": "object"
+      },
+      "TimelineRole": {
+        "properties": {
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "company_name"
+        ],
+        "title": "TimelineRole",
         "type": "object"
       },
       "TodoIn": {

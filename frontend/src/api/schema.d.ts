@@ -3162,13 +3162,13 @@ export interface components {
             people: components["schemas"]["TimelinePerson"][];
             /** Role Id */
             role_id?: string | null;
-            /**
-             * Role Ids
-             * @default []
-             */
-            role_ids: string[];
             /** Role Title */
             role_title?: string | null;
+            /**
+             * Roles
+             * @default []
+             */
+            roles: components["schemas"]["TimelineRole"][];
             /**
              * Seq
              * @default 0
@@ -3183,6 +3183,15 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** TimelineRole */
+        TimelineRole: {
+            /** Company Name */
+            company_name: string | null;
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
         };
         /**
          * TodoIn

@@ -24,7 +24,7 @@ export const CATEGORIES: { value: TimelineCategory; label: string; one: string; 
   { value: "note", label: "Notes", one: "Note", color: "yellow" },
   { value: "document", label: "Documents sent", one: "Document", color: "grape" },
   { value: "file", label: "Files", one: "File", color: "orange" },
-  { value: "added", label: "Companies and people added", one: "Added", color: "gray" },
+  { value: "added", label: "Companies, agencies and people added", one: "Added", color: "gray" },
   { value: "other", label: "Other", one: "Other", color: "dark" },
 ];
 

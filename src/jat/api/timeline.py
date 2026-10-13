@@ -52,6 +52,12 @@ class TimelinePerson(BaseModel):
     name: str
 
 
+class TimelineRole(BaseModel):
+    id: str
+    title: str
+    company_name: str | None
+
+
 class TimelineItem(BaseModel):
     id: str  # "<source>:<id>", unique within the response
     seq: int = 0  # breaks ties between events logged at the same moment
@@ -63,7 +69,7 @@ class TimelineItem(BaseModel):
     application_id: str | None = None
     role_title: str | None = None
     role_id: str | None = None  # the role it's about: on role items and on every application's items
-    role_ids: list[str] = []  # on a call: the roles that came up on it
+    roles: list[TimelineRole] = []  # on a call: the roles that came up on it
     company_id: str | None = None
     company_name: str | None = None
     agency_id: str | None = None
@@ -254,9 +260,10 @@ def timeline(
 
     # Calls and meetings with people, at their time (cancelled ones didn't happen), with the
     # roles that came up on them.
-    from_call: dict[str, list[str]] = defaultdict(list)
-    for role_id, meeting_id in session.execute(select(Role.id, Role.meeting_id).where(Role.meeting_id.is_not(None))):
-        from_call[meeting_id].append(role_id)
+    from_call: dict[str, list[TimelineRole]] = defaultdict(list)
+    for r in session.scalars(select(Role).where(Role.meeting_id.is_not(None)).order_by(Role.created_at, Role.id)):
+        co = companies.get(r.company_id)
+        from_call[r.meeting_id].append(TimelineRole(id=r.id, title=r.title, company_name=co.name if co else None))
     for m in session.scalars(select(Meeting).where(Meeting.status != "cancelled")):
         c = contacts.get(m.contact_id)
         if c is None:
@@ -268,7 +275,7 @@ def timeline(
             category="meeting",
             title=f"{meeting_label(m, c.name)} ({'booked' if m.status == 'scheduled' else m.status})",
             detail=m.notes or m.agenda,
-            role_ids=from_call[m.id],
+            roles=from_call[m.id],
         )
         if m.application_id in apps:
             item = on_app(m.application_id, **fields)
