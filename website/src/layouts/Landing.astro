@@ -1,0 +1,118 @@
+---
+// The landing page's shell: everything search engines and link previews read, the fonts,
+// the background, and the motion script.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "@fontsource/instrument-serif/400-italic.css";
+import "../styles/landing.css";
+import { DESCRIPTION, FAQ, REPO, SITE_URL, TITLE } from "../data";
+
+const base = import.meta.env.BASE_URL;
+const og = new URL("og.png", SITE_URL).href;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}#website`,
+      url: SITE_URL,
+      name: "Job Application Tracker",
+      description: DESCRIPTION,
+      inLanguage: "en",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "Job Application Tracker",
+      alternateName: "jat",
+      description: DESCRIPTION,
+      url: SITE_URL,
+      image: og,
+      screenshot: new URL("og.png", SITE_URL).href,
+      applicationCategory: "BusinessApplication",
+      applicationSubCategory: "Job search tracker",
+      operatingSystem: "Linux, macOS",
+      softwareVersion: "0.1.0",
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      author: { "@type": "Person", name: "Kai Waddington", url: "https://github.com/waddington" },
+      featureList: [
+        "Kanban board of job applications",
+        "Recruiter and agency CRM",
+        "Interview rounds and coding tasks",
+        "Follow-up reminders and a Next actions page",
+        "Offer comparison",
+        "Sankey diagram of the job search funnel",
+        "Markdown notes, files and exported emails",
+        "Local-first: data stays on your machine",
+      ],
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      name: "job-application-tracker",
+      codeRepository: REPO,
+      programmingLanguage: ["Python", "TypeScript"],
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQ.map(({ q, a }) => ({
+        "@type": "Question",
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a.replaceAll("`", "") },
+      })),
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{TITLE}</title>
+    <meta name="description" content={DESCRIPTION} />
+    <meta
+      name="keywords"
+      content="job application tracker, job tracker, job search tracker, self-hosted, open source, local-first, recruiter CRM, interview tracker, offer comparison, kanban, Huntr alternative, Teal alternative"
+    />
+    <link rel="canonical" href={SITE_URL} />
+    <meta name="theme-color" content="#05060f" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
+    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Job Application Tracker" />
+    <meta property="og:title" content={TITLE} />
+    <meta property="og:description" content={DESCRIPTION} />
+    <meta property="og:url" content={SITE_URL} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="Job Application Tracker: open source, self-hosted, local-first" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={TITLE} />
+    <meta name="twitter:description" content={DESCRIPTION} />
+    <meta name="twitter:image" content={og} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"></div>
+    <div class="backdrop" aria-hidden="true">
+      <div class="aurora a1"></div>
+      <div class="aurora a2"></div>
+      <div class="aurora a3"></div>
+      <div class="grid"></div>
+      <div class="noise"></div>
+    </div>
+    <slot />
+    <script>
+      import "../scripts/motion";
+    </script>
+  </body>
+</html>

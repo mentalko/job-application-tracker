@@ -1,0 +1,132 @@
+---
+import { REPO } from "../data";
+
+const base = import.meta.env.BASE_URL;
+const ways = [
+  {
+    icon: "🐛",
+    title: "Report a bug",
+    body: "Something broke or felt wrong? Tell us what you did and what happened.",
+    href: `${REPO}/issues/new?template=bug_report.yml`,
+    cta: "Open an issue",
+  },
+  {
+    icon: "💡",
+    title: "Suggest a feature",
+    body: "Missing something from your own job hunt? Describe the problem, not just the button.",
+    href: `${REPO}/issues/new?template=feature_request.yml`,
+    cta: "Share an idea",
+  },
+  {
+    icon: "🔧",
+    title: "Send a pull request",
+    body: "Python and FastAPI on the back, React and TypeScript on the front, tests for both.",
+    href: `${base}docs/contributing/`,
+    cta: "Read the guide",
+  },
+  {
+    icon: "⭐",
+    title: "Star the repo",
+    body: "It's free, takes a second, and helps other job seekers find it.",
+    href: REPO,
+    cta: "Star on GitHub",
+  },
+];
+---
+
+<section class="section" id="contribute" aria-labelledby="contrib-h">
+  <div class="wrap">
+    <div class="center head">
+      <p class="eyebrow reveal">Open source</p>
+      <h2 class="h2 reveal" id="contrib-h">Built in the open. <span class="serif grad">Build it with us.</span></h2>
+      <p class="lede reveal">
+        Every feature landed as a reviewed pull request, more than sixty so far. It's early, it hasn't had much real
+        use yet, and that's exactly where your issues and ideas help most.
+      </p>
+    </div>
+    <div class="ways">
+      {
+        ways.map((w, i) => (
+          <a class="card spotlight way reveal" href={w.href} style={`--d:${i * 0.08}s`}>
+            <span class="icon" aria-hidden="true">
+              {w.icon}
+            </span>
+            <h3>{w.title}</h3>
+            <p>{w.body}</p>
+            <span class="go">
+              {w.cta} <span class="arrow">→</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+    <p class="fine reveal">
+      Please use made-up names and companies in issues, tests and screenshots: it's a job-search tool, and real people
+      deserve privacy.
+    </p>
+  </div>
+</section>
+
+<style>
+  .head {
+    margin-bottom: 56px;
+  }
+  .ways {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .way {
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    text-decoration: none;
+    transition: transform 0.5s var(--ease);
+  }
+  .way:hover {
+    transform: translateY(-6px);
+  }
+  .icon {
+    font-size: 30px;
+    margin-bottom: 18px;
+  }
+  h3 {
+    margin: 0 0 8px;
+    font-size: 21px;
+    letter-spacing: -0.02em;
+  }
+  .way p {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 15.5px;
+    flex: 1;
+  }
+  .go {
+    font-weight: 600;
+    color: #a5b4fc;
+  }
+  .go .arrow {
+    display: inline-block;
+    transition: transform 0.3s var(--ease);
+  }
+  .way:hover .go .arrow {
+    transform: translateX(5px);
+  }
+  .fine {
+    text-align: center;
+    color: var(--faint);
+    font-size: 14px;
+    margin: 30px auto 0;
+    max-width: 620px;
+  }
+  @media (max-width: 1000px) {
+    .ways {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .ways {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

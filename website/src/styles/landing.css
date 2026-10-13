@@ -1,0 +1,510 @@
+/* The landing page: dark, glowing, and moving. Motion is progressive: scroll-driven
+   animations where the browser has them, an IntersectionObserver fallback (motion.ts adds
+   `.in`), and none at all with prefers-reduced-motion. */
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  --bg: #05060f;
+  --bg-2: #0a0c1d;
+  --surface: rgb(255 255 255 / 0.035);
+  --surface-2: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.09);
+  --border-strong: rgb(255 255 255 / 0.16);
+  --text: #eef0ff;
+  --muted: #9aa0bf;
+  --faint: #636985;
+  --brand: #4c6ef5;
+  --violet: #845ef7;
+  --cyan: #3bc9db;
+  --pink: #f06595;
+  --green: #51cf66;
+  --amber: #fcc419;
+  --grad: linear-gradient(100deg, #8ea2ff 0%, #b197fc 35%, #f783ac 65%, #66d9e8 100%);
+  --sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --radius: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: dark;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 90px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+::selection {
+  background: rgb(132 94 247 / 0.45);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.wrap {
+  width: min(1200px, 100% - 32px);
+  margin-inline: auto;
+}
+
+.serif {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.grad {
+  background: var(--grad);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 8s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Background ---------- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.a1 {
+  width: 55vmax;
+  height: 55vmax;
+  left: -15vmax;
+  top: -25vmax;
+  background: radial-gradient(circle, #3b5bdb 0%, transparent 65%);
+  animation: drift1 22s ease-in-out infinite alternate;
+}
+
+.a2 {
+  width: 45vmax;
+  height: 45vmax;
+  right: -15vmax;
+  top: -10vmax;
+  background: radial-gradient(circle, #7048e8 0%, transparent 65%);
+  animation: drift2 26s ease-in-out infinite alternate;
+}
+
+.a3 {
+  width: 40vmax;
+  height: 40vmax;
+  left: 25vw;
+  top: 35vh;
+  background: radial-gradient(circle, #0c8599 0%, transparent 65%);
+  opacity: 0.28;
+  animation: drift3 30s ease-in-out infinite alternate;
+}
+
+@keyframes drift1 {
+  to {
+    transform: translate(12vw, 10vh) scale(1.15);
+  }
+}
+@keyframes drift2 {
+  to {
+    transform: translate(-10vw, 14vh) scale(0.9);
+  }
+}
+@keyframes drift3 {
+  to {
+    transform: translate(-14vw, -8vh) scale(1.2);
+  }
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+}
+
+.noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Reading progress along the top. */
+.progress {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 2px;
+  z-index: 100;
+  background: var(--grad);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+  .progress {
+    animation: grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Shared pieces ---------- */
+
+.section {
+  padding-block: clamp(80px, 12vw, 150px);
+  position: relative;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin: 0 0 18px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+}
+
+.h2 {
+  font-size: clamp(36px, 5.6vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin: 0 0 20px;
+  text-wrap: balance;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: clamp(17px, 1.6vw, 20px);
+  max-width: 640px;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.center {
+  text-align: center;
+}
+
+.center .lede {
+  margin-inline: auto;
+}
+
+.btn {
+  --pad: 14px 22px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--pad);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 0.4s var(--ease),
+    background 0.3s,
+    box-shadow 0.4s;
+  will-change: transform;
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #4c6ef5, #7048e8);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.15) inset,
+    0 10px 40px -10px rgb(92 124 250 / 0.8);
+  isolation: isolate;
+}
+
+/* A light that runs round the primary button's edge. */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--angle), transparent 70%, #a5d8ff, #f783ac, transparent);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin 3s linear infinite;
+  z-index: -1;
+}
+
+@keyframes spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.btn-primary:hover {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.25) inset,
+    0 14px 60px -8px rgb(132 94 247 / 0.9);
+}
+
+.btn-ghost {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(10px);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+
+.btn .arrow {
+  transition: transform 0.3s var(--ease);
+}
+
+.btn:hover .arrow {
+  transform: translateX(4px);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.card {
+  position: relative;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.015));
+  border: 1px solid var(--border);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* A soft light that follows the pointer over cards (motion.ts sets --x and --y). */
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    500px circle at var(--x, 50%) var(--y, -100%),
+    rgb(132 94 247 / 0.16),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+  z-index: 2;
+}
+
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: radial-gradient(
+    300px circle at var(--x, 50%) var(--y, -100%),
+    rgb(165 216 255 / 0.6),
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s;
+  z-index: 3;
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+.shot {
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    0 30px 80px -20px rgb(0 0 0 / 0.8),
+    0 0 0 1px rgb(255 255 255 / 0.03);
+  overflow: hidden;
+  background: #fff;
+}
+
+.browser {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  background: #11131f;
+  box-shadow:
+    0 50px 120px -30px rgb(0 0 0 / 0.9),
+    0 0 120px -40px rgb(92 124 250 / 0.6);
+}
+
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  background: #161828;
+}
+
+.browser-bar i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #3a3d52;
+}
+
+.browser-bar i:nth-child(1) {
+  background: #ff6b6b;
+}
+.browser-bar i:nth-child(2) {
+  background: #fcc419;
+}
+.browser-bar i:nth-child(3) {
+  background: #51cf66;
+}
+
+.browser-bar span {
+  margin-left: 14px;
+  flex: 1;
+  max-width: 340px;
+  padding: 3px 12px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.05);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* ---------- Reveal on scroll ---------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s var(--ease),
+    transform 0.9s var(--ease),
+    filter 0.9s var(--ease);
+  transition-delay: var(--d, 0s);
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ---------- Reduced motion: everything still, everything visible ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
