@@ -114,6 +114,10 @@ class ContactIn(In):
     details: list[ContactDetailIn] = []
 
 
+class MergeIn(In):
+    from_id: str  # the other record of the same person, merged in and then deleted
+
+
 ContactClosed = Literal["ghosted", "not_interested"]
 
 

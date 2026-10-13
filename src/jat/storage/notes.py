@@ -178,12 +178,14 @@ class NoteStore:
         self._write(self._abs(note.path), render(note))
         return note
 
-    def save(self, note: Note) -> Note:
-        """Rewrite an existing note. The file keeps its path, so git history follows it."""
+    def save(self, note: Note, *, touch: bool = True) -> Note:
+        """Rewrite an existing note. The file keeps its path, so git history follows it.
+        `touch=False` keeps its edit time (for bookkeeping, like relinking a merged person)."""
         note.links = [check_link(x) for x in note.links]
         note.title = note.title.strip()
         note.body = _normal(note.body)
-        note.updated_at = utcnow().replace(microsecond=0)
+        if touch:
+            note.updated_at = utcnow().replace(microsecond=0)
         self._write(self._abs(note.path), render(note))
         return note
 

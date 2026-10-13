@@ -533,6 +533,30 @@ export interface paths {
         patch: operations["update_contact_api_v1_contacts__contact_id__patch"];
         trace?: never;
     };
+    "/api/v1/contacts/{contact_id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Merge Contact
+         * @description Fold another record of the same person (`from_id`) into this one, then delete it.
+         *
+         *     Its contact details (not ones this person already has), roles, applications, interview
+         *     panels, calls, links, files, to-dos and notes all move here. This person's own fields win;
+         *     any they don't have come from the other record.
+         */
+        post: operations["merge_contact_api_v1_contacts__contact_id__merge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/contacts/{contact_id}/summary": {
         parameters: {
             query?: never;
@@ -2350,6 +2374,11 @@ export interface components {
             status?: ("scheduled" | "done" | "cancelled") | null;
             /** Title */
             title?: string | null;
+        };
+        /** MergeIn */
+        MergeIn: {
+            /** From Id */
+            from_id: string;
         };
         /** MoveIn */
         MoveIn: {
@@ -4675,6 +4704,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ContactPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    merge_contact_api_v1_contacts__contact_id__merge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeIn"];
             };
         };
         responses: {

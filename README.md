@@ -147,7 +147,7 @@ went, as numbers, a Sankey diagram and a table per person or agency.
 | 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted | ✅ Available |
 | 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
-| 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, calls, the roles they've mentioned, notes and every application they're part of | ✅ Available |
+| 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, calls, the roles they've mentioned, notes and every application they're part of; one person per email address and LinkedIn profile, and **merge** two records of the same person in one click | ✅ Available |
 | 🗑️ | **Rename and delete** companies, roles, agencies, people and applications (or archive them) | ✅ Available |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
