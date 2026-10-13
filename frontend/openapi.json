@@ -7664,7 +7664,6 @@
             "type": "integer"
           },
           "calls": {
-            "default": 0,
             "title": "Calls",
             "type": "integer"
           },
@@ -7677,7 +7676,6 @@
             "type": "integer"
           },
           "pitched": {
-            "default": 0,
             "title": "Pitched",
             "type": "integer"
           },
@@ -7692,7 +7690,9 @@
           "added",
           "applied",
           "moves",
-          "interviews"
+          "interviews",
+          "calls",
+          "pitched"
         ],
         "title": "WeekOut",
         "type": "object"

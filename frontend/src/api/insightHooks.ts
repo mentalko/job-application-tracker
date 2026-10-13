@@ -52,3 +52,17 @@ export function useScorecard(since?: string) {
     placeholderData: keepPreviousData,
   });
 }
+
+export type Conversations = Schemas["ConversationsOut"];
+export type ConversationPerson = Schemas["ConversationPerson"];
+export type ConversationAgency = Schemas["ConversationAgency"];
+
+/** Calls with people and the roles they pitched (added since `since`), and how those went. */
+export function useConversations(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "conversations", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/conversations", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+  });
+}

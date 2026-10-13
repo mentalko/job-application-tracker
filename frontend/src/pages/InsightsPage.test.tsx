@@ -75,18 +75,20 @@ const STATS = {
 
 const week = (
   start: string,
-  counts: Partial<Record<"added" | "applied" | "moves" | "interviews", number>>,
+  counts: Partial<Record<"added" | "applied" | "moves" | "interviews" | "calls" | "pitched", number>>,
 ) => ({
   start,
   added: 0,
   applied: 0,
   moves: 0,
   interviews: 0,
+  calls: 0,
+  pitched: 0,
   ...counts,
 });
 
 const ACTIVITY = [
-  week("2026-09-21", { added: 2, applied: 1 }),
+  week("2026-09-21", { added: 2, applied: 1, calls: 2, pitched: 3 }),
   week("2026-09-28", { moves: 3, interviews: 1 }),
 ];
 
@@ -123,12 +125,115 @@ const SCORECARD = {
   agencies: [score({ id: "ag1", name: "Northwind Talent", roles: 5, interviewed: 2, active: 3, ghosted: 1 })],
 };
 
+const tally = (overrides: Record<string, unknown> = {}) => ({
+  calls_held: 0,
+  calls_booked: 0,
+  calls_cancelled: 0,
+  last_call: null,
+  pitched: 0,
+  applied: 0,
+  passed: 0,
+  deciding: 0,
+  apply_rate: null,
+  interviewed: 0,
+  offers: 0,
+  in_progress: 0,
+  closed: 0,
+  ghosted: 0,
+  median_decide_days: null,
+  ...overrides,
+});
+
+const CONVERSATIONS = {
+  total: tally({
+    calls_held: 3,
+    calls_booked: 1,
+    pitched: 5,
+    applied: 2,
+    passed: 2,
+    deciding: 1,
+    apply_rate: 0.5,
+    interviewed: 1,
+    offers: 1,
+    ghosted: 1,
+    median_decide_days: 1.5,
+  }),
+  people_talked_to: 2,
+  flow: {
+    applications: 5,
+    nodes: [
+      { id: "pitched", name: "Pitched to you", kind: "active", color: "indigo", reached: 5, current: 0 },
+      { id: "applied", name: "Applied", kind: "active", color: "blue", reached: 2, current: 0 },
+      { id: "passed", name: "Passed", kind: "outcome", color: "gray", reached: 2, current: 0 },
+      { id: "deciding", name: "Still deciding", kind: "outcome", color: "yellow", reached: 1, current: 0 },
+      { id: "offer", name: "Offer", kind: "outcome", color: "green", reached: 1, current: 0 },
+      { id: "ghosted", name: "Ghosted", kind: "outcome", color: "dark", reached: 1, current: 0 },
+    ],
+    links: [
+      { source: "pitched", target: "applied", value: 2 },
+      { source: "pitched", target: "passed", value: 2 },
+      { source: "pitched", target: "deciding", value: 1 },
+      { source: "applied", target: "offer", value: 1 },
+      { source: "applied", target: "ghosted", value: 1 },
+    ],
+  },
+  people: [
+    {
+      ...tally({
+        calls_held: 2,
+        pitched: 4,
+        applied: 2,
+        passed: 1,
+        deciding: 1,
+        apply_rate: 0.667,
+        interviewed: 1,
+        offers: 1,
+        ghosted: 1,
+      }),
+      id: "c1",
+      name: "Alex Morgan",
+      agency_id: "ag1",
+      agency_name: "Northwind Talent",
+      company_name: null,
+      closed_as: null,
+    },
+    {
+      ...tally({ calls_held: 1, pitched: 1, passed: 1, apply_rate: 0 }),
+      id: "c2",
+      name: "Riley Chen",
+      agency_id: null,
+      agency_name: null,
+      company_name: null,
+      closed_as: "not_interested",
+    },
+  ],
+  agencies: [
+    {
+      ...tally({ calls_held: 2, pitched: 4, applied: 2, passed: 1, deciding: 1, apply_rate: 0.667 }),
+      id: "ag1",
+      name: "Northwind Talent",
+      people: 1,
+    },
+  ],
+  pass_reasons: [
+    {
+      role_id: "r9",
+      role_title: "Frontend Engineer",
+      company_name: "Fabrikam",
+      person_name: "Alex Morgan",
+      reason: "Office five days a week",
+      decided_on: "2026-10-02",
+    },
+  ],
+};
+
 function mockInsights(overrides: Record<string, unknown> = {}) {
   return mockApi({
     "/api/v1/insights/flow": FLOW,
     "/api/v1/insights/stats": STATS,
     "/api/v1/insights/activity": ACTIVITY,
     "/api/v1/insights/scorecard": SCORECARD,
+    "/api/v1/insights/conversations": CONVERSATIONS,
     "/api/v1/health": {},
     ...overrides,
   });
@@ -187,8 +292,8 @@ describe("insights", () => {
 
     const weeks = await screen.findAllByRole("listitem");
     expect(weeks.map((w) => w.getAttribute("aria-label"))).toEqual([
-      "Week of 21 Sep: 2 added, 1 applied, 0 stage moves, 0 interviews",
-      "Week of 28 Sep: 0 added, 0 applied, 3 stage moves, 1 interview",
+      "Week of 21 Sep: 2 added, 1 applied, 0 stage moves, 0 interviews, 2 calls, 3 roles pitched",
+      "Week of 28 Sep: 0 added, 0 applied, 3 stage moves, 1 interview, 0 calls, 0 roles pitched",
     ]);
   });
 
@@ -262,6 +367,44 @@ describe("insights", () => {
     fireEvent.click(screen.getByText("Last 90 days"));
     await waitFor(() => {
       const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/scorecard")).at(-1)!;
+      expect(last.path).toContain("since=");
+    });
+  });
+
+  it("shows recruiter conversations: calls, pitched roles, who pitches them, and why you passed", async () => {
+    const calls = mockInsights();
+    renderAt("/insights");
+    fireEvent.click(await screen.findByRole("tab", { name: "Recruiter conversations" }));
+    const card = (await screen.findByRole("heading", { name: "Recruiter conversations" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    expect(within(card).getByText("Calls held").nextSibling).toHaveTextContent("3");
+    expect(within(card).getByText("1 booked ahead")).toBeInTheDocument();
+    expect(within(card).getByText("50% of roles decided")).toBeInTheDocument();
+    expect(within(card).getByText("1.5 days")).toBeInTheDocument();
+    expect(within(card).getByRole("img", { name: /5 roles pitched to you/ })).toBeInTheDocument();
+
+    const who = (await screen.findByRole("heading", { name: "Who you talk to" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    expect(rows(within(who).getByRole("table")).slice(1)).toEqual([
+      "Alex MorganNorthwind Talent2—421167%11 offer1 ghosted",
+      "Riley ChenNot interestedIndependent1—10100%0—",
+    ]);
+    expect(within(who).getByRole("link", { name: "Alex Morgan" })).toHaveAttribute("href", "/people/c1");
+    fireEvent.click(within(who).getByText("Agencies"));
+    expect(within(who).getByRole("link", { name: "Northwind Talent" })).toHaveAttribute(
+      "href",
+      "/agencies/ag1",
+    );
+
+    expect(screen.getByText("Office five days a week")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Frontend Engineer" })).toHaveAttribute("href", "/roles/r9");
+
+    // The date range applies here too.
+    fireEvent.click(screen.getByText("Last 30 days"));
+    await waitFor(() => {
+      const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/conversations")).at(-1)!;
       expect(last.path).toContain("since=");
     });
   });

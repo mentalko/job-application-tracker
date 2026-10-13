@@ -3280,19 +3280,13 @@ export interface components {
             added: number;
             /** Applied */
             applied: number;
-            /**
-             * Calls
-             * @default 0
-             */
+            /** Calls */
             calls: number;
             /** Interviews */
             interviews: number;
             /** Moves */
             moves: number;
-            /**
-             * Pitched
-             * @default 0
-             */
+            /** Pitched */
             pitched: number;
             /**
              * Start

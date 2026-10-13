@@ -146,6 +146,13 @@ const SERIES: {
     count: (n) => `${n} interview${n === 1 ? "" : "s"}`,
     color: "violet",
   },
+  { key: "calls", label: "Calls", count: (n) => `${n} call${n === 1 ? "" : "s"}`, color: "orange" },
+  {
+    key: "pitched",
+    label: "Roles pitched",
+    count: (n) => `${n} role${n === 1 ? "" : "s"} pitched`,
+    color: "grape",
+  },
 ];
 
 const WEEKS = 12;
