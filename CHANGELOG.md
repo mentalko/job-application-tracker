@@ -82,6 +82,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   ask (#7, #8, #13).
 - Localhost only: refuses other hosts and cross-site writes (#26).
 - A local project dashboard for the build itself (`python3 -m tools.pm`) (#4).
+- The README's demo GIF is built from the screenshots by `scripts/demo_gif/make_demo_gif.py`:
+  a styled scene per feature, 1.5 seconds each, with slides between (#63).
 
 ### Left out on purpose
 No job-board searching or scraping, no quick-add from URLs, no MCP server and no `.ics`
