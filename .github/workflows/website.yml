@@ -20,6 +20,10 @@ on:
     paths:
       - "website/**"
       - "docs/guide/**"
+      - "docs/screenshots/**"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - "llms.txt"
       - ".github/workflows/website.yml"
   workflow_dispatch:
 
@@ -28,7 +32,8 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a deploy that's under way; superseded pull request builds can go.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:

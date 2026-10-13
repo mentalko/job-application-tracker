@@ -475,7 +475,8 @@ img {
 
 /* ---------- Reveal on scroll ---------- */
 
-.reveal {
+/* Hidden only when the script that reveals them will run. */
+.js .reveal {
   opacity: 0;
   transform: translateY(40px);
   filter: blur(6px);
@@ -486,7 +487,7 @@ img {
   transition-delay: var(--d, 0s);
 }
 
-.reveal.in {
+.js .reveal.in {
   opacity: 1;
   transform: none;
   filter: none;
@@ -502,7 +503,7 @@ img {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .reveal {
+  .js .reveal {
     opacity: 1;
     transform: none;
     filter: none;

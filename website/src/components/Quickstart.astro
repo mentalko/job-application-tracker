@@ -57,7 +57,7 @@ const needs = [
     <div class="center head">
       <p class="eyebrow reveal">Quick start</p>
       <h2 class="h2 reveal" id="qs-h">
-        From <span class="serif grad">git clone</span> to tracking in two minutes.
+        From <span class="serif grad">git clone</span> to tracking in a few commands.
       </h2>
       <p class="lede reveal">
         Fair warning: this is a tool for developers. There's no installer and no hosted version. If you're
@@ -117,7 +117,7 @@ const needs = [
                 .filter((l) => l.cmd)
                 .map((l) => l.cmd)
                 .join("\n")}
-              aria-label="Copy"
+              aria-label={`Copy the ${t.label.replace(/^\d · /, "").toLowerCase()} commands`}
             >
               Copy
             </button>

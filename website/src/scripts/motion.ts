@@ -109,14 +109,21 @@ $$("[data-count]").forEach((el) => {
 $$("[data-rotate]").forEach((el) => {
   const words = $$("span", el);
   if (still || words.length < 2) return;
+  // One full cycle, back to the first word, then it stops; hovering pauses it.
   let i = 0;
-  setInterval(() => {
+  let steps = 0;
+  let paused = false;
+  el.closest("p")?.addEventListener("pointerenter", () => (paused = true));
+  el.closest("p")?.addEventListener("pointerleave", () => (paused = false));
+  const timer = setInterval(() => {
+    if (paused) return;
     words[i].classList.remove("on");
     words[i].classList.add("off");
     const prev = words[i];
     setTimeout(() => prev.classList.remove("off"), 600);
     i = (i + 1) % words.length;
     words[i].classList.add("on");
+    if (++steps >= words.length) clearInterval(timer);
   }, 2200);
 });
 
@@ -126,10 +133,11 @@ $$<HTMLButtonElement>("[data-copy]").forEach((btn) => {
     try {
       await navigator.clipboard.writeText(btn.dataset.copy ?? "");
       btn.classList.add("copied");
-      btn.setAttribute("aria-label", "Copied");
+      const announce = document.getElementById("announce");
+      if (announce) announce.textContent = "Copied to the clipboard";
       setTimeout(() => {
         btn.classList.remove("copied");
-        btn.setAttribute("aria-label", "Copy");
+        if (announce) announce.textContent = "";
       }, 1600);
     } catch {
       // No clipboard (an insecure context or a refusal): the text is still there to select.
@@ -140,7 +148,8 @@ $$<HTMLButtonElement>("[data-copy]").forEach((btn) => {
 // Terminals that type their commands out the first time you see them.
 function typeOut(term: HTMLElement) {
   const lines = $$(".line", term);
-  if (still) return;
+  if (still || term.dataset.typed) return;
+  term.dataset.typed = "1";
   const texts = lines.map((l) => l.querySelector(".cmd")?.textContent ?? "");
   lines.forEach((l) => {
     l.classList.add("pending");
@@ -193,10 +202,7 @@ $$("[data-tabs]").forEach((root) => {
     panels.forEach((p, k) => {
       const was = p.hidden;
       p.hidden = k !== i;
-      if (was && !p.hidden && p.matches("[data-type]") && !p.dataset.typed) {
-        p.dataset.typed = "1";
-        typeOut(p);
-      }
+      if (was && !p.hidden && p.matches("[data-type]")) typeOut(p);
     });
     if (focus) tabs[i].focus();
   };
@@ -205,6 +211,10 @@ $$("[data-tabs]").forEach((root) => {
     t.addEventListener("keydown", (ev) => {
       const d = ev.key === "ArrowRight" ? 1 : ev.key === "ArrowLeft" ? -1 : 0;
       if (d) select((i + d + tabs.length) % tabs.length, true);
+      else if (ev.key === "Home") select(0, true);
+      else if (ev.key === "End") select(tabs.length - 1, true);
+      else return;
+      ev.preventDefault();
     });
   });
 });

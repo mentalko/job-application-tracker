@@ -20,15 +20,16 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
     </h1>
 
     <p class="sub reveal" style="--d:.16s">
-      Track every{" "}
-      <span class="rotate" data-rotate>
+      <span class="sr-only">Track every application, recruiter, interview round, follow-up and offer.</span>
+      <span aria-hidden="true">Track every </span>
+      <span class="rotate" data-rotate aria-hidden="true">
         {ROTATING.map((w, i) => (
           <span class={i === 0 ? "on" : ""}>{w}</span>
         ))}
       </span>
       <br />A self-hosted, open-source CRM for your job hunt, built by a software engineer for software
       engineers. Kanban board, recruiter CRM, interview rounds, follow-ups, offers and a Sankey funnel, all in
-      plain files on your disk.
+      a folder on your disk.
     </p>
 
     <div class="ctas reveal" style="--d:.24s">
@@ -44,7 +45,7 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
       <code>
         <span class="prompt">$</span> {clone}
       </code>
-      <button type="button" class="copy" data-copy={clone} aria-label="Copy">
+      <button type="button" class="copy" data-copy={clone} aria-label="Copy the git clone command">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
           <rect
             x="9"
@@ -102,7 +103,7 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
         <span class="badge b-amber">⏰</span>
         <div>
           <b>3 follow-ups due</b>
-          <small>Contoso, Fabrikam, Blue Yonder</small>
+          <small>Contoso, Fabrikam, Litware</small>
         </div>
       </div>
       <div class="float f3" aria-hidden="true">

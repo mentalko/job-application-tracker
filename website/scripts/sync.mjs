@@ -174,15 +174,15 @@ if (process.argv.includes("--watch")) {
   };
   watch(join(ROOT, "docs/guide"), again);
   watch(join(ROOT, "docs/screenshots"), again);
-  for (const f of ["CONTRIBUTING.md", "CHANGELOG.md", "llms.txt"]) {
-    if (existsSync(join(ROOT, f))) watch(join(ROOT, f), again);
-  }
+  // Watch the repo root, not the files: editors often save by replacing a file.
+  const top = new Set(["CONTRIBUTING.md", "CHANGELOG.md", "llms.txt"]);
+  watch(ROOT, (_event, name) => name && top.has(String(name)) && again());
   console.log(`sync: watching ${relative(SITE, ROOT) || "."} for docs changes`);
   const extra = process.argv.slice(process.argv.indexOf("--watch") + 1);
   const astro = spawn("astro", ["dev", ...extra], { cwd: SITE, stdio: "inherit", shell: true });
   // Astro may detach into a background server (`astro dev stop` ends it) and exit 0: keep
   // watching the docs then. Ctrl+C ends both.
-  astro.on("exit", (code) => code && process.exit(code));
+  astro.on("exit", (code, signal) => (code || signal) && process.exit(code ?? 1));
   for (const sig of ["SIGINT", "SIGTERM"]) {
     process.on(sig, () => {
       astro.kill(sig);

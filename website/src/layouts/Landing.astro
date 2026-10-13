@@ -71,6 +71,9 @@ const jsonLd = {
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{TITLE}</title>
     <meta name="description" content={DESCRIPTION} />
@@ -111,6 +114,7 @@ const jsonLd = {
       <div class="noise"></div>
     </div>
     <slot />
+    <p class="sr-only" aria-live="polite" id="announce"></p>
     <script>
       import "../scripts/motion";
     </script>
