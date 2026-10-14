@@ -9,7 +9,8 @@ For each version, document and that row:
 - **sent**: applications;
 - **heard back**: any sign of life: a move to a stage that isn't closed, a call, email or
   message logged, or a move to a closed stage that isn't yours (a rejection is a reply;
-  Withdrawn and the `reopen_from` stages, Ghosted by default, aren't);
+  Withdrawn and the `reopen_from` stages, Ghosted by default, aren't), or a screen, interview
+  round or offer;
 - **interviewed**: got past the CV: reached a stage beyond Applied that isn't closed (a screen
   counts), or has an interview round that wasn't cancelled;
 - **offers**: an offer recorded, or reached the Offer stage or a success stage;
@@ -138,7 +139,8 @@ def _outcome(
     offer = offered or any(s == "offer" or kinds.get(s) == "success" for s in reached)
     kind = kinds.get(app.stage, "active")
     return _Outcome(
-        heard_back=bool(signs),
+        # A round or an offer means they replied, even if nothing else was logged.
+        heard_back=bool(signs) or interviewed or past_cv or offer,
         interviewed=interviewed or past_cv,
         offer=offer,
         now="ghosted" if app.stage in workflow.reopen_from else ("closed" if kind == "closed" else "open"),

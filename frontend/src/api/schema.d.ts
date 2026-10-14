@@ -696,6 +696,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Performance
+         * @description Your CVs and cover letters compared, version by version (an A/B test), on the
+         *     applications added in [since, until) and by route: how many heard back, got a screen or
+         *     interview, or an offer. Applications with none recorded are a row of their own.
+         */
+        get: operations["document_performance_api_v1_insights_documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/flow": {
         parameters: {
             query?: never;
@@ -1881,6 +1903,14 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** DocumentKindPerformance */
+        DocumentKindPerformance: {
+            /** Documents */
+            documents: components["schemas"]["DocumentPerformance"][];
+            /** Kind */
+            kind: string;
+            none: components["schemas"]["DocumentTally"];
+        };
         /** DocumentOut */
         DocumentOut: {
             /**
@@ -1909,6 +1939,66 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** DocumentPerformance */
+        DocumentPerformance: {
+            /** Closed */
+            closed: number;
+            /** Ghosted */
+            ghosted: number;
+            /** Heard Back */
+            heard_back: number;
+            /** Id */
+            id: string;
+            /** Interview High */
+            interview_high: number | null;
+            /** Interview Low */
+            interview_low: number | null;
+            /** Interview Rate */
+            interview_rate: number | null;
+            /** Interviewed */
+            interviewed: number;
+            /** Median Reply Days */
+            median_reply_days: number | null;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+            /** Open */
+            open: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Sent */
+            sent: number;
+            /** Versions */
+            versions: components["schemas"]["DocumentVersionPerformance"][];
+        };
+        /** DocumentTally */
+        DocumentTally: {
+            /** Closed */
+            closed: number;
+            /** Ghosted */
+            ghosted: number;
+            /** Heard Back */
+            heard_back: number;
+            /** Interview High */
+            interview_high: number | null;
+            /** Interview Low */
+            interview_low: number | null;
+            /** Interview Rate */
+            interview_rate: number | null;
+            /** Interviewed */
+            interviewed: number;
+            /** Median Reply Days */
+            median_reply_days: number | null;
+            /** Offers */
+            offers: number;
+            /** Open */
+            open: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Sent */
+            sent: number;
+        };
         /**
          * DocumentUsage
          * @description One application a version of this document was sent with.
@@ -1930,6 +2020,49 @@ export interface components {
             version_id: string;
             /** Version Label */
             version_label: string;
+        };
+        /** DocumentVersionPerformance */
+        DocumentVersionPerformance: {
+            /** Closed */
+            closed: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Ghosted */
+            ghosted: number;
+            /** Heard Back */
+            heard_back: number;
+            /** Id */
+            id: string;
+            /** Interview High */
+            interview_high: number | null;
+            /** Interview Low */
+            interview_low: number | null;
+            /** Interview Rate */
+            interview_rate: number | null;
+            /** Interviewed */
+            interviewed: number;
+            /** Label */
+            label: string;
+            /** Median Reply Days */
+            median_reply_days: number | null;
+            /** Offers */
+            offers: number;
+            /** Open */
+            open: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /** Sent */
+            sent: number;
+        };
+        /** DocumentsOut */
+        DocumentsOut: {
+            /** Applications */
+            applications: number;
+            /** Kinds */
+            kinds: components["schemas"]["DocumentKindPerformance"][];
         };
         /**
          * DuplicateOut
@@ -5092,6 +5225,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_performance_api_v1_insights_documents_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+                route?: ("direct" | "agency" | "referral") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentsOut"];
                 };
             };
             /** @description Validation Error */
