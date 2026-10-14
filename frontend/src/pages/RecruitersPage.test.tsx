@@ -32,6 +32,8 @@ const contacts = [
   person("c2", "Sam Patel", "ag2"),
   person("c3", "Jo Freelance", null),
 ];
+// Alex usually gets back to you within two working days.
+Object.assign(contacts[0]!, { replies: 3, usual_reply_days: 2 });
 
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
@@ -50,6 +52,7 @@ describe("recruiters", () => {
     const tiles = await screen.findAllByRole("link", { name: /^(Alex Morgan|Jo Freelance|Sam Patel)$/ });
     expect(tiles.map((t) => t.textContent)).toEqual(["Alex Morgan", "Jo Freelance", "Sam Patel"]);
     expect(tiles[0]).toHaveAttribute("href", "/people/c1");
+    expect(screen.getByText("Usually replies within 2 working days")).toBeInTheDocument();
     // Alex's tile: the agency chip, and every way to reach them.
     const alex = tiles[0]!.closest(".mantine-Card-root") as HTMLElement;
     expect(within(alex).getByRole("link", { name: "Northwind Talent" })).toHaveAttribute(

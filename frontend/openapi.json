@@ -1674,6 +1674,11 @@
             "title": "Name",
             "type": "string"
           },
+          "replies": {
+            "default": 0,
+            "title": "Replies",
+            "type": "integer"
+          },
           "reply_to_read_since": {
             "anyOf": [
               {
@@ -1701,6 +1706,17 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "usual_reply_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usual Reply Days"
           }
         },
         "required": [

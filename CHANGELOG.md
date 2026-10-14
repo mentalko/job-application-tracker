@@ -100,6 +100,10 @@ brackets are pull requests.
   their page and tile, the applications they brought you, calls, Next actions, the Timeline,
   search and Insights; a *Ghosted* filter on the Recruiters page; and **Not a ghost** (or the
   **×** on their chip) to take it off whenever you like, with an Undo (#72).
+- **Usually replies within N working days**: the app remembers how long each person takes to
+  get back to you (weekends don't count; backfilled from your applications' history) and says
+  so on their tile, their page and Next actions, with *longer than usual* when you're waiting
+  past it (#73).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

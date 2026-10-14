@@ -21,6 +21,7 @@ from jat.db.models import (
     Link,
     Meeting,
     NoteIndex,
+    Reply,
     Role,
     Todo,
 )
@@ -156,6 +157,7 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
     session.execute(update(Role).where(Role.contact_id == gone.id).values(contact_id=keep.id))
     session.execute(update(Application).where(Application.recruiter_id == gone.id).values(recruiter_id=keep.id))
     session.execute(update(Meeting).where(Meeting.contact_id == gone.id).values(contact_id=keep.id))
+    session.execute(update(Reply).where(Reply.contact_id == gone.id).values(contact_id=keep.id))
 
     # On applications and interview panels, once per (application, relation) or interview.
     on_apps = {

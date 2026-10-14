@@ -147,6 +147,8 @@ class ContactOut(Out):
     chased_on: date | None = None
     closed_as: ContactClosed | None = None
     closed_on: date | None = None
+    replies: int = 0  # times they got back to you after you'd been waiting
+    usual_reply_days: int | None = None  # median working days to reply, rounded up
     created_at: datetime
     updated_at: datetime
 

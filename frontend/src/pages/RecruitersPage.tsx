@@ -32,6 +32,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
 import { GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
@@ -169,6 +170,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             )}
           </Group>
         )}
+        <ReplyHabit contact={contact} />
         {contact.details.map((d) => {
           const Icon = DETAIL_ICONS[d.kind as keyof typeof DETAIL_ICONS] ?? IconPoint;
           const link = contactHref(d.kind, d.value);

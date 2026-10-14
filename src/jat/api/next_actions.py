@@ -54,7 +54,7 @@ def next_actions(
 
     Only open applications count: archived ones, and ones in a closed or success stage, are done.
     """
-    from .routers import _contact_out, list_applications  # routers includes this module's router
+    from .routers import _contact_outs, list_applications  # routers includes this module's router
 
     now = datetime.now(UTC)
     start = (since or now.replace(hour=0, minute=0, second=0, microsecond=0)).astimezone(UTC)
@@ -117,7 +117,7 @@ def next_actions(
         .where(Contact.awaiting_reply_since.is_not(None))
         .order_by(Contact.awaiting_reply_since, Contact.name)
     )
-    waiting_people = [_contact_out(session, c) for c in people]
+    waiting_people = _contact_outs(session, people)
     # Replies to read: on any application still open (archived ones are done), and people.
     to_read = sorted(
         (r for r in rows if r.reply_to_read_since is not None),
@@ -128,7 +128,7 @@ def next_actions(
         .where(Contact.reply_to_read_since.is_not(None))
         .order_by(Contact.reply_to_read_since, Contact.name)
     )
-    to_read_people = [_contact_out(session, c) for c in replied]
+    to_read_people = _contact_outs(session, replied)
     booked_meetings = _meeting_query().where(Meeting.status == "scheduled")
     meetings = _meeting_outs(
         session.execute(

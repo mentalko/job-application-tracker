@@ -244,6 +244,22 @@ until you press **Read it**; the applications list and board mark it *reply to r
 **I've replied, waiting** clears it too. A reply to read is never *gone quiet* or a follow-up to chase; moving the application to
 another stage clears it, and undoing the move puts it back.
 
+**How long people usually take.** Each time a wait ends because they got back to you, the
+app remembers how long it took, in working days (weekends don't count: waiting from a Friday
+and hearing back on the Monday is one working day). That's when you press **They've replied**
+or **Heard back**, or an application you were waiting on moves to another stage (not one you
+chose yourself: *Withdrawn*, *Declined*, *Accepted* or *Ghosted*); an application counts for
+its recruiter. Chasing and marking them *Ghosted* don't count, and undoing a stage move takes
+its reply back. Days are your local days. A person's tile, their page and their rows on Next
+actions then say *Usually replies within 2 working days* (the middle of their reply times,
+rounded up), or *Replied once, in 3 working days*; an application you're waiting on, on Next
+actions, shows its recruiter's. When you've been waiting longer than that, Next actions and
+their tile add *waiting 3 working days longer than usual*, which helps tell slow from gone.
+Replies already in your applications' history (waiting, then *They replied* or *Heard back*,
+or a move on) were counted when you updated; waits on people before then weren't recorded, so
+theirs start now. Merging two people keeps both their replies, and deleting an application
+keeps its recruiter's.
+
 **Chasing people, or giving up on them.** For people (a recruiter you're talking to outside
 any one application), three buttons sit next to *Waiting* or *Replies to read* on Next
 actions, and at the top of their page:
