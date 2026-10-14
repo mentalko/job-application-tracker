@@ -61,6 +61,43 @@ describe("roles to decide", () => {
     });
   });
 
+  it("tracks a role at Interested without applying", async () => {
+    const calls = mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/role-summaries": [pitched],
+      "POST /api/v1/applications": { id: "a9" },
+      "/api/v1/health": {},
+    });
+    const router = renderAt("/roles");
+    fireEvent.click(await screen.findByRole("button", { name: "Interested: Platform Engineer" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Interested: Platform Engineer at Fabrikam")).toBeInTheDocument();
+    expect(within(dialog).getAllByLabelText("Applied on")[0]).toHaveValue("");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create application" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/applications/a9"));
+    expect(calls.find((c) => c.method === "POST")!.body).toMatchObject({
+      role_id: "r2",
+      stage: "interested",
+      applied_on: null,
+    });
+  });
+
+  it("shows a role you're interested in, with its application", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/role-summaries": [{ ...pitched, status: "interested", application_ids: ["a9"] }],
+      "/api/v1/health": {},
+    });
+    renderAt("/roles");
+    expect(await screen.findByRole("link", { name: "Open application" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open application" })).toHaveAttribute(
+      "href",
+      "/applications/a9",
+    );
+    expect(screen.getAllByText("Interested").length).toBeGreaterThan(1); // the view, and the role's badge
+    expect(screen.queryByRole("button", { name: "Apply: Platform Engineer" })).not.toBeInTheDocument();
+  });
+
   it("passes on a role with a reason", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,

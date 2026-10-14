@@ -129,3 +129,19 @@ def test_a_roles_page(client, seeded):
     hits = [h for h in client.get("/api/v1/search", params={"q": "senior backend"}).json() if h["kind"] == "role"]
     assert [(h["link"], h["subtitle"]) for h in hits] == [(f"/roles/{role['id']}", "Contoso")]
     assert not [h for h in client.get("/api/v1/search", params={"q": "contoso"}).json() if h["kind"] == "role"]
+
+
+def test_a_role_you_track_at_interested_is_interested_until_you_apply(client, seeded):
+    role = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "Product Engineer"})["id"]
+    app = post(client, "/api/v1/applications", {"role_id": role, "stage": "interested"})["id"]
+    assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "interested"
+    assert [r["id"] for r in _summaries(client, status="interested")] == [role]
+    assert role not in [r["id"] for r in _summaries(client, status="to_decide")]
+    r = client.post(f"/api/v1/applications/{app}/move", json={"to_stage": "applied"})
+    assert r.status_code == 200, r.text
+    assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "applied"
+    # Closed before applying (you decided against it after all): no longer interested.
+    other = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "SRE"})["id"]
+    a2 = post(client, "/api/v1/applications", {"role_id": other, "stage": "interested"})["id"]
+    client.post(f"/api/v1/applications/{a2}/move", json={"to_stage": "withdrawn"})
+    assert client.get(f"/api/v1/role-summaries/{other}").json()["status"] == "applied"

@@ -23,7 +23,7 @@ company, agency, role or application, `/api/v1/todos`; follow-ups due, applicati
 interviews coming up, one-click follow-up, snooze and Ghosted, waiting to hear back, replies to read, and chased / ghosted / not interested for people, with a ghost before a ghosted person's name across the app, a Ghosted filter on Recruiters and Not a ghost to take it off; "usually replies within N working days" per person, weekends excluded (`replies` and `usual_reply_days` on contacts), with "longer than usual" when you're waiting past it), person pages with booked and logged
 calls and meetings (`/api/v1/meetings`; one person per email address and LinkedIn profile;
 merge two records of one person, `POST /api/v1/contacts/{id}/merge`), roles to decide before applying (a Roles page;
-pitched by whom, on which call; apply or pass; a page per role with its files, such as the
+pitched by whom, on which call; apply, mark interested (tracked at the starting stage, role status `interested`) or pass; a page per role with its files, such as the
 job description, which also show on the application; `/api/v1/role-summaries`), renaming and
 deleting, applications list and Kanban board (move between any stages), application
 pages (with an "At a glance" card: what needs attention, for how long, and key dates as

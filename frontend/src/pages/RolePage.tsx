@@ -99,7 +99,7 @@ export function RolePage() {
           >
             Edit
           </Button>
-          {role.status !== "applied" && (
+          {role.application_ids.length === 0 && (
             <DeleteButton
               kind="role"
               id={role.id}

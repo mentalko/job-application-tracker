@@ -48,8 +48,12 @@ any. Add them as **roles** first, then decide on each:
 - **Apply** makes the application and opens it: through the recruiter's agency if they're at
   one, otherwise directly with them as your contact. Pick the stage (Applied by default) and
   the date.
+- **Interested** does the same at your starting stage (*Interested* by default) with no
+  applied date: you want it but haven't applied yet. The role then shows as *Interested* until
+  its application gets to *Applied* (move it on from the application). In either dialog,
+  picking the starting stage clears the applied date, and picking a later one fills in today.
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
-  puts it back. The pencil edits a role; the bin deletes it (not once you've applied).
+  puts it back. The pencil edits a role; the bin deletes it (not once it has an application).
 - Deleting a call keeps the roles from it; they just aren't linked to a call any more.
 
 **A role's page.** Click a role's name anywhere (the Roles page, a company, a person, a call,
@@ -57,14 +61,15 @@ Next actions, an application's *Role* card, search, the Timeline) to open its pa
 
 - what it is (pay, terms, location, the job ad), who told you about it and on which call,
   when you added it, and why you passed if you did; your notes on it;
-- **Apply**, **Pass** or **Reconsider**, **Edit** and **Delete**;
+- **Apply**, **Interested**, **Pass** or **Reconsider**, **Edit** and **Delete**;
 - the application you made from it, with its stage;
 - **To-dos**, **Notes**, **Links** and **Files** about the role. Drop the job description on
   **Files**: once you apply, it shows on the application's **Files** card too, under *From
   the role* (it's the same file, not a copy). A paperclip and count next to a role's name
   means it has files.
 
-The **Roles** page shows roles *To decide* (the default), *Applied*, *Passed* or *All*. Roles
+The **Roles** page shows roles *To decide* (the default), *Interested* (an application that
+hasn't got to *Applied* yet), *Applied* (one that has, or was closed), *Passed* or *All*. Roles
 to decide also show on Next actions and count towards *Needs attention* on the Overview. On
 the Timeline you'll see who mentioned which role, and the ones you passed on. A role you
 applied for through **New application** with the same title at the same company counts as

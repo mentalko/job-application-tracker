@@ -72,7 +72,8 @@ like this, and its **Timeline** button shows their calls, pitches, applications 
 ![A recruiter's page: where things stand with them, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
 
 **Roles to decide.** Everything you might go for, before you apply. **Apply** makes the
-application through whoever pitched it; **Pass** keeps your reason. Each role has its own page:
+application through whoever pitched it; **Interested** tracks it without applying yet; **Pass**
+keeps your reason. Each role has its own page:
 drop the job description on it and it follows the role onto your application.
 
 ![Roles to decide: two pitched roles with pay, source and Apply or Pass](docs/screenshots/roles.png)
@@ -167,7 +168,7 @@ to applications, roles or recruiters as plain files? It spots identical ones and
 | 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |
-| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) | ✅ Available |
+| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them), mark it interested (tracked, not applied yet) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) | ✅ Available |
 | 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline | ✅ Available |
 | 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase; when they reply, **They've replied** puts it at the top of Next actions until you've read it; for people, **Chased**, **Ghosted** or **Not interested** in one click; a ghost marks anyone who ghosted you across the app (their page, applications, calls, Next actions, the Timeline, search and Insights), a *Ghosted* filter lists them, and **Not a ghost** takes it off any time; each person shows how long they *usually* take to reply, in working days, and says when you've been waiting longer than usual | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |

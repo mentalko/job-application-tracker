@@ -213,7 +213,7 @@ class RoleOut(Out):
     updated_at: datetime
 
 
-RoleStatus = Literal["to_decide", "applied", "passed"]
+RoleStatus = Literal["to_decide", "interested", "applied", "passed"]
 
 
 class RoleSummary(RoleOut):

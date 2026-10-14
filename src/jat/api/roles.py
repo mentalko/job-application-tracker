@@ -10,14 +10,17 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db.models import Agency, Application, Company, Contact, Meeting, Role
+from ..domain.document_performance import applied_rank
+from ..domain.insights import stage_rank
+from ..domain.workflow import Workflow
 from . import schemas as S
-from .deps import SessionDep
+from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
 
 router = APIRouter(tags=["roles"])
 
 
-def summaries(session: Session, *where) -> list[S.RoleSummary]:
+def summaries(session: Session, *where, workflow: Workflow | None = None) -> list[S.RoleSummary]:
     rows = session.execute(
         select(Role, Company.name, Contact, Agency)
         .join(Company, Role.company_id == Company.id)
@@ -27,13 +30,15 @@ def summaries(session: Session, *where) -> list[S.RoleSummary]:
     ).all()
     role_ids = [r.id for r, *_ in rows]
     apps: dict[str, list[str]] = defaultdict(list)
+    stages: dict[str, list[str]] = defaultdict(list)
     if role_ids:
-        for app_id, role_id in session.execute(
-            select(Application.id, Application.role_id)
+        for app_id, role_id, stage in session.execute(
+            select(Application.id, Application.role_id, Application.stage)
             .where(Application.role_id.in_(role_ids))
             .order_by(Application.created_at)
         ):
             apps[role_id].append(app_id)
+            stages[role_id].append(stage)
     meeting_ids = {r.meeting_id for r, *_ in rows if r.meeting_id}
     meetings = {}
     if meeting_ids:
@@ -43,9 +48,22 @@ def summaries(session: Session, *where) -> list[S.RoleSummary]:
             .where(Meeting.id.in_(meeting_ids))
         ):
             meetings[m.id] = meeting_label(m, name)
+
+    def not_yet_applied(app_stages: list[str]) -> bool:
+        """Every application is still before Applied (Interested, say), and open."""
+        if workflow is None:
+            return False
+        rank = stage_rank(workflow)
+        applied = applied_rank(workflow, rank)
+        kinds = {st.id: st.kind for st in workflow.stages}
+        return all(kinds.get(st) == "active" and rank.get(st, applied) < applied for st in app_stages)
+
     out = []
     for role, company_name, contact, agency in rows:
-        status = "applied" if apps[role.id] else ("passed" if role.decision == "passed" else "to_decide")
+        if apps[role.id]:
+            status = "interested" if not_yet_applied(stages[role.id]) else "applied"
+        else:
+            status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
             S.RoleSummary(
                 **S.RoleOut.model_validate(role).model_dump(),
@@ -64,6 +82,7 @@ def summaries(session: Session, *where) -> list[S.RoleSummary]:
 @router.get("/role-summaries", response_model=list[S.RoleSummary])
 def role_summaries(
     session: SessionDep,
+    workflow: WorkflowDep,
     status: S.RoleStatus | None = None,
     company_id: str | None = None,
     contact_id: str | None = None,
@@ -71,8 +90,9 @@ def role_summaries(
 ):
     """Roles with where they came from and where they stand, oldest first.
 
-    `status`: `to_decide` (no application and not passed), `applied` (has an application) or
-    `passed`. Filter by company, by who told you about it, or by the call it came up in.
+    `status`: `to_decide` (no application and not passed), `interested` (it has applications,
+    all still before Applied), `applied` (an application got to Applied or further) or `passed`.
+    Filter by company, by who told you about it, or by the call it came up in.
     """
     where = []
     if company_id:
@@ -81,15 +101,15 @@ def role_summaries(
         where.append(Role.contact_id == contact_id)
     if meeting_id:
         where.append(Role.meeting_id == meeting_id)
-    found = summaries(session, *where)
+    found = summaries(session, *where, workflow=workflow)
     found.sort(key=lambda r: (r.created_at, r.id))  # ids are time-ordered (UUIDv7): creation order
     return [r for r in found if status is None or r.status == status]
 
 
 @router.get("/role-summaries/{role_id}", response_model=S.RoleSummary)
-def role_summary(role_id: str, session: SessionDep):
+def role_summary(role_id: str, session: SessionDep, workflow: WorkflowDep):
     """One role with where it came from and where it stands, for its page."""
-    found = summaries(session, Role.id == role_id)
+    found = summaries(session, Role.id == role_id, workflow=workflow)
     if not found:
         raise HTTPException(404, f"Role {role_id} not found")
     return found[0]
