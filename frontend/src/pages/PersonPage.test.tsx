@@ -56,6 +56,10 @@ describe("people", () => {
     );
     expect(screen.getByText("Brought it to you, Hiring manager")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Notes" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Timeline for Riley Chen" })).toHaveAttribute(
+      "href",
+      "/timeline?about=contact%3Ac9&period=all",
+    );
   });
 
   it("renames a company", async () => {
@@ -79,6 +83,10 @@ describe("people", () => {
     });
     renderAt("/companies/co1");
     fireEvent.click(await screen.findByRole("button", { name: "Edit" }));
+    expect(screen.getByRole("link", { name: "Timeline for Unknown`" })).toHaveAttribute(
+      "href",
+      "/timeline?about=company%3Aco1&period=all",
+    );
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Name"), { target: { value: "Develop RC" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
