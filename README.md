@@ -67,9 +67,9 @@ up and what's gone quiet. Follow up, snooze or mark Ghosted in one click.
 
 **Recruiters, their calls and the roles they pitch.** Book a call with an agenda, note how it
 went, add the roles they mentioned, then apply for or pass on each. Every person has a page
-like this.
+like this, and its **Timeline** button shows everything about them over time.
 
-![A recruiter's page: a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
+![A recruiter's page: where things stand with them, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
 
 **Roles to decide.** Everything you might go for, before you apply. **Apply** makes the
 application through whoever pitched it; **Pass** keeps your reason. Each role has its own page:
