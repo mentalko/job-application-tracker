@@ -16,9 +16,10 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
 
+import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
-import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
+import { stageLookup, useContacts, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { useTodos, type Todo } from "../api/todoHooks";
@@ -114,7 +115,10 @@ function AppLine({
   action?: ReactNode;
 }) {
   const { data: workflow } = useWorkflow();
+  const { data: contacts } = useContacts();
   const stages = stageLookup(workflow);
+  // Waiting on it: how long its recruiter usually takes.
+  const recruiter = row.awaiting_reply_since ? contacts?.find((c) => c.id === row.recruiter_id) : undefined;
   return (
     <Group justify="space-between" wrap="nowrap">
       <UnstyledButton
@@ -136,6 +140,9 @@ function AppLine({
                 </>
               )}
             </Text>
+            {recruiter && (
+              <ReplyHabit contact={{ ...recruiter, awaiting_reply_since: row.awaiting_reply_since }} />
+            )}
           </div>
         </Group>
       </UnstyledButton>
@@ -205,6 +212,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
             {where}
           </Text>
         )}
+        {!person.reply_to_read_since && <ReplyHabit contact={person} />}
       </div>
       <Group gap="xs" wrap="wrap" justify="flex-end" style={{ marginLeft: "auto" }}>
         <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"}>

@@ -16,6 +16,7 @@ import { IconArrowLeft, IconPencil, IconUser } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { ReplyHabit } from "../components/ReplyHabit";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { relationLabel, useContactSummary } from "../api/peopleHooks";
 import { AttachmentsCard } from "../components/Attachments";
@@ -81,6 +82,7 @@ export function PersonPage() {
               {contact.title && where ? " · " : ""}
               {where}
             </Text>
+            <ReplyHabit contact={contact} size="sm" />
           </div>
         </Group>
         <Group gap="xs">

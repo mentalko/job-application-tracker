@@ -27,6 +27,7 @@ from jat.db.models import (
     Interview,
     Meeting,
     Offer,
+    Reply,
     Role,
     Todo,
 )
@@ -385,6 +386,17 @@ def seed(path: Path) -> None:
                     due_on=date.today() + timedelta(days=2),
                 ),
                 Todo(text="Update my portfolio site", done_at=days_ago(2)),
+                # Alex usually gets back within a couple of working days; Sam takes longer.
+                *(
+                    Reply(contact_id=recruiters[name].id, waited_since=start, replied_on=start + timedelta(days=gap))
+                    for name, start, gap in (
+                        ("Alex Morgan", date(2026, 9, 7), 2),
+                        ("Alex Morgan", date(2026, 9, 18), 3),
+                        ("Alex Morgan", date(2026, 9, 28), 1),
+                        ("Sam Patel", date(2026, 9, 8), 6),
+                        ("Sam Patel", date(2026, 9, 22), 9),
+                    )
+                ),
             ]
         )
         # A CV with two versions and a cover letter, recorded against most applications, so
