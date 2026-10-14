@@ -23,7 +23,10 @@ export interface ReplyHabit {
 /** "Usually replies within 2 working days", or null when they've never replied yet. */
 export function replyHabit(c: ReplyHabit): string | null {
   if (!c.replies || c.usual_reply_days == null) return null;
-  if (c.replies === 1) return `Replied once, in ${wd(c.usual_reply_days)}`;
+  if (c.replies === 1)
+    return c.usual_reply_days === 0
+      ? "Replied once, the same day"
+      : `Replied once, in ${wd(c.usual_reply_days)}`;
   return c.usual_reply_days === 0
     ? "Usually replies the same day"
     : `Usually replies within ${wd(c.usual_reply_days)}`;

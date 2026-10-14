@@ -46,17 +46,34 @@ def test_a_person_usually_replies_within(client, seeded):
     assert listed[seeded["recruiter"]["id"]]["usual_reply_days"] == 2
 
 
-def test_chasing_ghosting_and_undo_arent_replies(client, seeded):
+def test_chasing_and_ghosting_arent_replies(client, seeded):
     start = _monday_weeks_ago(2)
     _person(client, seeded, awaiting_reply_since=start.isoformat())
     # A chase waits again from a new day: no reply.
-    _person(client, seeded, chased_on=(start + timedelta(days=3)).isoformat())
-    # Ghosted: no reply either.
+    assert _person(client, seeded, chased_on=(start + timedelta(days=3)).isoformat())["replies"] == 0
+    # Ghosted, then Undo (the UI puts every field back as it was): still no reply.
+    before = {"awaiting_reply_since": (start + timedelta(days=3)).isoformat(), "reply_to_read_since": None}
     assert _person(client, seeded, closed_as="ghosted")["replies"] == 0
-    # Waiting again, then Heard back (counts), then Undo (puts the waiting back: forgotten).
-    _person(client, seeded, awaiting_reply_since=start.isoformat())
-    assert _person(client, seeded, awaiting_reply_since=None)["replies"] == 1
-    assert _person(client, seeded, awaiting_reply_since=start.isoformat())["replies"] == 0
+    assert _person(client, seeded, **before, closed_as=None, closed_on=None, chased_on=None)["replies"] == 0
+
+
+def test_a_reply_stays_when_you_wait_on_them_again_the_same_day(client, seeded):
+    today = date.today().isoformat()
+    _person(client, seeded, awaiting_reply_since=today)
+    assert _person(client, seeded, reply_to_read_since=today)["replies"] == 1
+    # You answer them straight away and wait again: their reply still counts.
+    out = _person(client, seeded, awaiting_reply_since=today)
+    assert (out["replies"], out["usual_reply_days"]) == (1, 0)
+
+
+def test_deleting_an_application_keeps_the_reply(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    body = {"role_id": seeded["role"]["id"], "stage": "applied", "route": "agency", "recruiter_id": alex}
+    app = post(client, "/api/v1/applications", body)["id"]
+    client.patch(f"/api/v1/applications/{app}", json={"awaiting_reply_since": _monday_weeks_ago(1).isoformat()})
+    client.patch(f"/api/v1/applications/{app}", json={"awaiting_reply_since": None})
+    assert client.delete(f"/api/v1/applications/{app}").status_code == 204
+    assert client.get(f"/api/v1/contacts/{alex}").json()["replies"] == 1
 
 
 def test_an_application_counts_for_its_recruiter(client, seeded):
@@ -121,6 +138,12 @@ def test_0011_backfills_replies_from_application_history(tmp_path):
             ("e5", "b", "stage_change", "withdrawn", "2026-10-09T09:00:00Z", '{"was_waiting_since": "2026-10-01"}'),
             ("e6", "b", "stage_change", "screen", "2026-10-10T09:00:00Z", '{"was_waiting_since": "2026-10-01"}'),
             ("e7", "b", "stage_change", "withdrawn", "2026-10-10T10:00:00Z", '{"undo_of": "e6"}'),
+            # Malformed history is skipped, not fatal.
+            ("e8", "b", "manual", None, "2026-10-11T09:00:00Z", "null"),
+            ("e9", "b", "manual", None, "2026-10-11T09:00:00Z", "[]"),
+            ("e10", "b", "manual", None, "2026-10-11T09:00:00Z", "{bad"),
+            ("e11", "b", "stage_change", "screen", "2026-10-12T09:00:00Z", '{"was_waiting_since": "soon"}'),
+            ("e12", "b", "stage_change", "accepted", "2026-10-13T09:00:00Z", '{"was_waiting_since": "2026-10-12"}'),
         ]
         for seq, (eid, app_id, kind, to_stage, at, data) in enumerate(events, start=1):
             stage = f"'{to_stage}'" if to_stage else "NULL"
@@ -144,3 +167,11 @@ def test_0011_backfills_replies_from_application_history(tmp_path):
         ("p", "a", "2026-10-02", "2026-10-06", None),
         ("p", "a", "2026-10-07", "2026-10-09", "e4"),
     ]
+
+
+def test_your_own_moves_arent_replies():
+    from jat.domain.replies import is_reply_move
+    from jat.domain.workflow import DEFAULT_WORKFLOW as W
+
+    assert is_reply_move(W, "screen") and is_reply_move(W, "rejected")
+    assert not any(is_reply_move(W, s) for s in ("withdrawn", "declined", "ghosted", "accepted"))

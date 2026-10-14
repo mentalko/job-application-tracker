@@ -305,7 +305,8 @@ class Reply(IdMixin, Base):
 
     __tablename__ = "replies"
     contact_id: Mapped[str | None] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
-    application_id: Mapped[str | None] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), index=True)
+    # Deleting the application keeps the reply: it's still how long the person took.
+    application_id: Mapped[str | None] = mapped_column(ForeignKey("applications.id", ondelete="SET NULL"), index=True)
     waited_since: Mapped[date]
     replied_on: Mapped[date]
     # The stage move that meant they'd replied, so undoing it takes the reply back.

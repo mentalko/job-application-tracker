@@ -107,7 +107,7 @@ def move(
             contact_id=app.recruiter_id,
             application_id=app.id,
             waited_since=app.awaiting_reply_since,
-            replied_on=when.date(),
+            replied_on=when.astimezone().date(),  # your local day, like the waiting date
             event_id=event.id,
         )
     app.stage = to_stage

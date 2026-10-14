@@ -3,8 +3,9 @@
 A reply is recorded when you'd been waiting on someone (or on an application, which counts
 for its recruiter) and then: they replied (*They've replied*), you heard back (*Heard back*),
 or the application moved on while you were waiting, to a stage that isn't yours to choose
-(Withdrawn, Declined and the `reopen_from` stages, Ghosted by default, are yours). Undoing it
-takes the reply back. A person's usual reply time is the median of theirs, rounded up.
+(Withdrawn, Declined, success stages such as Accepted, and the `reopen_from` stages, Ghosted by
+default, are yours). Undoing that move takes the reply back. Days are your local days. A
+person's usual reply time is the median of theirs, rounded up.
 """
 
 from __future__ import annotations
@@ -19,7 +20,6 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from jat.db.models import Reply
-from jat.db.types import utcnow
 
 from .workflow import Workflow
 
@@ -42,7 +42,8 @@ def working_days(start: date, end: date) -> int:
 
 def is_reply_move(workflow: Workflow, to_stage: str) -> bool:
     """A move that means they got back to you (not one you made yourself)."""
-    return to_stage not in YOURS and to_stage not in workflow.reopen_from
+    success = {st.id for st in workflow.stages if st.kind == "success"}
+    return to_stage not in YOURS and to_stage not in workflow.reopen_from and to_stage not in success
 
 
 def record(
@@ -65,17 +66,6 @@ def record(
             event_id=event_id,
         )
     )
-
-
-def take_back(session: Session, *, contact_id: str | None, application_id: str | None, waited_since: date) -> None:
-    """You put the waiting back (an Undo): forget the reply recorded today for that wait."""
-    stmt = select(Reply).where(Reply.waited_since == waited_since, Reply.created_at >= utcnow() - timedelta(days=1))
-    stmt = stmt.where(Reply.application_id == application_id if application_id else Reply.application_id.is_(None))
-    if not application_id:
-        stmt = stmt.where(Reply.contact_id == contact_id)
-    latest = session.scalars(stmt.order_by(Reply.created_at.desc())).first()
-    if latest is not None:
-        session.delete(latest)
 
 
 def take_back_move(session: Session, event_id: str) -> None:
