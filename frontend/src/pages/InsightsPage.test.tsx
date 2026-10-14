@@ -486,6 +486,18 @@ describe("insights", () => {
         "Likely a real difference: Backend CV · v2 (impact first): 9 of 10 got a screen or interview (90%) and Backend CV · v1: 2 of 10 got a screen or interview (20%).",
       ),
     ).toBeInTheDocument();
+    // A CV can't be compared with one of its own versions: they share applications.
+    const withBox = within(card).getAllByLabelText("With")[0]!;
+    fireEvent.click(withBox);
+    const withList = document.getElementById(withBox.getAttribute("aria-controls")!)!;
+    expect(within(withList).getByRole("option", { name: "Backend CV", hidden: true })).toHaveAttribute(
+      "data-combobox-disabled",
+    );
+    expect(
+      within(withList).getByRole("option", { name: "No CV recorded", hidden: true }),
+    ).not.toHaveAttribute("data-combobox-disabled");
+    fireEvent.keyDown(within(card).getAllByLabelText("With")[0]!, { key: "Escape" });
+
     // Heard back is 7 of 10 each: nothing to see.
     fireEvent.click(within(card).getByRole("radio", { name: "Heard back" }));
     expect(await within(card).findByText("Could be chance")).toBeInTheDocument();

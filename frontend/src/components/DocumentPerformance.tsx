@@ -60,16 +60,27 @@ interface Row {
   name: string;
   tally: DocumentTally;
   level: "document" | "version" | "none";
+  docId?: string;
 }
+
+/** A document and one of its own versions share applications: not a fair comparison. */
+const overlaps = (x: Row, y: Row) =>
+  x.docId !== undefined && x.docId === y.docId && (x.level === "document" || y.level === "document");
 
 function rowsOf(kind: DocumentKindPerformance): Row[] {
   const rows: Row[] = [];
   for (const d of kind.documents) {
-    rows.push({ id: `doc:${d.id}`, name: d.name, tally: d, level: "document" });
+    rows.push({ id: `doc:${d.id}`, name: d.name, tally: d, level: "document", docId: d.id });
     // One version is the document itself: no need to say it twice.
     if (d.versions.length > 1)
       for (const v of d.versions)
-        rows.push({ id: `version:${v.id}`, name: `${d.name} · ${v.label}`, tally: v, level: "version" });
+        rows.push({
+          id: `version:${v.id}`,
+          name: `${d.name} · ${v.label}`,
+          tally: v,
+          level: "version",
+          docId: d.id,
+        });
   }
   if (NONE_LABEL[kind.kind] && kind.none.sent > 0)
     rows.push({ id: "none", name: NONE_LABEL[kind.kind]!, tally: kind.none, level: "none" });
@@ -187,9 +198,17 @@ function Compare({ rows }: { rows: Row[] }) {
   );
   const [picked, setPicked] = useState<{ a?: string | null; b?: string | null }>({});
   const [measure, setMeasure] = useState<Measure>("interviewed");
-  const a = rows.find((r) => r.id === (picked.a ?? pool[0]?.id));
-  const b = rows.find((r) => r.id === (picked.b ?? pool[1]?.id));
-  const options = rows.map((r) => ({ value: r.id, label: r.name }));
+  // A pick that's gone (another date range, say) falls back to the defaults.
+  const a = rows.find((r) => r.id === picked.a) ?? pool[0];
+  const b = rows.find((r) => r.id === picked.b && (!a || !overlaps(a, r))) ?? pool.find((r) => r !== a);
+  const optionsBesides = (other: Row | undefined) =>
+    rows.map((r) => ({ value: r.id, label: r.name, disabled: Boolean(other && overlaps(other, r)) }));
+  if (rows.length < 2)
+    return (
+      <Text size="sm" c="dimmed">
+        Only one so far: send another version (or record applications without one) to compare.
+      </Text>
+    );
   const m = MEASURES.find((x) => x.value === measure)!;
 
   let result: { kind: keyof typeof VERDICT_TEXT; p: number; text: string } | null = null;
@@ -207,7 +226,7 @@ function Compare({ rows }: { rows: Row[] }) {
       <Group gap="sm" align="flex-end" wrap="wrap">
         <Select
           label="Compare"
-          data={options}
+          data={optionsBesides(b)}
           value={a?.id ?? null}
           onChange={(v) => setPicked((p) => ({ ...p, a: v }))}
           allowDeselect={false}
@@ -215,7 +234,7 @@ function Compare({ rows }: { rows: Row[] }) {
         />
         <Select
           label="With"
-          data={options}
+          data={optionsBesides(a)}
           value={b?.id ?? null}
           onChange={(v) => setPicked((p) => ({ ...p, b: v }))}
           allowDeselect={false}
@@ -321,16 +340,17 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
         ) : (
           <Stack gap="lg">
             <VersionsTable rows={rows} />
-            <Compare key={`${current?.kind}-${route}`} rows={rows.filter((r) => r.tally.sent > 0)} />
+            <Compare key={`${current?.kind}-${route}-${since}`} rows={rows.filter((r) => r.tally.sent > 0)} />
           </Stack>
         )}
       </Card>
       <Text size="xs" c="dimmed" maw={820}>
-        <b>Heard back</b>: any reply, a rejection included (Ghosted and Withdrawn aren't).{" "}
-        <b>Screen or interview</b>: got past Applied, or has an interview round. <b>How sure</b>: the dot is
-        the screen or interview rate, the bar where it likely really is (a 95% range); with few applications
-        it's wide. Other things vary too (the roles, the route, the market), so compare like with like: pick a
-        route, and change one thing at a time.
+        <b>Heard back</b>: any reply after applying, a rejection included (closing it yourself, or marking it
+        ghosted, isn't; logged calls and messages count either way). <b>Screen or interview</b>: got past
+        Applied, or has an interview round. <b>How sure</b>: the dot is the screen or interview rate, the bar
+        where it likely really is (a 95% range); with few applications it's wide. Other things vary too (the
+        roles, the route, the market), so compare like with like: pick a route, and change one thing at a
+        time.
       </Text>
     </Stack>
   );

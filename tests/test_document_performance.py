@@ -1,6 +1,10 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 
-from jat.domain.document_performance import wilson
+from jat.domain.document_performance import applied_rank, wilson
+from jat.domain.insights import stage_rank
+from jat.domain.workflow import workflow_from_config
 
 from .factories import post
 
@@ -118,3 +122,84 @@ def test_wilson_interval():
     assert low == 0 and 0.5 < high < 0.6
     low, high = wilson(50, 100)
     assert low == pytest.approx(0.404, abs=0.001) and high == pytest.approx(0.596, abs=0.001)
+
+
+def _iso(days_ago: float) -> str:
+    return (datetime.now(UTC) - timedelta(days=days_ago)).replace(microsecond=0).isoformat()
+
+
+def test_closed_before_applying_wasnt_sent(client, seeded):
+    role = seeded["role"]["id"]
+    for stage in ("withdrawn", "rejected"):
+        a = post(client, "/api/v1/applications", {"role_id": role, "stage": "interested"})["id"]
+        _move(client, a, stage)
+    out = client.get("/api/v1/insights/documents").json()
+    assert out["applications"] == 0 and out["kinds"][0]["none"]["sent"] == 0
+
+
+def test_one_application_with_two_versions_counts_once_for_the_document(client, seeded):
+    cv = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})["id"]
+    v1, v2 = _version(client, cv, "v1"), _version(client, cv, "v2")
+    other = post(client, "/api/v1/documents", {"kind": "cv", "name": "Frontend CV"})["id"]
+    f1 = _version(client, other, "v1")
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})["id"]
+    for v in (v1, v2, f1):
+        _send(client, a, v)
+    [cvs] = [k for k in client.get("/api/v1/insights/documents").json()["kinds"] if k["kind"] == "cv"]
+    docs = {d["name"]: d for d in cvs["documents"]}
+    assert docs["Backend CV"]["sent"] == 1
+    assert [v["sent"] for v in docs["Backend CV"]["versions"]] == [1, 1]
+    assert docs["Frontend CV"]["sent"] == 1 and cvs["none"]["sent"] == 0
+
+
+def test_reply_time_counts_from_applying(client, seeded):
+    cv = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})["id"]
+    v1 = _version(client, cv, "v1")
+    # Added as Interested, applied four days ago, heard back a day later.
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "interested"})["id"]
+    _send(client, a, v1)
+    r = client.post(f"/api/v1/applications/{a}/move", json={"to_stage": "applied", "occurred_at": _iso(4)})
+    assert r.status_code == 200, r.text
+    r = client.post(f"/api/v1/applications/{a}/move", json={"to_stage": "screen", "occurred_at": _iso(3)})
+    assert r.status_code == 200, r.text
+    [version] = client.get("/api/v1/insights/documents").json()["kinds"][0]["documents"][0]["versions"]
+    assert version["median_reply_days"] == 1.0
+
+
+def test_the_date_range_is_by_when_applications_were_added(client, seeded):
+    post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    later = client.get("/api/v1/insights/documents", params={"since": _iso(-1)}).json()
+    assert later["applications"] == 0
+    assert client.get("/api/v1/insights/documents", params={"since": _iso(1)}).json()["applications"] == 1
+
+
+def test_applied_in_a_workflow_without_an_applied_stage():
+    wf = workflow_from_config(
+        {
+            "initial": "lead",
+            "stages": [{"id": "lead"}, {"id": "submitted"}, {"id": "screen"}, {"id": "gone", "kind": "closed"}],
+        }
+    )
+    rank = stage_rank(wf)
+    assert applied_rank(wf, rank) == rank["submitted"]
+
+
+def test_custom_workflow_end_to_end(app, client):
+    (app.state.jat.data_dir / "config.toml").write_text(
+        '[workflow]\ninitial = "lead"\n'
+        '[[workflow.stages]]\nid = "lead"\n'
+        '[[workflow.stages]]\nid = "submitted"\n'
+        '[[workflow.stages]]\nid = "screen"\n'
+        '[[workflow.stages]]\nid = "gone"\nkind = "closed"\n'
+    )
+    company = post(client, "/api/v1/companies", {"name": "Fabrikam"})["id"]
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "SRE"})["id"]
+    lead = post(client, "/api/v1/applications", {"role_id": role, "stage": "lead"})["id"]  # not sent
+    sent = post(client, "/api/v1/applications", {"role_id": role, "stage": "lead"})["id"]
+    _move(client, sent, "submitted")  # yours: not a reply
+    screened = post(client, "/api/v1/applications", {"role_id": role, "stage": "lead"})["id"]
+    _move(client, screened, "submitted")
+    _move(client, screened, "screen")
+    assert lead
+    none = client.get("/api/v1/insights/documents").json()["kinds"][0]["none"]
+    assert (none["sent"], none["heard_back"], none["interviewed"]) == (2, 1, 1)

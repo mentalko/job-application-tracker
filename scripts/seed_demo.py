@@ -133,7 +133,7 @@ def seed(path: Path) -> None:
         recruiters: dict[str, Contact] = {}
         companies: dict[str, Company] = {}
         first_app: dict[str, Application] = {}
-        by_title: dict[str, Application] = {}  # role title -> application
+        by_title: dict[str, Application] = {}  # role title -> application (titles are unique here)
         for company, title, route, agency_name, recruiter_name, path_, tags in APPLICATIONS:
             if company not in companies:
                 companies[company] = Company(

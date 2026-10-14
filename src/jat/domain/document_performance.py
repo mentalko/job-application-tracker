@@ -1,21 +1,24 @@
 """How your CVs and cover letters do: an A/B test across the versions you've sent.
 
-Each application you sent (it got to the first stage after the start, Applied by default, or
-has a document recorded against it) counts for every document version recorded as sent with
-it, and once for its document as a whole. Applications with no CV recorded (or no cover letter)
-make a row of their own, so you can compare with and without.
+*Applied* is the `applied` stage, or in a workflow without one, the first active stage after
+the starting one. Each application you sent (it got to Applied, or was closed after it, or has
+a document recorded against it) counts for every document version recorded as sent with it,
+and once for each document. Applications with no CV recorded (or no cover letter) make a row
+of their own, so you can compare with and without. One closed before it got to Applied (you
+decided not to, or the role went) wasn't sent.
 
 For each version, document and that row:
 - **sent**: applications;
-- **heard back**: any sign of life: a move past Applied, a call, email or message logged, or a
-  move to a closed stage that isn't yours (a rejection is a reply; Withdrawn and the
-  `reopen_from` stages, Ghosted by default, aren't), or an interview round or offer. Moving it
-  to Applied yourself isn't;
+- **heard back**: any sign of life after applying: a move past Applied, a call, email or
+  message logged (logged contact has no direction, so a chaser you sent counts too), a move to
+  a closed stage that isn't yours (a rejection is a reply; Withdrawn, Declined and the
+  `reopen_from` stages, Ghosted by default, aren't), or an interview round or offer;
 - **interviewed**: got past the CV: reached a stage beyond Applied that isn't closed (a screen
   counts), or has an interview round that wasn't cancelled;
-- **offers**: an offer recorded, or reached the Offer stage or a success stage;
+- **offers**: an offer recorded, or reached the `offer` stage or a success stage;
 - **open** / **ghosted** / **closed**: where they are now;
-- **reply days**: median days from applying to hearing back.
+- **reply days**: median days from applying (when it got to Applied; for one recorded at
+  Applied from the start, its backdatable first stage) to the first sign of life.
 
 Undone moves don't count, and nothing dated in the future does either. Rates are out of
 `sent`; `interview_low` and `interview_high` are a 95% Wilson interval, so small numbers show
@@ -41,7 +44,7 @@ from .scorecard import CONTACT_KINDS, _added_at
 from .workflow import Workflow
 
 KINDS = ("cv", "cover_letter", "other")
-NOT_A_REPLY = frozenset({"withdrawn"})  # closing moves you make yourself (besides reopen_from)
+NOT_A_REPLY = frozenset({"withdrawn", "declined"})  # closing moves you make (besides reopen_from)
 
 
 @dataclass
@@ -109,20 +112,51 @@ class _Outcome:
     reply_days: float | None
 
 
+def applied_rank(workflow: Workflow, rank: dict[str, int]) -> int:
+    """Where *Applied* is: the `applied` stage, or the first active stage after the start."""
+    if "applied" in rank:
+        return rank["applied"]
+    active = [st.id for st in workflow.stages if st.is_active]
+    after = active[active.index(workflow.initial) + 1 :] if workflow.initial in active else active
+    return rank[after[0]] if after else rank.get(workflow.initial, 0)
+
+
+def applied_at(
+    history: list[Event], kinds: dict[str, str], rank: dict[str, int], applied: int, now: datetime
+) -> datetime | None:
+    """When it got to Applied (or past it), or was closed after it; None if it never did."""
+    first = next((ev for ev in history if ev.kind == STAGE_CHANGE and ev.from_stage is None), None)
+    if (
+        first is not None
+        and first.to_stage
+        and kinds.get(first.to_stage) != "closed"
+        and rank.get(first.to_stage, -1) >= applied
+    ):
+        return first.occurred_at
+    for ev in sorted(_effective_moves(history), key=lambda e: (e.occurred_at, e.seq)):
+        if ev.occurred_at > now or not ev.to_stage:
+            continue
+        if kinds.get(ev.to_stage) != "closed" and rank.get(ev.to_stage, -1) >= applied:
+            return ev.occurred_at
+        if kinds.get(ev.to_stage) == "closed" and rank.get(ev.from_stage or "", -1) >= applied:
+            return ev.occurred_at
+    return None
+
+
 def _outcome(
     app: Application,
     history: list[Event],
     workflow: Workflow,
     *,
+    sent_at: datetime,
+    applied: int,
+    rank: dict[str, int],
     interviewed: bool,
     offered: bool,
     now: datetime,
 ) -> _Outcome:
     kinds = {s.id: s.kind for s in workflow.stages}
-    rank = stage_rank(workflow)
-    applied_rank = rank.get("applied", rank.get(workflow.initial, 0))
     yours = NOT_A_REPLY | set(workflow.reopen_from)
-    added = _added_at(app.created_at, history)
     moves = [ev for ev in _effective_moves(history) if ev.occurred_at <= now]
     signs = [
         ev.occurred_at
@@ -130,17 +164,17 @@ def _outcome(
         if ev.to_stage
         and (
             # Moving it to Applied (or before) is yours; past it, or a rejection, is theirs.
-            (kinds.get(ev.to_stage) != "closed" and rank.get(ev.to_stage, -1) > applied_rank)
+            (kinds.get(ev.to_stage) != "closed" and rank.get(ev.to_stage, -1) > applied)
             or (kinds.get(ev.to_stage) == "closed" and ev.to_stage not in yours)
         )
     ]
     signs += [ev.occurred_at for ev in history if ev.kind in CONTACT_KINDS and ev.occurred_at <= now]
-    signs = [t for t in signs if t >= added]
+    signs = [t for t in signs if t >= sent_at]
     reached = {ev.to_stage for ev in moves if ev.to_stage}
     first = next((ev.to_stage for ev in history if ev.kind == STAGE_CHANGE and ev.from_stage is None), None)
     if first:
         reached.add(first)
-    past_cv = any(kinds.get(s) != "closed" and rank.get(s, -1) > applied_rank for s in reached)
+    past_cv = any(kinds.get(s) != "closed" and rank.get(s, -1) > applied for s in reached)
     offer = offered or any(s == "offer" or kinds.get(s) == "success" for s in reached)
     kind = kinds.get(app.stage, "active")
     return _Outcome(
@@ -149,7 +183,7 @@ def _outcome(
         interviewed=interviewed or past_cv,
         offer=offer,
         now="ghosted" if app.stage in workflow.reopen_from else ("closed" if kind == "closed" else "open"),
-        reply_days=(min(signs) - added).total_seconds() / 86_400 if signs else None,
+        reply_days=(min(signs) - sent_at).total_seconds() / 86_400 if signs else None,
     )
 
 
@@ -220,15 +254,28 @@ def performance(
 
     kinds = {k: Kind(kind=k) for k in KINDS}
     rank = stage_rank(workflow)
-    applied_rank = rank.get("applied", rank.get(workflow.initial, 0))
+    applied = applied_rank(workflow, rank)
+    stage_kinds = {st.id: st.kind for st in workflow.stages}
     now = datetime.now(UTC)
     result = Result()
     for app_id, app in apps.items():
         events = history[app_id]
-        path_ranks = [rank.get(app.stage, -1)] + [rank.get(ev.to_stage or "", -1) for ev in events]
-        if not sent[app_id] and max(path_ranks) < applied_rank:
-            continue  # not sent yet (still Interested)
-        o = _outcome(app, events, workflow, interviewed=app_id in interviewed, offered=app_id in offered, now=now)
+        sent_at = applied_at(events, stage_kinds, rank, applied, now)
+        if sent_at is None:
+            if not sent[app_id]:
+                continue  # not sent (still Interested, or closed before applying)
+            sent_at = _added_at(app.created_at, events)  # a CV recorded: it went out
+        o = _outcome(
+            app,
+            events,
+            workflow,
+            sent_at=sent_at,
+            applied=applied,
+            rank=rank,
+            interviewed=app_id in interviewed,
+            offered=app_id in offered,
+            now=now,
+        )
         result.applications += 1
         had: dict[str, set[str]] = defaultdict(set)  # kind -> document ids
         for version_id in sent[app_id]:
