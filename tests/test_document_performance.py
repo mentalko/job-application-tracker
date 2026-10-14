@@ -75,6 +75,16 @@ def test_cv_versions_compared(client, seeded):
     assert direct["applications"] == 6 and direct["kinds"][0]["none"]["sent"] == 0
 
 
+def test_moving_it_to_applied_yourself_isnt_hearing_back(client, seeded):
+    cv = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})["id"]
+    v1 = _version(client, cv, "v1")
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "interested"})["id"]
+    _send(client, a, v1)
+    _move(client, a, "applied")
+    [version] = client.get("/api/v1/insights/documents").json()["kinds"][0]["documents"][0]["versions"]
+    assert (version["sent"], version["heard_back"], version["median_reply_days"]) == (1, 0, None)
+
+
 def test_no_documents_yet(client, seeded):
     out = client.get("/api/v1/insights/documents").json()
     assert out == {

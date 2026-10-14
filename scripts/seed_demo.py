@@ -133,6 +133,7 @@ def seed(path: Path) -> None:
         recruiters: dict[str, Contact] = {}
         companies: dict[str, Company] = {}
         first_app: dict[str, Application] = {}
+        by_title: dict[str, Application] = {}  # role title -> application
         for company, title, route, agency_name, recruiter_name, path_, tags in APPLICATIONS:
             if company not in companies:
                 companies[company] = Company(
@@ -199,6 +200,7 @@ def seed(path: Path) -> None:
                 log_activity(
                     s, app, "call", summary=f"Intro call with {recruiter.name}", occurred_at=days_ago(path_[0][1] + 1)
                 )
+            by_title[title] = app
             # Interview rounds for the stages it went through, and the next one if it's mid-process.
             reached = dict(path_)
             rounds = [(reached[stage], title, kind) for stage, title, kind in ROUNDS if stage in reached]
@@ -385,15 +387,39 @@ def seed(path: Path) -> None:
                 Todo(text="Update my portfolio site", done_at=days_ago(2)),
             ]
         )
-        # A CV with two versions, the newer one sent to Contoso.
+        # A CV with two versions and a cover letter, recorded against most applications, so
+        # Insights can compare them.
         cv = Document(kind="cv", name="Backend CV")
-        s.add(cv)
+        letter = Document(kind="cover_letter", name="Short cover letter")
+        s.add_all([cv, letter])
         s.flush()
-        v2 = DocumentVersion(document_id=cv.id, label="v2", created_at=days_ago(40))
-        v3 = DocumentVersion(document_id=cv.id, label="v3 (fintech)", notes="Leads with payments work")
-        s.add_all([v2, v3])
+        v2 = DocumentVersion(document_id=cv.id, label="v2", created_at=days_ago(60))
+        v3 = DocumentVersion(
+            document_id=cv.id, label="v3 (impact first)", notes="Leads with results", created_at=days_ago(45)
+        )
+        plain = DocumentVersion(document_id=letter.id, label="plain", created_at=days_ago(60))
+        s.add_all([v2, v3, plain])
         s.flush()
-        s.add(ApplicationDocument(application_id=first_app["Contoso"].id, document_version_id=v3.id))
+        sent = {
+            v2: [
+                "Engineering Manager",
+                "Data Platform Engineer",
+                "Staff Platform Engineer",
+                "Senior Full-stack Engineer",
+                "Site Reliability Engineer",
+            ],
+            v3: [
+                "Senior Backend Engineer",
+                "Senior Python Developer",
+                "Senior Software Engineer",
+                "Backend Engineer (Go)",
+                "Full-stack Engineer",
+            ],
+            plain: ["Senior Software Engineer", "Staff Platform Engineer", "Site Reliability Engineer"],
+        }
+        for version, titles in sent.items():
+            for title in titles:
+                s.add(ApplicationDocument(application_id=by_title[title].id, document_version_id=version.id))
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")
 

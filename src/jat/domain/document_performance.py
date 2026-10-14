@@ -7,10 +7,10 @@ make a row of their own, so you can compare with and without.
 
 For each version, document and that row:
 - **sent**: applications;
-- **heard back**: any sign of life: a move to a stage that isn't closed, a call, email or
-  message logged, or a move to a closed stage that isn't yours (a rejection is a reply;
-  Withdrawn and the `reopen_from` stages, Ghosted by default, aren't), or a screen, interview
-  round or offer;
+- **heard back**: any sign of life: a move past Applied, a call, email or message logged, or a
+  move to a closed stage that isn't yours (a rejection is a reply; Withdrawn and the
+  `reopen_from` stages, Ghosted by default, aren't), or an interview round or offer. Moving it
+  to Applied yourself isn't;
 - **interviewed**: got past the CV: reached a stage beyond Applied that isn't closed (a screen
   counts), or has an interview round that wasn't cancelled;
 - **offers**: an offer recorded, or reached the Offer stage or a success stage;
@@ -127,7 +127,12 @@ def _outcome(
     signs = [
         ev.occurred_at
         for ev in moves
-        if ev.to_stage and (kinds.get(ev.to_stage) != "closed" or ev.to_stage not in yours)
+        if ev.to_stage
+        and (
+            # Moving it to Applied (or before) is yours; past it, or a rejection, is theirs.
+            (kinds.get(ev.to_stage) != "closed" and rank.get(ev.to_stage, -1) > applied_rank)
+            or (kinds.get(ev.to_stage) == "closed" and ev.to_stage not in yours)
+        )
     ]
     signs += [ev.occurred_at for ev in history if ev.kind in CONTACT_KINDS and ev.occurred_at <= now]
     signs = [t for t in signs if t >= added]

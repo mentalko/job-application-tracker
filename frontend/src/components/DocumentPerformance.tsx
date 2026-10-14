@@ -29,6 +29,7 @@ const KIND_LABEL: Record<string, string> = {
   cover_letter: "Cover letters",
   other: "Other documents",
 };
+const ONE: Record<string, string> = { cv: "CV", cover_letter: "cover letter", other: "document" };
 const NONE_LABEL: Record<string, string> = { cv: "No CV recorded", cover_letter: "No cover letter recorded" };
 
 const ROUTES = [
@@ -70,7 +71,7 @@ function rowsOf(kind: DocumentKindPerformance): Row[] {
       for (const v of d.versions)
         rows.push({ id: `version:${v.id}`, name: `${d.name} · ${v.label}`, tally: v, level: "version" });
   }
-  if (NONE_LABEL[kind.kind])
+  if (NONE_LABEL[kind.kind] && kind.none.sent > 0)
     rows.push({ id: "none", name: NONE_LABEL[kind.kind]!, tally: kind.none, level: "none" });
   return rows;
 }
@@ -280,11 +281,11 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
       <Card withBorder>
         <Group justify="space-between" mb="md" wrap="wrap" align="flex-start">
           <div>
-            <Title order={4}>Which CV works best</Title>
+            <Title order={4}>Which {ONE[current?.kind ?? "cv"] ?? "document"} works best</Title>
             <Text size="sm" c="dimmed" maw={720}>
-              Each version against the {data.applications} application{data.applications === 1 ? "" : "s"} you
-              sent with it (by the date they were added). <b>Screen or interview</b> is the one to watch: it's
-              the CV getting you through the door.
+              Your {data.applications} sent application{data.applications === 1 ? "" : "s"} (by the date they
+              were added), by which version went with each. <b>Screen or interview</b> is the one to watch:
+              it's what gets you through the door.
             </Text>
           </div>
           <Group gap="xs">
