@@ -67,7 +67,7 @@ up and what's gone quiet. Follow up, snooze or mark Ghosted in one click.
 
 **Recruiters, their calls and the roles they pitch.** Book a call with an agenda, note how it
 went, add the roles they mentioned, then apply for or pass on each. Every person has a page
-like this, and its **Timeline** button shows everything about them over time.
+like this, and its **Timeline** button shows their calls, pitches, applications and notes over time.
 
 ![A recruiter's page: where things stand with them, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
 
@@ -156,7 +156,7 @@ went, as numbers, a Sankey diagram and a table per person or agency.
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
-| 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about; a **Timeline** button on each person, company and agency opens everything about them | ✅ Available |
+| 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about; a **Timeline** button on each person, company and agency opens it filtered to them | ✅ Available |
 | 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |

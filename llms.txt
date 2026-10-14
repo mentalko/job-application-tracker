@@ -17,7 +17,7 @@ is built (see CHANGELOG.md). Available now: an Overview home page (counts, pipel
 attention, what's coming up, recent activity, a numbered "How it works"), a Timeline across
 every role, application, company, agency and person (by day or as lanes, one row per role
 from the call it came up on to its outcome; a Timeline button on each person, company and agency page opens
-`/timeline?about=contact:<id>&period=all`; `GET /api/v1/timeline`),
+`/timeline?about=contact:<id>&period=all` (or `company:`, `agency:`); `GET /api/v1/timeline`),
 a Next actions page at `/next-actions` (your own to-dos, on their own or about a person,
 company, agency, role or application, `/api/v1/todos`; follow-ups due, applications gone quiet,
 interviews coming up, one-click follow-up, snooze and Ghosted, waiting to hear back, replies to read, and chased / ghosted / not interested for people), person pages with booked and logged

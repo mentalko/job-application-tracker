@@ -123,6 +123,39 @@ describe("timeline", () => {
     const last = timelineCalls().at(-1)!;
     expect(last.searchParams.get("contact_id")).toBe("c2");
     expect(last.searchParams.get("since")).toBeTruthy();
+
+    // Lanes keep the person and the period; clearing About takes it out of the address.
+    fireEvent.click(screen.getByText("Lanes"));
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({ about: "contact:c2", period: 30, view: "lanes" }),
+    );
+    fireEvent.click(screen.getByDisplayValue("Riley Chen").parentElement!.querySelector("button")!);
+    await waitFor(() => expect(router.state.location.search).toEqual({ period: 30, view: "lanes" }));
+    expect(timelineCalls().at(-1)!.searchParams.get("contact_id")).toBeNull();
+  });
+
+  it("falls back to the defaults for values it doesn't know, and drops them on the next change", async () => {
+    const calls = mockApi({
+      "/api/v1/timeline": { items: ITEMS, now },
+      "/api/v1/companies": [],
+      "/api/v1/agencies": [],
+      "/api/v1/contacts": [{ id: "c2", name: "Riley Chen" }],
+      "/api/v1/health": {},
+    });
+    const router = renderTimeline("/timeline?period=foo&view=bar&about=contact%3Agone&keep=1");
+    await screen.findByText("Applied → Screen");
+    expect(screen.getByDisplayValue("Last 3 months")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Yesterday/ })).toBeInTheDocument(); // the list
+    // Someone who's gone filters nothing (once the people have loaded).
+    await waitFor(() => {
+      const last = new URL(
+        calls.filter((c) => c.path.startsWith("/api/v1/timeline")).at(-1)!.path,
+        "http://x",
+      );
+      expect(last.searchParams.get("contact_id")).toBeNull();
+    });
+    fireEvent.click(screen.getByText("Lanes"));
+    await waitFor(() => expect(router.state.location.search).toEqual({ keep: 1, view: "lanes" }));
   });
 
   it("leaves bookkeeping out until you ask for it", async () => {

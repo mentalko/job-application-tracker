@@ -420,22 +420,40 @@ function useTimelineSearch() {
       ? search.about
       : null;
   const set = (patch: { view?: string; period?: string; about?: string | null }) => {
-    const next: Record<string, unknown> = { ...search, ...patch };
-    if (next.view === "list") delete next.view;
-    if (next.period === "90") delete next.period;
-    else if (next.period !== undefined && next.period !== "all") next.period = Number(next.period);
-    if (!next.about) delete next.about;
+    // From the cleaned-up values, so a bad one in the address doesn't survive a change.
+    const merged = { view, period, about, ...patch };
+    const next: Record<string, unknown> = { ...search };
+    delete next.view;
+    delete next.period;
+    delete next.about;
+    if (merged.view === "lanes") next.view = "lanes";
+    if (merged.period !== "90") next.period = merged.period === "all" ? "all" : Number(merged.period);
+    if (merged.about) next.about = merged.about;
     void navigate({ to: ".", search: next as never, replace: true });
   };
   return { view, period, about, set };
 }
 
 export function TimelinePage() {
-  const { view, period, about, set } = useTimelineSearch();
+  const { view, period, about: asked, set } = useTimelineSearch();
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
   const { data: contacts } = useContacts();
+
+  const aboutOptions = [
+    {
+      group: "Companies",
+      items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
+    },
+    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
+    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+  ].filter((g) => g.items.length);
+  // Someone who's gone (deleted, or merged into someone else) filters nothing, rather than
+  // filtering everything away under an empty box.
+  const loaded = Boolean(companies && agencies && contacts);
+  const about =
+    asked && loaded && !aboutOptions.some((g) => g.items.some((i) => i.value === asked)) ? null : asked;
 
   const since = useMemo(
     () => (period === "all" ? undefined : dayjs().startOf("day").subtract(Number(period), "day").format()),
@@ -446,22 +464,14 @@ export function TimelinePage() {
   if (categories.length < CATEGORIES.length) filters.category = categories as TimelineCategory[];
   const nothingTicked = categories.length === 0;
   if (about) {
-    const [kind, id] = about.split(":") as [string, string];
+    const colon = about.indexOf(":");
+    const [kind, id] = [about.slice(0, colon), about.slice(colon + 1)];
     if (kind === "company") filters.company_id = id;
     if (kind === "agency") filters.agency_id = id;
     if (kind === "contact") filters.contact_id = id;
   }
   const { data, isLoading, isFetching } = useTimeline(filters, !nothingTicked);
   const items = data?.items ?? [];
-
-  const aboutOptions = [
-    {
-      group: "Companies",
-      items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
-    },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
-  ].filter((g) => g.items.length);
 
   return (
     <Stack>
@@ -475,7 +485,7 @@ export function TimelinePage() {
         </div>
         <SegmentedControl
           value={view}
-          onChange={(v) => set({ view: v })}
+          onChange={(v) => set({ about, view: v })}
           data={[
             { value: "list", label: "List" },
             { value: "lanes", label: "Lanes" },
@@ -489,7 +499,7 @@ export function TimelinePage() {
           label="Period"
           data={PERIODS}
           value={period}
-          onChange={(v) => set({ period: v ?? "90" })}
+          onChange={(v) => set({ about, period: v ?? "90" })}
           allowDeselect={false}
           w={170}
         />

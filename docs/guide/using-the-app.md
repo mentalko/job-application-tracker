@@ -153,9 +153,11 @@ Insights. It includes:
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
   offers, files and documents sent;
 - each interview at its own time;
-- notes on people, companies and agencies;
+- notes on people, companies, agencies and roles (a note on a role counts for its company and
+  the person who pitched it);
 - people you're waiting to hear back from, and people whose reply you still need to read;
-- companies, agencies and people being added (bookkeeping, hidden unless you ask for it).
+- companies, agencies, people and roles being added (bookkeeping, hidden unless you ask for
+  it; a role someone pitched shows as their pitch instead).
 
 Archived applications are included.
 
@@ -178,7 +180,8 @@ Archived applications are included.
 The view, period and *About* are in the page's address, so a bookmark or **Back** keeps them:
 `/timeline?view=lanes` opens straight into lanes, and the **Timeline** button on a person's,
 company's or agency's page opens `/timeline?about=contact:<id>&period=all` (or `company:`,
-`agency:`).
+`agency:`). Someone who's since been deleted or merged away is ignored, so the Timeline
+shows everything rather than nothing.
 
 ## Applications: list and board
 
@@ -313,8 +316,8 @@ Each **person** has a page, a dossier: their job title and where they work, how 
 them, your calls and meetings with them, the roles they've mentioned, every application they're part of (and as what),
 the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Timeline**,
 **Edit**, **Merge…** and **Delete** are at the top. **Timeline** opens the
-[Timeline](#timeline) on everything about them, over all time: calls, the roles they
-pitched, the applications and interviews they're on, and notes about them.
+[Timeline](#timeline) filtered to them, over all time: calls, the roles they pitched, the
+applications and interviews they're on, and notes about them or those roles.
 
 **Two records of the same person?** On the one to keep, press **Merge…** and pick the other
 (people with the same name, email address or LinkedIn profile are listed first). Everything
@@ -358,8 +361,8 @@ A list of companies with how many applications and how many need chasing. A **co
 page** has its applications, roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
 an *About* box, notes, links and files. **Edit** at the top renames it or sets its website,
-and **Timeline** opens the Timeline on everything about it, over all time; agencies have the
-same.
+and **Timeline** opens the Timeline filtered to it, over all time (its applications, roles,
+the people there and notes); agencies have the same.
 
 ## Interviews
 
