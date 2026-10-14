@@ -104,6 +104,10 @@ brackets are pull requests.
   get back to you (weekends don't count; backfilled from your applications' history) and says
   so on their tile, their page and Next actions, with *longer than usual* when you're waiting
   past it (#73).
+- **CV files become versions**: the Documents page finds CV files you attached to
+  applications (by name, or the same file on several; identical files are one) and makes each
+  a version recorded as sent with those applications, so Which CV works best can use them
+  (#74).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

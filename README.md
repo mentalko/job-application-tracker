@@ -117,7 +117,8 @@ went, as numbers, a Sankey diagram and a table per person or agency.
 
 **Which CV works best?** An A/B test of your CV and cover-letter versions: how many heard
 back, got a screen or interview, or an offer, with how sure each number is. Pick two to
-compare and it tells you whether the gap is likely real or could be chance.
+compare and it tells you whether the gap is likely real or could be chance. Attached your CV
+to applications as plain files? It spots identical ones and turns each into a version.
 
 ![CVs compared: each version's applications sent, heard back, screens or interviews with a 95% range, offers and typical reply time, and a comparison of two versions saying whether the gap could be chance](docs/screenshots/cv-insights.png)
 
@@ -173,7 +174,7 @@ compare and it tells you whether the gap is likely real or could be chance.
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
 | 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency | ✅ Available |
-| 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real) | ✅ Available |
+| 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real); CV files attached to applications become versions in one click | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
 | 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links | ✅ Available |

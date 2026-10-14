@@ -23,6 +23,7 @@ import {
   type FlowFilters,
 } from "../api/insightHooks";
 import { TOO_FEW, verdict } from "../utils/abtest";
+import { useCvFilesToSort } from "./CvFiles";
 
 const KIND_LABEL: Record<string, string> = {
   cv: "CVs",
@@ -288,6 +289,7 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
     route: route === "any" ? undefined : (route as FlowFilters["route"]),
   };
   const { data, isLoading, isError } = useDocumentPerformance(filters);
+  const toSort = useCvFilesToSort();
 
   if (isLoading) return <Loader />;
   if (isError || !data) return <Text c="red">Couldn't load how your CVs are doing.</Text>;
@@ -297,6 +299,19 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
 
   return (
     <Stack>
+      {toSort > 0 && (
+        <Alert color="blue" variant="light">
+          <Text size="sm">
+            {toSort} CV file{toSort === 1 ? "" : "s"} attached to your applications{" "}
+            {toSort === 1 ? "isn't" : "aren't"} a version yet, so {toSort === 1 ? "it isn't" : "they aren't"}{" "}
+            compared here.{" "}
+            <Anchor component={Link} to="/documents" size="sm">
+              Sort them out on Documents
+            </Anchor>
+            .
+          </Text>
+        </Alert>
+      )}
       <Card withBorder>
         <Group justify="space-between" mb="md" wrap="wrap" align="flex-start">
           <div>

@@ -366,6 +366,48 @@ class DocumentDetail(DocumentOut):
     used_in: list[DocumentUsage]
 
 
+class CvFileApplication(BaseModel):
+    id: str
+    company_name: str
+    role_title: str
+    has_it: bool  # already recorded as sent with the matching version
+
+
+class CvFileVersion(BaseModel):
+    id: str
+    label: str
+    document_id: str
+    document_name: str
+
+
+class CvFile(BaseModel):
+    """A file attached to applications that looks like a CV: one per distinct file (by content)."""
+
+    sha256: str
+    name: str
+    size: int
+    content_type: str | None
+    applications: list[CvFileApplication]
+    version: CvFileVersion | None  # a document version with the very same file, if there is one
+
+
+class CvFileAdopt(In):
+    """Make a file a version of a document (an existing one, or a new one named here), or, when
+    it already is one, record it as sent with the applications it's attached to."""
+
+    sha256: str = Field(min_length=64, max_length=64)
+    document_id: str | None = None
+    document_name: str | None = Field(None, max_length=200)
+    kind: DocumentKind = "cv"
+    label: str | None = Field(None, max_length=100)
+
+
+class CvFileAdopted(BaseModel):
+    document_id: str
+    version_id: str
+    recorded: int  # applications it was newly recorded as sent with
+
+
 class SentDocumentIn(In):
     document_version_id: str
     sent_on: date | None = None

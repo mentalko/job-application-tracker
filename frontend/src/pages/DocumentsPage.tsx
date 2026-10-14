@@ -29,6 +29,7 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { CvFilesCard } from "../components/CvFiles";
 import {
   KIND_LABEL,
   useAddVersion,
@@ -279,6 +280,7 @@ export function DocumentsPage() {
           New document
         </Button>
       </Group>
+      <CvFilesCard />
       {isLoading || !documents ? (
         <Loader />
       ) : documents.length ? (

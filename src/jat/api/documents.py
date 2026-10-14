@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import contextlib
 import mimetypes
+import re
+import unicodedata
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
 from sqlalchemy import func, select
@@ -317,3 +319,179 @@ def unsend_document(app_id: str, link_id: str, session: SessionDep):
     session.delete(link)
     session.flush()
     return Response(status_code=204)
+
+
+# Files on applications that look like a CV: by name, or the same file on two or more.
+CV_NAME = re.compile(r"(?<![a-z])(cv|resume|résumé|curriculum)(?![a-z])", re.IGNORECASE)
+CV_TYPES = frozenset(
+    {
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+)
+
+
+def _is_cv_type(att: Attachment) -> bool:
+    """PDF or Word, by its stored type or (when there isn't one) its name."""
+    kind = att.content_type or mimetypes.guess_type(att.original_name)[0]
+    return kind in CV_TYPES
+
+
+def _looks_like_cv(name: str) -> bool:
+    return bool(CV_NAME.search(unicodedata.normalize("NFC", name)))
+
+
+def _cv_files(session: Session) -> list[S.CvFile]:
+    rows = session.execute(
+        select(Attachment, Application.id, Company.name, Role.title)
+        .join(Application, (Attachment.entity_type == "application") & (Attachment.entity_id == Application.id))
+        .join(Role, Application.role_id == Role.id)
+        .join(Company, Role.company_id == Company.id)
+        .order_by(Attachment.created_at)
+    ).all()
+    groups: dict[str, list] = {}
+    for att, app_id, company, title in rows:
+        if _is_cv_type(att):
+            groups.setdefault(att.sha256, []).append((att, app_id, company, title))
+    # Every version with each file (the same file can be a version of two documents); the newest
+    # is the one to record.
+    versions: dict[str, list[tuple[DocumentVersion, Document]]] = {}
+    for v, d, sha in session.execute(
+        select(DocumentVersion, Document, Attachment.sha256)
+        .join(Document, DocumentVersion.document_id == Document.id)
+        .join(Attachment, DocumentVersion.attachment_id == Attachment.id)
+        .order_by(DocumentVersion.created_at)
+    ):
+        versions.setdefault(sha, []).append((v, d))
+    sent = set(session.execute(select(ApplicationDocument.application_id, ApplicationDocument.document_version_id)))
+    out = []
+    for sha, items in groups.items():
+        apps = {app_id: (company, title) for _, app_id, company, title in items}
+        first = items[0][0]
+        if len(apps) < 2 and not any(_looks_like_cv(att.original_name) for att, *_ in items):
+            continue
+        matches = versions.get(sha, [])
+        newest = matches[-1] if matches else None
+        out.append(
+            S.CvFile(
+                sha256=sha,
+                name=first.original_name,
+                size=first.size,
+                content_type=first.content_type,
+                applications=[
+                    S.CvFileApplication(
+                        id=app_id,
+                        company_name=company,
+                        role_title=title,
+                        has_it=any((app_id, v.id) in sent for v, _ in matches),
+                    )
+                    for app_id, (company, title) in apps.items()
+                ],
+                version=S.CvFileVersion(
+                    id=newest[0].id, label=newest[0].label, document_id=newest[1].id, document_name=newest[1].name
+                )
+                if newest
+                else None,
+            )
+        )
+    # Most to do first: files not yet versions, then the most applications.
+    out.sort(key=lambda f: (f.version is not None, -len(f.applications), f.name.lower()))
+    return [f for f in out if f.version is None or not all(a.has_it for a in f.applications)]
+
+
+@router.get("/cv-files", response_model=list[S.CvFile])
+def cv_files(session: SessionDep):
+    """CV files attached to applications that aren't recorded as document versions sent with them
+    yet: one per distinct file, named like a CV or on two or more applications."""
+    return _cv_files(session)
+
+
+@router.post("/cv-files/adopt", response_model=S.CvFileAdopted, status_code=201)
+def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
+    """Make the file a version of a document (copying the file, so the version keeps it), unless
+    it already is one, and record that version as sent with every application it's attached to,
+    on the day you applied (or, without one, the day you attached it). When the file already is a
+    version, `document_id`, `document_name` and `label` are ignored."""
+    found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
+    if found is None:
+        raise HTTPException(404, "No CV file like that on your applications (or it's all recorded already).")
+    store = FileStore(request.app.state.jat.data_dir)
+    stored = None
+    try:
+        if found.version is not None:
+            version = session.get(DocumentVersion, found.version.id)
+            doc = session.get(Document, version.document_id)
+        else:
+            if body.document_id:
+                doc = get_or_404(session, Document, body.document_id)
+            elif body.document_name and body.document_name.strip():
+                doc = Document(kind=body.kind, name=body.document_name.strip())
+                session.add(doc)
+                session.flush()
+            else:
+                raise HTTPException(422, "Pick a document to add it to, or name a new one.")
+            src = session.scalar(
+                select(Attachment).where(
+                    Attachment.sha256 == body.sha256,
+                    Attachment.entity_type == "application",
+                    Attachment.entity_id.in_([a.id for a in found.applications]),
+                )
+            )
+            try:
+                with store.resolve(src.path).open("rb") as f:
+                    stored = store.save(f, src.original_name)
+            except (FileError, OSError) as exc:
+                raise HTTPException(409, f"{src.original_name} is missing from your data folder.") from exc
+            att = Attachment(
+                id=stored.id,
+                entity_type="document",
+                entity_id=doc.id,
+                path=stored.path,
+                original_name=src.original_name,
+                content_type=src.content_type,
+                size=stored.size,
+                sha256=stored.sha256,
+            )
+            session.add(att)
+            label = (body.label or "").strip() or src.original_name.rsplit(".", 1)[0][:100]
+            version = DocumentVersion(document_id=doc.id, label=label, attachment_id=att.id)
+            session.add(version)
+            doc.updated_at = utcnow()
+            session.flush()
+        recorded = 0
+        kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
+        for a in found.applications:
+            if a.has_it:
+                continue
+            attached = session.scalar(
+                select(func.min(Attachment.created_at)).where(
+                    Attachment.sha256 == body.sha256,
+                    Attachment.entity_type == "application",
+                    Attachment.entity_id == a.id,
+                )
+            )
+            application = session.get(Application, a.id)
+            session.add(
+                ApplicationDocument(
+                    application_id=a.id,
+                    document_version_id=version.id,
+                    sent_on=application.applied_on or (attached.astimezone().date() if attached else None),
+                )
+            )
+            svc.log_activity(
+                session,
+                application,
+                "file",
+                summary=f"{kind} sent: {doc.name} {version.label}",
+                data={"document_version_id": version.id},
+            )
+            recorded += 1
+        session.flush()
+        session.commit()  # now, so a failed save can take its copied file with it
+    except BaseException:
+        session.rollback()
+        if stored is not None:
+            store.delete(stored.path)
+        raise
+    return S.CvFileAdopted(document_id=doc.id, version_id=version.id, recorded=recorded)

@@ -577,6 +577,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cv-files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cv Files
+         * @description CV files attached to applications that aren't recorded as document versions sent with them
+         *     yet: one per distinct file, named like a CV or on two or more applications.
+         */
+        get: operations["cv_files_api_v1_cv_files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cv-files/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adopt Cv File
+         * @description Make the file a version of a document (copying the file, so the version keeps it), unless
+         *     it already is one, and record that version as sent with every application it's attached to,
+         *     on the day you applied (or, without one, the day you attached it). When the file already is a
+         *     version, `document_id`, `document_name` and `label` are ignored.
+         */
+        post: operations["adopt_cv_file_api_v1_cv_files_adopt_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents": {
         parameters: {
             query?: never;
@@ -1875,6 +1919,75 @@ export interface components {
             /** People Talked To */
             people_talked_to: number;
             total: components["schemas"]["ConversationTally"];
+        };
+        /**
+         * CvFile
+         * @description A file attached to applications that looks like a CV: one per distinct file (by content).
+         */
+        CvFile: {
+            /** Applications */
+            applications: components["schemas"]["CvFileApplication"][];
+            /** Content Type */
+            content_type: string | null;
+            /** Name */
+            name: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size */
+            size: number;
+            version: components["schemas"]["CvFileVersion"] | null;
+        };
+        /**
+         * CvFileAdopt
+         * @description Make a file a version of a document (an existing one, or a new one named here), or, when
+         *     it already is one, record it as sent with the applications it's attached to.
+         */
+        CvFileAdopt: {
+            /** Document Id */
+            document_id?: string | null;
+            /** Document Name */
+            document_name?: string | null;
+            /**
+             * Kind
+             * @default cv
+             * @enum {string}
+             */
+            kind: "cv" | "cover_letter" | "other";
+            /** Label */
+            label?: string | null;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** CvFileAdopted */
+        CvFileAdopted: {
+            /** Document Id */
+            document_id: string;
+            /** Recorded */
+            recorded: number;
+            /** Version Id */
+            version_id: string;
+        };
+        /** CvFileApplication */
+        CvFileApplication: {
+            /** Company Name */
+            company_name: string;
+            /** Has It */
+            has_it: boolean;
+            /** Id */
+            id: string;
+            /** Role Title */
+            role_title: string;
+        };
+        /** CvFileVersion */
+        CvFileVersion: {
+            /** Document Id */
+            document_id: string;
+            /** Document Name */
+            document_name: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
         };
         /** DocumentDetail */
         DocumentDetail: {
@@ -4920,6 +5033,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cv_files_api_v1_cv_files_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CvFile"][];
+                };
+            };
+        };
+    };
+    adopt_cv_file_api_v1_cv_files_adopt_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CvFileAdopt"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CvFileAdopted"];
                 };
             };
             /** @description Validation Error */

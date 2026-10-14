@@ -2347,6 +2347,202 @@
         "title": "ConversationsOut",
         "type": "object"
       },
+      "CvFile": {
+        "description": "A file attached to applications that looks like a CV: one per distinct file (by content).",
+        "properties": {
+          "applications": {
+            "items": {
+              "$ref": "#/components/schemas/CvFileApplication"
+            },
+            "title": "Applications",
+            "type": "array"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CvFileVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "sha256",
+          "name",
+          "size",
+          "content_type",
+          "applications",
+          "version"
+        ],
+        "title": "CvFile",
+        "type": "object"
+      },
+      "CvFileAdopt": {
+        "additionalProperties": false,
+        "description": "Make a file a version of a document (an existing one, or a new one named here), or, when\nit already is one, record it as sent with the applications it's attached to.",
+        "properties": {
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "document_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Name"
+          },
+          "kind": {
+            "default": "cv",
+            "enum": [
+              "cv",
+              "cover_letter",
+              "other"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "sha256": {
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sha256"
+        ],
+        "title": "CvFileAdopt",
+        "type": "object"
+      },
+      "CvFileAdopted": {
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "recorded": {
+            "title": "Recorded",
+            "type": "integer"
+          },
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "version_id",
+          "recorded"
+        ],
+        "title": "CvFileAdopted",
+        "type": "object"
+      },
+      "CvFileApplication": {
+        "properties": {
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "has_it": {
+            "title": "Has It",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company_name",
+          "role_title",
+          "has_it"
+        ],
+        "title": "CvFileApplication",
+        "type": "object"
+      },
+      "CvFileVersion": {
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "document_name": {
+            "title": "Document Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "document_id",
+          "document_name"
+        ],
+        "title": "CvFileVersion",
+        "type": "object"
+      },
       "DocumentDetail": {
         "properties": {
           "created_at": {
@@ -10400,6 +10596,74 @@
         "summary": "Contact Summary",
         "tags": [
           "summaries"
+        ]
+      }
+    },
+    "/api/v1/cv-files": {
+      "get": {
+        "description": "CV files attached to applications that aren't recorded as document versions sent with them\nyet: one per distinct file, named like a CV or on two or more applications.",
+        "operationId": "cv_files_api_v1_cv_files_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CvFile"
+                  },
+                  "title": "Response Cv Files Api V1 Cv Files Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Cv Files",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/cv-files/adopt": {
+      "post": {
+        "description": "Make the file a version of a document (copying the file, so the version keeps it), unless\nit already is one, and record that version as sent with every application it's attached to,\non the day you applied (or, without one, the day you attached it). When the file already is a\nversion, `document_id`, `document_name` and `label` are ignored.",
+        "operationId": "adopt_cv_file_api_v1_cv_files_adopt_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvFileAdopt"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvFileAdopted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Adopt Cv File",
+        "tags": [
+          "documents"
         ]
       }
     },
