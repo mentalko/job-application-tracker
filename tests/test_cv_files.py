@@ -159,3 +159,70 @@ def test_a_failed_adopt_leaves_nothing_behind(client, seeded, app, monkeypatch):
         client.post("/api/v1/cv-files/adopt", json={"sha256": found["sha256"], "document_name": "CV"})
     assert client.get("/api/v1/documents").json() == []
     assert sorted(p for p in files.rglob("*") if p.is_file()) == before
+
+
+def _attach_to(client, entity_type, entity_id, name, data):
+    r = client.post(
+        "/api/v1/attachments",
+        files={"file": (name, data, "application/pdf")},
+        data={"entity_type": entity_type, "entity_id": entity_id},
+    )
+    assert r.status_code == 201, r.text
+
+
+def test_cvs_on_roles_and_people_count_for_their_applications(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    company = seeded["company"]["id"]
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "Platform Engineer", "contact_id": alex})[
+        "id"
+    ]
+    via_alex = post(
+        client,
+        "/api/v1/applications",
+        {"role_id": role, "stage": "applied", "route": "agency", "recruiter_id": alex},
+    )["id"]
+    # Another of Alex's applications already has a CV recorded: the one sent to Alex doesn't claim it.
+    other_role = post(client, "/api/v1/roles", {"company_id": company, "title": "SRE"})["id"]
+    recorded = post(
+        client,
+        "/api/v1/applications",
+        {"role_id": other_role, "stage": "applied", "route": "agency", "recruiter_id": alex},
+    )["id"]
+    _attach(client, recorded, "Old CV.pdf", OTHER_CV)
+    sha_old = next(f["sha256"] for f in client.get("/api/v1/cv-files").json())
+    client.post("/api/v1/cv-files/adopt", json={"sha256": sha_old, "document_name": "Backend CV", "label": "v1"})
+
+    _attach_to(client, "contact", alex, "CV for Alex.pdf", CV)
+    _attach_to(client, "role", role, "Tailored CV.pdf", AD)  # a CV on the role
+    found = {f["name"]: f for f in client.get("/api/v1/cv-files").json()}
+    sent_to_alex = found["CV for Alex.pdf"]
+    assert [(x["kind"], x["name"]) for x in sent_to_alex["sources"]] == [("contact", "Alex Recruiter")]
+    assert [a["id"] for a in sent_to_alex["applications"]] == [via_alex]
+    on_role = found["Tailored CV.pdf"]
+    assert [(x["kind"], x["name"]) for x in on_role["sources"]] == [("role", "Platform Engineer at Contoso")]
+    assert [a["id"] for a in on_role["applications"]] == [via_alex]
+
+    # Choose the applications: none here, so it's a version recorded nowhere yet.
+    r = client.post(
+        "/api/v1/cv-files/adopt",
+        json={"sha256": sent_to_alex["sha256"], "document_name": "Backend CV", "label": "v2", "application_ids": []},
+    )
+    assert r.status_code == 201, r.text
+    assert r.json()["recorded"] == 0
+    # It's still offered for that application, now as a version to record.
+    again = next(f for f in client.get("/api/v1/cv-files").json() if f["sha256"] == sent_to_alex["sha256"])
+    assert again["version"]["label"] == "v2"
+    bad = client.post("/api/v1/cv-files/adopt", json={"sha256": again["sha256"], "application_ids": [recorded]})
+    assert bad.status_code == 422
+    r = client.post("/api/v1/cv-files/adopt", json={"sha256": again["sha256"], "application_ids": [via_alex]})
+    assert r.json()["recorded"] == 1
+    # Now via_alex has a CV, so the role's file no longer claims it.
+    on_role = next(f for f in client.get("/api/v1/cv-files").json() if f["name"] == "Tailored CV.pdf")
+    assert on_role["applications"] == []
+
+
+def test_a_cv_sent_to_a_recruiter_before_any_application(client, seeded):
+    sam = post(client, "/api/v1/contacts", {"name": "Sam Patel"})["id"]
+    _attach_to(client, "contact", sam, "Resume.pdf", CV)
+    [found] = client.get("/api/v1/cv-files").json()
+    assert found["applications"] == [] and found["sources"][0]["name"] == "Sam Patel"
