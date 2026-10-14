@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import contextlib
 import mimetypes
+import re
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
 from sqlalchemy import func, select
@@ -317,3 +318,152 @@ def unsend_document(app_id: str, link_id: str, session: SessionDep):
     session.delete(link)
     session.flush()
     return Response(status_code=204)
+
+
+# Files on applications that look like a CV: by name, or the same file on two or more.
+CV_NAME = re.compile(r"\b(cv|resume|résumé|curriculum)\b|cv[._ -]|_cv\b", re.IGNORECASE)
+CV_TYPES = ("application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument")
+
+
+def _cv_files(session: Session) -> list[S.CvFile]:
+    rows = session.execute(
+        select(Attachment, Application.id, Company.name, Role.title)
+        .join(Application, (Attachment.entity_type == "application") & (Attachment.entity_id == Application.id))
+        .join(Role, Application.role_id == Role.id)
+        .join(Company, Role.company_id == Company.id)
+        .order_by(Attachment.created_at)
+    ).all()
+    groups: dict[str, list] = {}
+    for att, app_id, company, title in rows:
+        if att.content_type and not att.content_type.startswith(CV_TYPES):
+            continue
+        groups.setdefault(att.sha256, []).append((att, app_id, company, title))
+    versions = {
+        sha: (v, d)
+        for v, d, sha in session.execute(
+            select(DocumentVersion, Document, Attachment.sha256)
+            .join(Document, DocumentVersion.document_id == Document.id)
+            .join(Attachment, DocumentVersion.attachment_id == Attachment.id)
+            .order_by(DocumentVersion.created_at)
+        )
+    }
+    sent = set(session.execute(select(ApplicationDocument.application_id, ApplicationDocument.document_version_id)))
+    out = []
+    for sha, items in groups.items():
+        apps = {app_id: (company, title) for _, app_id, company, title in items}
+        first = items[0][0]
+        if len(apps) < 2 and not CV_NAME.search(first.original_name):
+            continue
+        match = versions.get(sha)
+        out.append(
+            S.CvFile(
+                sha256=sha,
+                name=first.original_name,
+                size=first.size,
+                content_type=first.content_type,
+                applications=[
+                    S.CvFileApplication(
+                        id=app_id,
+                        company_name=company,
+                        role_title=title,
+                        has_it=bool(match and (app_id, match[0].id) in sent),
+                    )
+                    for app_id, (company, title) in apps.items()
+                ],
+                version=S.CvFileVersion(
+                    id=match[0].id, label=match[0].label, document_id=match[1].id, document_name=match[1].name
+                )
+                if match
+                else None,
+            )
+        )
+    # Most to do first: files not yet versions, then the most applications.
+    out.sort(key=lambda f: (f.version is not None, -len(f.applications), f.name.lower()))
+    return [f for f in out if f.version is None or not all(a.has_it for a in f.applications)]
+
+
+@router.get("/cv-files", response_model=list[S.CvFile])
+def cv_files(session: SessionDep):
+    """CV files attached to applications that aren't recorded as document versions sent with them
+    yet: one per distinct file, named like a CV or on two or more applications."""
+    return _cv_files(session)
+
+
+@router.post("/cv-files/adopt", response_model=S.CvFileAdopted, status_code=201)
+def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
+    """Make the file a version of a document (copying the file, so the version keeps it), unless
+    it already is one, and record that version as sent with every application it's attached to."""
+    found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
+    if found is None:
+        raise HTTPException(404, "No CV file like that on your applications (or it's all recorded already).")
+    store = FileStore(request.app.state.jat.data_dir)
+    stored = None
+    try:
+        if found.version is not None:
+            version = session.get(DocumentVersion, found.version.id)
+            doc = session.get(Document, version.document_id)
+        else:
+            if body.document_id:
+                doc = get_or_404(session, Document, body.document_id)
+            elif body.document_name and body.document_name.strip():
+                doc = Document(kind=body.kind, name=body.document_name.strip())
+                session.add(doc)
+                session.flush()
+            else:
+                raise HTTPException(422, "Pick a document to add it to, or name a new one.")
+            src = session.scalar(
+                select(Attachment).where(Attachment.sha256 == body.sha256, Attachment.entity_type == "application")
+            )
+            with store.resolve(src.path).open("rb") as f:
+                stored = store.save(f, src.original_name)
+            att = Attachment(
+                id=stored.id,
+                entity_type="document",
+                entity_id=doc.id,
+                path=stored.path,
+                original_name=src.original_name,
+                content_type=src.content_type,
+                size=stored.size,
+                sha256=stored.sha256,
+            )
+            session.add(att)
+            label = (body.label or "").strip() or src.original_name.rsplit(".", 1)[0][:100]
+            version = DocumentVersion(document_id=doc.id, label=label, attachment_id=att.id)
+            session.add(version)
+            doc.updated_at = utcnow()
+            session.flush()
+        recorded = 0
+        kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
+        for a in found.applications:
+            if a.has_it:
+                continue
+            attached = session.scalar(
+                select(Attachment.created_at).where(
+                    Attachment.sha256 == body.sha256,
+                    Attachment.entity_type == "application",
+                    Attachment.entity_id == a.id,
+                )
+            )
+            session.add(
+                ApplicationDocument(
+                    application_id=a.id,
+                    document_version_id=version.id,
+                    sent_on=attached.astimezone().date() if attached else None,
+                )
+            )
+            svc.log_activity(
+                session,
+                session.get(Application, a.id),
+                "file",
+                summary=f"{kind} sent: {doc.name} {version.label}",
+                data={"document_version_id": version.id},
+            )
+            recorded += 1
+        session.flush()
+        session.commit()  # now, so a failed save can take its copied file with it
+    except BaseException:
+        session.rollback()
+        if stored is not None:
+            store.delete(stored.path)
+        raise
+    return S.CvFileAdopted(document_id=doc.id, version_id=version.id, recorded=recorded)
