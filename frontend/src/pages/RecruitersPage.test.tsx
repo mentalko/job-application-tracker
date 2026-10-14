@@ -180,5 +180,9 @@ describe("recruiters", () => {
     expect(screen.getByText("Alex Morgan")).toBeInTheDocument();
     expect(screen.getByText("Contoso")).toBeInTheDocument();
     expect(screen.getByText("Archived")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Timeline for Northwind Talent" })).toHaveAttribute(
+      "href",
+      "/timeline?about=agency%3Aag1&period=all",
+    );
   });
 });

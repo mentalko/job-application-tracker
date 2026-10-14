@@ -32,3 +32,6 @@ if (!("fonts" in document)) {
   });
 }
 window.scrollTo = () => {};
+
+// jsdom has no scrollIntoView; Mantine's Combobox scrolls the selected option into view.
+Element.prototype.scrollIntoView = Element.prototype.scrollIntoView ?? (() => {});

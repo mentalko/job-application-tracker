@@ -28,6 +28,7 @@ import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
 import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
+import { TimelineButton } from "../components/TimelineButton";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { PersonChase, PersonClosed } from "../components/PersonChase";
@@ -83,6 +84,7 @@ export function PersonPage() {
             toRead={contact.reply_to_read_since}
           />
           {!contact.closed_as && <PersonChase contact={contact} />}
+          <TimelineButton kind="contact" id={contact.id} name={contact.name} />
           <Button
             variant="default"
             size="xs"

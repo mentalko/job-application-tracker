@@ -21,6 +21,7 @@ import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { TimelineButton } from "../components/TimelineButton";
 import { AttachmentsCard } from "../components/Attachments";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
@@ -92,6 +93,7 @@ export function CompanyPage() {
           )}
         </Group>
         <Group gap="xs">
+          <TimelineButton kind="company" id={company.id} name={company.name} />
           <Button
             variant="default"
             size="xs"

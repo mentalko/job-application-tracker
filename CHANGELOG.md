@@ -87,6 +87,11 @@ brackets are pull requests.
   pitched roles, applications, interviews, notes, links, files and to-dos move over), with a
   nudge when someone looks like a duplicate; and one person per email address and LinkedIn
   profile (#68).
+- **A timeline per person**: a **Timeline** button on each person, company and agency page
+  opens the Timeline filtered to them, over all time (calls, the roles they pitched, the
+  applications and interviews they're on, notes); the Timeline keeps its view, period and
+  *About* in the address. Notes on a role now show for its company and the person who pitched
+  it (#70).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

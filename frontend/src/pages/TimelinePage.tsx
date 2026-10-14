@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconTimeline } from "@tabler/icons-react";
-import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Fragment, useMemo, useState } from "react";
 
@@ -407,16 +407,53 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   );
 }
 
-export function TimelinePage() {
-  // ?view=lanes opens straight into lanes (handy for a bookmark).
+/** The view, period and "about" filter live in the URL, so a person's page can link straight to
+ * their timeline (?about=contact:<id>&period=all), and a bookmark or Back keeps them. */
+function useTimelineSearch() {
   const search: Record<string, unknown> = useRouterState({ select: (s) => s.location.search });
-  const [view, setView] = useState<"list" | "lanes">(search.view === "lanes" ? "lanes" : "list");
-  const [period, setPeriod] = useState("90");
+  const navigate = useNavigate();
+  const view: "list" | "lanes" = search.view === "lanes" ? "lanes" : "list";
+  // The router reads ?period=30 as a number.
+  const period = PERIODS.some((p) => p.value === String(search.period)) ? String(search.period) : "90";
+  const about =
+    typeof search.about === "string" && /^(company|agency|contact):./.test(search.about)
+      ? search.about
+      : null;
+  const set = (patch: { view?: string; period?: string; about?: string | null }) => {
+    // From the cleaned-up values, so a bad one in the address doesn't survive a change.
+    const merged = { view, period, about, ...patch };
+    const next: Record<string, unknown> = { ...search };
+    delete next.view;
+    delete next.period;
+    delete next.about;
+    if (merged.view === "lanes") next.view = "lanes";
+    if (merged.period !== "90") next.period = merged.period === "all" ? "all" : Number(merged.period);
+    if (merged.about) next.about = merged.about;
+    void navigate({ to: ".", search: next as never, replace: true });
+  };
+  return { view, period, about, set };
+}
+
+export function TimelinePage() {
+  const { view, period, about: asked, set } = useTimelineSearch();
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
-  const [about, setAbout] = useState<string | null>(null);
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
   const { data: contacts } = useContacts();
+
+  const aboutOptions = [
+    {
+      group: "Companies",
+      items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
+    },
+    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
+    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+  ].filter((g) => g.items.length);
+  // Someone who's gone (deleted, or merged into someone else) filters nothing, rather than
+  // filtering everything away under an empty box.
+  const loaded = Boolean(companies && agencies && contacts);
+  const about =
+    asked && loaded && !aboutOptions.some((g) => g.items.some((i) => i.value === asked)) ? null : asked;
 
   const since = useMemo(
     () => (period === "all" ? undefined : dayjs().startOf("day").subtract(Number(period), "day").format()),
@@ -427,22 +464,14 @@ export function TimelinePage() {
   if (categories.length < CATEGORIES.length) filters.category = categories as TimelineCategory[];
   const nothingTicked = categories.length === 0;
   if (about) {
-    const [kind, id] = about.split(":") as [string, string];
+    const colon = about.indexOf(":");
+    const [kind, id] = [about.slice(0, colon), about.slice(colon + 1)];
     if (kind === "company") filters.company_id = id;
     if (kind === "agency") filters.agency_id = id;
     if (kind === "contact") filters.contact_id = id;
   }
   const { data, isLoading, isFetching } = useTimeline(filters, !nothingTicked);
   const items = data?.items ?? [];
-
-  const aboutOptions = [
-    {
-      group: "Companies",
-      items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
-    },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
-  ].filter((g) => g.items.length);
 
   return (
     <Stack>
@@ -456,7 +485,7 @@ export function TimelinePage() {
         </div>
         <SegmentedControl
           value={view}
-          onChange={(v) => setView(v as "list" | "lanes")}
+          onChange={(v) => set({ about, view: v })}
           data={[
             { value: "list", label: "List" },
             { value: "lanes", label: "Lanes" },
@@ -470,7 +499,7 @@ export function TimelinePage() {
           label="Period"
           data={PERIODS}
           value={period}
-          onChange={(v) => setPeriod(v ?? "90")}
+          onChange={(v) => set({ about, period: v ?? "90" })}
           allowDeselect={false}
           w={170}
         />
@@ -479,7 +508,7 @@ export function TimelinePage() {
           placeholder="Everyone and everything"
           data={aboutOptions}
           value={about}
-          onChange={setAbout}
+          onChange={(v) => set({ about: v })}
           searchable
           clearable
           w={260}
