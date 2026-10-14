@@ -17,7 +17,11 @@ function readDismissed(): Set<string> {
 }
 
 const kb = (size: number) =>
-  size < 1024 * 1024 ? `${Math.max(1, Math.round(size / 1024))} KB` : `${(size / 1048576).toFixed(1)} MB`;
+  size < 1024
+    ? `${size} B`
+    : size < 1024 * 1024
+      ? `${Math.round(size / 1024)} KB`
+      : `${(size / 1048576).toFixed(1)} MB`;
 const stem = (name: string) => name.replace(/\.[^.]+$/, "").slice(0, 100);
 
 /** Make a file a version: of an existing document, or a new one. */
