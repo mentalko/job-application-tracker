@@ -169,3 +169,21 @@ def test_a_call_carries_the_roles_that_came_up_on_it(client, seeded):
         {"id": roles[0]["id"], "title": "Platform Engineer", "company_name": "Contoso"},
         {"id": roles[1]["id"], "title": "SRE", "company_name": "Contoso"},
     ]
+
+
+def test_a_note_on_a_role_counts_for_its_company_pitcher_and_agency(client, seeded):
+    alex, contoso, northwind = seeded["recruiter"]["id"], seeded["company"]["id"], seeded["agency"]["id"]
+    pitched = post(client, "/api/v1/roles", {"company_id": contoso, "title": "Platform Engineer", "contact_id": alex})
+    note = post(
+        client, "/api/v1/notes", {"title": "What they said", "body": "Team of six", "links": [f"role:{pitched['id']}"]}
+    )
+    for params in ({"company_id": contoso}, {"contact_id": alex}, {"agency_id": northwind}):
+        [item] = [i for i in _timeline(client, **params) if i["id"] == f"note:{note['id']}"]
+        assert item["role_id"] == pitched["id"]
+
+
+def test_a_role_you_added_yourself_is_bookkeeping(client, seeded):
+    role = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "SRE"})
+    added = [i for i in _timeline(client, category=["added"]) if i["role_id"] == role["id"]]
+    assert [i["title"] for i in added] == ["Added role SRE at Contoso"]
+    assert not [i for i in _timeline(client, category=["role"]) if i["role_id"] == role["id"]]

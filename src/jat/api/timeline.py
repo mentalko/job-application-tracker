@@ -286,7 +286,8 @@ def timeline(
             items.append(about_contact(c, **fields))
 
     # Roles before applying: who pitched them, and the ones you passed on.
-    for r in session.scalars(select(Role).where((Role.contact_id.is_not(None)) | (Role.decision.is_not(None)))):
+    roles = {r.id: r for r in session.scalars(select(Role))}
+    for r in roles.values():
         co = companies.get(r.company_id)
         who = contacts.get(r.contact_id or "")
         base = dict(
@@ -310,6 +311,17 @@ def timeline(
                     category="role",
                     title=f"{who.name} pitched {r.title} at {co.name if co else '?'}",
                     detail=r.description,
+                    **base,
+                )
+            )
+        else:  # added by you (from a company page, say): bookkeeping, like adding a company
+            items.append(
+                TimelineItem(
+                    id=f"role-added:{r.id}",
+                    at=r.created_at,
+                    all_day=False,
+                    category="added",
+                    title=f"Added role {r.title} at {co.name if co else '?'}",
                     **base,
                 )
             )
@@ -413,6 +425,15 @@ def timeline(
         who = [p for cid in kinds["contact"] if (p := person(cid))]
         co = next((companies[x] for x in kinds["company"] if x in companies), None)
         ag = next((agencies[x] for x in kinds["agency"] if x in agencies), None)
+        # A note on a role counts for its company and the person who pitched it.
+        role = next((roles[x] for x in kinds["role"] if x in roles), None)
+        if role is not None:
+            co = co or companies.get(role.company_id)
+            pitcher = person(role.contact_id) if role.contact_id else None
+            if pitcher and all(p.id != pitcher.id for p in who):
+                who.append(pitcher)
+            if pitcher and ag is None:
+                ag = agencies.get(contacts[pitcher.id].agency_id or "")
         if co is None and ag is None and who:  # a note on a person counts for their company or agency
             first = contacts[who[0].id]
             co, ag = companies.get(first.company_id or ""), agencies.get(first.agency_id or "")
@@ -423,6 +444,8 @@ def timeline(
                 all_day=False,
                 category="note",
                 title=f"Note: {n.title}",
+                role_id=role.id if role else None,
+                role_title=role.title if role else None,
                 company_id=co.id if co else None,
                 company_name=co.name if co else None,
                 agency_id=ag.id if ag else None,
