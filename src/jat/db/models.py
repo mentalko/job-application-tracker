@@ -299,6 +299,20 @@ class Link(IdMixin, Base):
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
 
 
+class Reply(IdMixin, Base):
+    """Someone got back to you: from the day you started waiting to the day they replied. Kept so
+    the app can say how long a person usually takes ("usually replies within 2 working days")."""
+
+    __tablename__ = "replies"
+    contact_id: Mapped[str | None] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
+    application_id: Mapped[str | None] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), index=True)
+    waited_since: Mapped[date]
+    replied_on: Mapped[date]
+    # The stage move that meant they'd replied, so undoing it takes the reply back.
+    event_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
 class Todo(IdMixin, TimestampMixin, Base):
     """A to-do in your own words ("reply to Alex", "look into what they do"), on its own or about
     one thing. It points at that thing by type and id, like a link (no foreign key)."""

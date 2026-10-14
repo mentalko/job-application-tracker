@@ -1691,6 +1691,11 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /**
+             * Replies
+             * @default 0
+             */
+            replies: number;
             /** Reply To Read Since */
             reply_to_read_since?: string | null;
             /** Title */
@@ -1700,6 +1705,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Usual Reply Days */
+            usual_reply_days?: number | null;
         };
         /** ContactPatch */
         ContactPatch: {

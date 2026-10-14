@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..db.models import Application, Event
 from ..db.types import utcnow
+from . import replies
 from .workflow import Workflow, WorkflowError
 
 STAGE_CHANGE = "stage_change"
@@ -98,6 +99,17 @@ def move(
         },
     )
     session.add(event)
+    session.flush()
+    # It moving on while you were waiting means they got back to you (unless the move was yours).
+    if app.awaiting_reply_since is not None and replies.is_reply_move(workflow, to_stage):
+        replies.record(
+            session,
+            contact_id=app.recruiter_id,
+            application_id=app.id,
+            waited_since=app.awaiting_reply_since,
+            replied_on=when.date(),
+            event_id=event.id,
+        )
     app.stage = to_stage
     app.awaiting_reply_since = None
     app.reply_to_read_since = None
@@ -147,6 +159,7 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
     )
     session.add(event)
     app.stage = last.from_stage
+    replies.take_back_move(session, last.id)
     # Put back where the conversation stood, both halves together (one may have been set since).
     moved = last.data or {}
     if "was_waiting_since" in moved or "was_to_read_since" in moved:

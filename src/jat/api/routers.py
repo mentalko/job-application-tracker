@@ -25,6 +25,7 @@ from ..domain import applications as svc
 from ..domain import duplicates as dup
 from ..domain import interviews as interviews_svc
 from ..domain import people as people_svc
+from ..domain import replies as reply_svc
 from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
@@ -131,12 +132,44 @@ def _one_reply_state(data: dict) -> None:
         data["reply_to_read_since"] = None
 
 
-def _contact_out(session: Session, contact: Contact) -> S.ContactOut:
+def _note_reply(
+    session: Session,
+    was_waiting: date | None,
+    waiting: date | None,
+    to_read: date | None,
+    data: dict,
+    *,
+    contact_id: str | None,
+    application_id: str | None = None,
+) -> None:
+    """Waiting ended because they replied (or you heard back): remember how long it took.
+    Waiting put back as it was (an Undo) forgets that again. Chasing (waiting from a new day),
+    Ghosted and Not interested aren't replies."""
+    if was_waiting is not None and waiting is None and not data.get("closed_as"):
+        replied = to_read or date.today()
+        reply_svc.record(
+            session,
+            contact_id=contact_id,
+            application_id=application_id,
+            waited_since=was_waiting,
+            replied_on=replied,
+        )
+    elif was_waiting is None and waiting is not None:
+        reply_svc.take_back(session, contact_id=contact_id, application_id=application_id, waited_since=waiting)
+
+
+def _contact_out(
+    session: Session, contact: Contact, replies: dict[str, reply_svc.ReplyStats] | None = None
+) -> S.ContactOut:
     details = session.scalars(
         select(ContactDetail).where(ContactDetail.contact_id == contact.id).order_by(ContactDetail.position)
     ).all()
     out = S.ContactOut.model_validate(contact)
     out.details = [S.ContactDetailOut.model_validate(d) for d in details]
+    if replies is None:
+        replies = reply_svc.stats(session, [contact.id])
+    if (r := replies.get(contact.id)) is not None:
+        out.replies, out.usual_reply_days = r.replies, r.usual_days
     return out
 
 
@@ -166,7 +199,8 @@ def list_contacts(session: SessionDep, q: str | None = None, agency_id: str | No
         stmt = stmt.where(func.lower(Contact.name).contains(q.lower(), autoescape=True))
     if agency_id:
         stmt = stmt.where(Contact.agency_id == agency_id)
-    return [_contact_out(session, c) for c in session.scalars(stmt.order_by(func.lower(Contact.name)))]
+    replies = reply_svc.stats(session)
+    return [_contact_out(session, c, replies) for c in session.scalars(stmt.order_by(func.lower(Contact.name)))]
 
 
 @contacts.get("/{contact_id}", response_model=S.ContactOut)
@@ -212,8 +246,12 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
         data["closed_on"] = None  # reopened
     if "closed_on" in data and "closed_as" not in data and not contact.closed_as:
         del data["closed_on"]  # a date for a conversation that isn't closed means nothing
+    was_waiting = contact.awaiting_reply_since
     for key, value in data.items():
         setattr(contact, key, value)
+    _note_reply(
+        session, was_waiting, contact.awaiting_reply_since, contact.reply_to_read_since, data, contact_id=contact.id
+    )
     if body.details is not None:
         _set_details(session, contact, body.details)
     session.flush()
@@ -645,6 +683,15 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     _one_reply_state(data)
     for key, value in data.items():
         setattr(app, key, value)
+    _note_reply(
+        session,
+        was_waiting,
+        app.awaiting_reply_since,
+        app.reply_to_read_since,
+        data,
+        contact_id=app.recruiter_id,
+        application_id=app.id,
+    )
     session.flush()
     if "reply_to_read_since" in data and (was_to_read is None) != (app.reply_to_read_since is None):
         summary = "They replied; to read" if app.reply_to_read_since else "Read their reply"
