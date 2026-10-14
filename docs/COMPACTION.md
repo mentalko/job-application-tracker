@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-13, after PR #68); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-14, after PR #75); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -108,12 +108,12 @@ next action.
 - **Docs.** `docs/guide/` (README, install, your-data, using-the-app, customising, commands,
   troubleshooting), `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/` (bug, feature, links),
   `.github/pull_request_template.md`, `docs/prd/tracker.md`, `docs/rfc/stack.md`,
-  `docs/ROADMAP.yaml`, `CHANGELOG.md`, `docs/IDEAS.md`, `docs/screenshots/` (16 PNGs incl.
-  `conversations.png`, plus `demo.gif`), `docs/social-preview.png`, this file.
+  `docs/ROADMAP.yaml`, `CHANGELOG.md`, `docs/IDEAS.md`, `docs/screenshots/` (17 PNGs incl.
+  `conversations.png` and `cv-insights.png`, plus `demo.gif`), `docs/social-preview.png`, this file.
 - **Demo GIF.** `python3 scripts/demo_gif/make_demo_gif.py [--out x.gif] [--hold 150]` renders
   `scripts/demo_gif/scene.html` frames with headless Chrome and builds the GIF with
   ImageMagick (1.5 s per scene, 45 frames, ~2.7 MB). Show Kai a preview before replacing it.
-- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0010) and
+- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0011) and
   SQLite in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9,
   TanStack Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
 - **Data folder.** `--data-dir` or `JAT_DATA_DIR` (env var or `.env` in the current
@@ -135,7 +135,7 @@ next action.
   - After API changes: `uv run python -m jat.openapi` then `pnpm --dir frontend gen:api`
     (`tests/test_openapi.py` fails on drift, including docstring changes).
   - Demo: `uv run python scripts/seed_demo.py <new empty dir>` then
-    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8867 was the last
+    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8873 was the last
     port). Rebuild `frontend/dist` in the worktree first so it serves the branch. TaskStop it
     after merging, and tell Kai the URL if they want to look.
   - Screenshots: Playwright with the system Chrome, from a throwaway env:
@@ -144,6 +144,9 @@ next action.
     `google-chrome --headless=new --screenshot` works for a page top, not after anchors.
   - Link check: `python3 /home/kai/.claude/jobs/cf5328f4/tmp/check_links.py` (rewrite it if the
     tmp dir is gone: it resolves the guide's relative links and GitHub-style anchors).
+  - Waiting on a PR's checks: a background Bash `until` loop on
+    `gh pr view N --json mergeStateStatus` (not CLEAN-only: UNSTABLE while the website build
+    runs), never a foreground `sleep`.
 - **Scratch files** in `/home/kai/.claude/jobs/cf5328f4/tmp` (and `tmp/site/` for the website),
   never `/tmp`.
 
@@ -161,88 +164,113 @@ next action.
   *Recent activity* (timeline items except `added`, so pitches show).
 - **Next actions** (`pages/NextActionsPage.tsx`, `api/next_actions.py`): replies to read,
   to-dos, offers to answer, waiting to hear back (people rows: Chased / Ghosted / Not
-  interested), how did it go?, follow up, roles to decide, coming up, gone quiet.
+  interested; *Usually replies within N working days* and *longer than usual*, also on
+  application rows via their recruiter), how did it go?, follow up, roles to decide, coming
+  up, gone quiet.
 - **Application page and quick view** (`pages/ApplicationPage.tsx`,
   `components/ApplicationDrawer.tsx`): summary, then **At a glance**
-  (`components/AtAGlance.tsx`, rules in `utils/attention.ts`, #65): needs attention with how
-  long ("for 12 days", "overdue by 2 days"), coming up, key dates as "3 weeks ago". Then
-  details, interviews, documents sent, offer, notes, links, files (+ *From the role*), log
-  activity, timeline; to-dos, role and people on the right.
+  (`components/AtAGlance.tsx`, rules in `utils/attention.ts`, #65). Then details, interviews,
+  documents sent, offer, notes, links, files (+ *From the role*), log activity, timeline;
+  to-dos, role and people on the right.
 - **Roles** (`api/roles.py`, `components/Roles.tsx`, `pages/RolesPage.tsx`,
   `pages/RolePage.tsx`): pitched or spotted roles, apply / pass / reconsider; a page per role
   with its files (shown on the application).
-- **People** (`pages/RecruitersPage.tsx` tiles, `pages/PersonPage.tsx`): calls
-  (`api/meetings.py`), roles mentioned, applications, interviews, to-dos, notes, links, files.
-  **Merge…** and a *Looks like a duplicate* nudge with *Not the same person*
-  (`components/MergePerson.tsx`, `domain/people.py`, `POST /contacts/{id}/merge`, #68). One
-  person per email and LinkedIn profile (409 naming who has it).
+- **People** (`pages/RecruitersPage.tsx` tiles with All / Agencies / Companies / Independent /
+  *Ghosted · n*; `pages/PersonPage.tsx`): calls, roles mentioned, applications, interviews,
+  to-dos, notes, links, files; **Timeline**, **Edit**, **Merge…**, **Delete**.
+  - Merge and one person per email / LinkedIn (`components/MergePerson.tsx`,
+    `domain/people.py`, #68).
+  - **Ghosts** (#72): `components/GhostMark.tsx` (`GhostMark`, `useGhosted`, `PersonName`) puts
+    a ghost before a ghosted person's name across the app (tiles, page icon, application
+    list/board/quick view/People card, company/agency/role pages, calls, Next actions,
+    Timeline entries and person lanes, search, Insights). Role lines say "(ghosted)". **Not a
+    ghost** / **Remove Not interested** on the page, or the × on the tile chip, with Undo
+    (`components/PersonChase.tsx`, `useAct`).
+  - **Reply times** (#73): `replies` table (migration 0011, backfilled from application
+    events), `domain/replies.py` (`working_days` = weekdays after the wait day up to the reply,
+    `is_reply_move`, `record`, `take_back_move`, `stats`); `ContactOut.replies` +
+    `usual_reply_days` (median, rounded up); `components/ReplyHabit.tsx`, `utils/replies.ts`.
+- **Documents** (`pages/DocumentsPage.tsx`, `api/documents.py`): CVs and cover letters with
+  versions. **CV files you've attached** card (`components/CvFiles.tsx`, #74/#75):
+  `GET /cv-files` finds PDF/Word files on applications, roles and people named like a CV or in
+  two or more places (a role and its own application count as one), grouped by `sha256`, each
+  with `sources` and the `applications` it counts for (role/person files only claim
+  applications with no CV yet); `POST /cv-files/adopt` copies it into a version (or reuses the
+  matching one) and records it on the ticked `application_ids` (sent on `applied_on`, else the
+  earliest attachment linked to that application). *Not a CV* (localStorage `jat.notACv`,
+  "Show … you said aren't CVs").
 - **Insights** (`pages/InsightsPage.tsx`): tabs *Applications* (Sankey, stage table, routes,
-  scorecard) and *Recruiter conversations* (`components/Conversations.tsx`,
-  `domain/conversations.py`, `GET /insights/conversations`, #66: calls, pitched roles,
-  applied / passed / deciding, where they went, time to decide, per person and agency, why
-  you passed). *Weekly activity* under both, with calls held and roles pitched.
-- **Timeline** (`pages/TimelinePage.tsx`, `api/timeline.py`, #67): list by day or lanes; lanes
-  default to one row per role (call → pitch → application → outcome), or per person, company,
-  agency. Kinds include `role` (pitched, passed); `added` (bookkeeping) is off by default;
-  *Show* tick boxes with Everything / Usual / None. Application items carry `role_id`; call
-  items carry `roles` (`{id, title, company_name}`) for the roles that came up on them.
+  scorecard), *Recruiter conversations* (`components/Conversations.tsx`,
+  `domain/conversations.py`, #66) and *CVs and cover letters* (#71:
+  `domain/document_performance.py`, `GET /insights/documents`,
+  `components/DocumentPerformance.tsx`, Fisher's exact test in `utils/abtest.ts`; a note
+  linking to Documents when CV files aren't versions yet). *Weekly activity* under all.
+- **Timeline** (`pages/TimelinePage.tsx`, `api/timeline.py`, #67/#70): list by day or lanes
+  (per role by default, or person, company, agency). View, period and *About* live in the URL
+  (`useTimelineSearch`; the router JSON-parses `?period=30` into a number); person, company and
+  agency pages have a **Timeline** button (`components/TimelineButton.tsx`) opening
+  `/timeline?about=contact:<id>&period=all`. Notes on a role count for its company, pitcher and
+  agency; roles you added yourself are `added` bookkeeping.
 - **API** (`/api/v1`): CRUD for companies, agencies, contacts (+ `/merge`), roles,
   applications (+ `/quick`, `/move`, `/undo`, `/activities`, `/contacts`), interviews, offers,
-  notes, links, attachments, documents, todos; summaries; `role-summaries`, `next-actions`,
-  `timeline`, `meetings`, `insights/{flow,stats,activity,scorecard,conversations}`, `search`,
-  `backup` (+ `/archive`, `/snapshot`, `/push`).
+  notes, links, attachments, documents (+ `cv-files`, `cv-files/adopt`), todos; summaries;
+  `role-summaries`, `next-actions`, `timeline`, `meetings`,
+  `insights/{flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
+  (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-13, after #68)
+### 4. Current state (snapshot 2026-10-14, after #75)
 
-- **main at `70e8a34`** (merge of #68), plus this doc's PR until it merges. No other open PRs,
+- **main at `c6eaeac`** (merge of #75), plus this doc's PR until it merges. No other open PRs,
   worktrees or remote branches.
-- **Merged since the last snapshot:** #61 compaction doc; #62 social preview image; #63 demo
-  GIF and its generator; #64 website, CONTRIBUTING, issue/PR templates, Pages workflow,
-  "in daily use" wording; #65 At a glance; #66 Recruiter conversations; #67 Timeline by role
-  (and moved to Review); #68 merge people, unique email and LinkedIn. Roadmap tasks for all
-  are `done`.
-- **Tests on main:** 286 backend, 105 frontend.
-- **Kai's tracker** serves #66's endpoint but not yet #68's (checked 2026-10-13): #67 and #68
-  changed the API and Kai was told to restart `uv run jat serve`. Read-only check:
-  `curl -s http://127.0.0.1:8770/api/openapi.json` lists `/api/v1/contacts/{contact_id}/merge`
-  once restarted. If not, remind Kai once.
-- **Kai's latest messages, in order** (since #60): repo description and tags (applied);
-  social preview (#62, Kai uploaded it); "Perhaps you can improve the main gif… could
-  ReMotion… help" then "1.5s version" (#63); "i want to make agithub pages site… go full
-  VC-bro…" with live preview, "remove this section", "maybe we dont need a docs section, just
-  link to github", "it is ready, im using it…", the "Try the demo" button ("either remove
-  the button or change the wording"), "the color scheme is a bit dark and feels like an AI
-  created colour scheme", "Paper is best so far, keep the pallete switcher for future dev but
-  make sure it is disabled for the github pages build", "merge it, setup github pages, update
-  the repo url…" (#64); "is there a way to see how many visitors" (answered: Search Console
-  or GoatCounter, footer wording would change; nothing set up); "i did the social preview"
-  (verified); "applications should have a next-actions/needs attention…" (#65); "insights
-  should have mroe about recruiter conversations…" (#66); "same with the timeline… the
-  timeline menu item should be doiwn with insights" (#67); "is there a version running
-  locally i can check out" (demo on a spare port); "sure looks good, merge once ready and
-  update local main"; "i accidentally created 2 entries for the same recruiter… unique by
-  linkedin URL, and aslo email address" (#68; told to restart and use Merge…); "why would
-  github show so many clones and views?" (answered: bots on a new public repo plus our
-  fetches; 48 views, 7 unique, 1 from Brave search); then this compaction refresh.
+- **Merged since the last snapshot:** #69 compaction doc; #70 Timeline button per person /
+  company / agency and URL filters; #71 *Which CV works best* (Insights CV A/B test); #72
+  ghosts everywhere, *Ghosted* filter, *Not a ghost*; #73 *Usually replies within N working
+  days* (migration 0011); #74 CV files on applications become versions; #75 CV files on roles
+  and people too, with tick boxes. Roadmap tasks for all are `done`.
+- **Tests on main:** 326 backend, 119 frontend. The machine is often heavily loaded (load
+  average ~30 from other jobs): frontend tests that time out at ~2 s in a full run pass when
+  run on their own; rerun those files before suspecting the code.
+- **Kai's tracker** has restarted onto the latest code (2026-10-14: `/api/v1/cv-files` and
+  `/api/v1/insights/documents` answer 200, read-only GETs), so migration 0011 has run on their
+  data.
+- **Kai's latest messages, in order** (since #68): "Update … COMPACTION.md…" (#69); "on
+  individual recruiter pages i want to be able to see a timeline for just that person…" and
+  "i want some insights about how different CVs perform compared to each other, an A/B test if
+  you will" (#70, #71); "what are you buuilding, i missed your other messages" (answered);
+  "how is it going to tell the difference between CVs and know which are the same"
+  (answered: by the version you record, not the file; offered fingerprint matching); "add a
+  ghost icon just before a recruiter name if they have ghosted", then "and also a filter here
+  for ghosts. it should be very clear on every page/role/etc associated with a recruiter that
+  they are a ghost… i need a way to be able to remove that status in case they are just slow.
+  Perhaps also good to add a "usually replies within X time" taking into account that weekend
+  days dont count as a day", then "Not necessarily undo, i might want to remove the ghost
+  status a week later" (#72, #73); "yes build that" (CV files → versions, #74); "it should
+  also lok at CVs sent to recruiters/roles, not just on applications" (#75); then this
+  compaction refresh.
 
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
 - **Offered, waiting on Kai:**
-  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Insights tabs, Timeline by
-    role); show a preview first.
-  - Visitor stats for the website: Google Search Console (no tracking, keeps the footer true)
-    and/or GoatCounter (footer wording would change). Needs Kai to create the account.
+  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Insights tabs incl. CVs,
+    Timeline by role, ghosts); show a preview first.
+  - Visitor stats for the website: Google Search Console and/or GoatCounter (footer wording
+    would change). Needs Kai to create the account.
 - **Noticed, not promised:**
-  - `person.png`, `roles.png`, `recruiters.png` come from an older seed (before recruiters'
-    applications started as pitches); still accurate UI.
+  - README screenshots don't show ghosts or reply times yet (`recruiters.png`, `person.png`,
+    `next-actions.png`); the demo seed has replies but nobody ghosted.
+  - Ghost still missing in: the Timeline *About* select's people, to-do "about" text on Next
+    actions and the Overview.
+  - Reply times: only weekdays, no bank holidays; waits on people before #73 weren't recorded.
+  - CV files: an unticked application stays on offer until it has a CV recorded; files
+    attached to applications don't use the "no CV yet" rule.
   - On phones: Next actions application rows overflow; the header search overlaps the title.
   - The application page's People card ignores a recruiter set through the route.
   - Overview stats show zeros before the first application; its "roles to decide" line isn't
     linked.
   - Small nits left on purpose: re-passing a role re-stamps `decided_on`; all-day timeline
-    items at UTC midnight; `GET /meetings?upcoming` defaults to UTC; server `date.today()`
-    defaults are UTC; timeline "pitched" wording even for a referrer.
+    items at UTC midnight; `GET /meetings?upcoming` defaults to UTC; timeline "pitched"
+    wording even for a referrer.
 
 ### 6. The delivery loop
 
@@ -299,6 +327,20 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   deletes their calls and unlinks the rest (so for duplicates, merge).
 - **Offers:** the newest per application counts; worth a year = salary + bonus + equity +
   employer pension, or day rate × 220.
+- **Ghosts:** only `closed_as == "ghosted"` gets a ghost (not *Not interested*); taking it off
+  is a plain action any time (not "undo" wording), with an Undo toast.
+- **Reply times:** recorded when waiting ends with *They've replied* / *Heard back*, or a move
+  on while waiting that isn't yours (Withdrawn, Declined, success stages, `reopen_from`);
+  undoing that move takes it back; chasing and Ghosted aren't replies; no guessing at PATCH
+  "undos" (it deleted real replies). Local days. Merging people keeps replies; deleting an
+  application keeps them (`SET NULL`).
+- **CV A/B:** CVs are told apart by the version recorded per application, not by reading
+  files. *Sent* = got to Applied (or the first active stage after the start without an
+  `applied` stage), closed after it, or a document recorded; reply time from the day it got
+  to Applied. Screen or interview is the headline measure; Wilson 95% ranges; Fisher's exact
+  test with "too few" under 5 each; a CV can't be compared with its own versions.
+- **CV files:** grouped by content (`sha256`); the version gets its own copy; originals never
+  touched; role/person files only claim applications without a CV; you tick the applications.
 - **Website:** one landing page, paper palette, docs on GitHub, no analytics.
 - **Search:** every word must match, accent- and case-insensitive.
 
@@ -333,6 +375,20 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   smooth` swallows scripted scrolling (inject `html{scroll-behavior:auto}`).
 - **Astro 7 `dev`** detaches into a daemon: `npx astro dev stop` before restarting; a content
   change it misses needs a restart.
+- **The truncation trap again (#74):** a script's last line `open(C, "w").write(open(C).read())`
+  emptied a file. Never reopen a file for writing on the same line it's read; restore with
+  `git checkout -- <file>` and re-apply only that file's edits.
+- **`git checkout -- <file>` after a test-the-test break** also drops your uncommitted edits to
+  that file: copy the file aside (`cp f tmp/f.bak`) and copy it back instead.
+- **`export PATH=…node…`** in a Bash call hides `uv` for the rest of that call: run
+  `uv run python -m jat.openapi` in its own call before `pnpm gen:api`.
+- **TanStack Router:** routes built from `NAV` aren't typed for `navigate({ to: "/timeline" })`;
+  navigate to `"."`. Mantine Select inputs have two elements per label (use
+  `getAllByLabelText(...)[0]` or `findByDisplayValue`); jsdom lacks `scrollIntoView` (stubbed
+  in `src/test/setup.ts`); notifications persist across tests (scope `Undo` clicks to the
+  toast).
+- **CI:** a website build check runs when docs/screenshots change; `mergeStateStatus` is
+  UNSTABLE until it passes.
 
 ### 8a. How Kai works
 
