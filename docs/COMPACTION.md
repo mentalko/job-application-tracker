@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-14, after PR #75); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-14, after PR #77); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -122,9 +122,16 @@ next action.
   the last write; pushing is `jat push` only. Notes are Markdown files under `notes/` with
   their links in the front matter; `note_index` is rebuilt from the files (`_sync`).
 - **Running apps.**
-  - **Kai runs the tracker in their own terminal:** `uv run jat serve` in the main checkout →
-    http://127.0.0.1:8770 (`/api/docs`). It migrates on start and serves `frontend/dist`.
-    Don't stop or replace it.
+  - **The tracker:** `uv run jat serve` in the main checkout → http://127.0.0.1:8770
+    (`/api/docs`), on Kai's data folder via `.env`. It migrates on start and serves
+    `frontend/dist`. Usually Kai runs it in their own terminal; since 2026-10-14 ("start it up")
+    **this session runs it as a background job** (Bash `run_in_background`, task id
+    `b9z5y0c0g` at the time; the id may not survive compaction). Never stop it unless Kai asks.
+    When a merge changes the backend, ask before restarting it (TaskStop, then start it again
+    the same way from the main checkout); a frontend-only change needs only `pnpm build` on
+    main and a page refresh. Check it with
+    `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`; if it's down,
+    say so and offer to start it.
   - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (not running; start it if Kai
     asks).
 - **Commands.**
@@ -173,8 +180,14 @@ next action.
   documents sent, offer, notes, links, files (+ *From the role*), log activity, timeline;
   to-dos, role and people on the right.
 - **Roles** (`api/roles.py`, `components/Roles.tsx`, `pages/RolesPage.tsx`,
-  `pages/RolePage.tsx`): pitched or spotted roles, apply / pass / reconsider; a page per role
-  with its files (shown on the application).
+  `pages/RolePage.tsx`): pitched or spotted roles, **Apply** / **Interested** / **Pass** /
+  Reconsider; a page per role with its files (shown on the application). Status (#77):
+  `to_decide` (no application, not passed), `interested` (applications all in open stages
+  before Applied: `before_applied` in `domain/insights.py`, which also holds `applied_rank`),
+  `applied` (got to Applied or later, or closed), `passed`; views on the Roles page for each.
+  *Interested* opens `ApplyModal` with `interested` (starting stage, no applied date; hidden
+  when the workflow starts at Applied); the dialog's date follows before/after Applied until
+  edited (`utils/applied.ts`). `move()` fills in `applied_on` when it reaches Applied or later.
 - **People** (`pages/RecruitersPage.tsx` tiles with All / Agencies / Companies / Independent /
   *Ghosted · n*; `pages/PersonPage.tsx`): calls, roles mentioned, applications, interviews,
   to-dos, notes, links, files; **Timeline**, **Edit**, **Merge…**, **Delete**.
@@ -218,52 +231,57 @@ next action.
   `insights/{flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
   (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-14, after #75)
+### 4. Current state (snapshot 2026-10-14, after #77)
 
-- **main at `c6eaeac`** (merge of #75), plus this doc's PR until it merges. No other open PRs,
+- **main at `cd84706`** (merge of #77), plus this doc's PR until it merges. No other open PRs,
   worktrees or remote branches.
-- **Merged since the last snapshot:** #69 compaction doc; #70 Timeline button per person /
-  company / agency and URL filters; #71 *Which CV works best* (Insights CV A/B test); #72
-  ghosts everywhere, *Ghosted* filter, *Not a ghost*; #73 *Usually replies within N working
-  days* (migration 0011); #74 CV files on applications become versions; #75 CV files on roles
-  and people too, with tick boxes. Roadmap tasks for all are `done`.
-- **Tests on main:** 326 backend, 119 frontend. The machine is often heavily loaded (load
+- **Merged since the last snapshot:** #76 compaction doc; #77 roles *Interested* (button, role
+  status, Insights counts it as still deciding, applied date filled on move). Roadmap tasks
+  are `done`.
+- **Tests on main:** 330 backend, 123 frontend. The machine is often heavily loaded (load
   average ~30 from other jobs): frontend tests that time out at ~2 s in a full run pass when
   run on their own; rerun those files before suspecting the code.
-- **Kai's tracker** has restarted onto the latest code (2026-10-14: `/api/v1/cv-files` and
-  `/api/v1/insights/documents` answer 200, read-only GETs), so migration 0011 has run on their
-  data.
-- **Kai's latest messages, in order** (since #68): "Update … COMPACTION.md…" (#69); "on
-  individual recruiter pages i want to be able to see a timeline for just that person…" and
-  "i want some insights about how different CVs perform compared to each other, an A/B test if
-  you will" (#70, #71); "what are you buuilding, i missed your other messages" (answered);
-  "how is it going to tell the difference between CVs and know which are the same"
-  (answered: by the version you record, not the file; offered fingerprint matching); "add a
-  ghost icon just before a recruiter name if they have ghosted", then "and also a filter here
-  for ghosts. it should be very clear on every page/role/etc associated with a recruiter that
-  they are a ghost… i need a way to be able to remove that status in case they are just slow.
-  Perhaps also good to add a "usually replies within X time" taking into account that weekend
-  days dont count as a day", then "Not necessarily undo, i might want to remove the ghost
-  status a week later" (#72, #73); "yes build that" (CV files → versions, #74); "it should
-  also lok at CVs sent to recruiters/roles, not just on applications" (#75); then this
-  compaction refresh.
+- **Kai's tracker** runs from this session as a background job (see section 2), on main
+  `cd84706`, with migrations through 0011; `/api/v1/backup` showed the data repo with its
+  remote, nothing unpushed, not dirty.
+- **Kai's data folder** (read-only check): Kai made CV versions with the CV files card; the
+  snapshot committed them 60 s later (Kai had looked within the minute and thought it was a
+  bug; it isn't).
+- **Kai's latest messages, in order** (since #75): "update the compaction doc" (#76); "i just
+  created the CV versions and now in the data dir there are uncommitted changes, it seems like
+  it doesnt handle that properly" (answered: the 60 s snapshot debounce; it committed; the
+  delay is `[snapshot] debounce_seconds`); "i want to be able to convert a role to interested,
+  not just applied" (#77); "start it up" (started the tracker as a background job); "what
+  reddit could i post this on to get some attention on github" (answered: r/selfhosted first,
+  then r/opensource, r/coolgithubprojects, r/SideProject, r/Python and the r/webdev or
+  r/reactjs showcase slots, r/jobsearchhacks or r/UKJobs, plus a Show HN; offered drafts);
+  "give me the text with formatting chars i can copy and paste" (gave a Reddit-Markdown
+  comment for the r/selfhosted *New Project Megathread* template: Project Name, Repo/Website,
+  Description, Deployment (no Docker image; uv + pnpm from source, localhost, no auth), AI
+  Involvement (built with Claude Code, Kai directing)); then this compaction refresh.
 
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
 - **Offered, waiting on Kai:**
+  - Drafts for other places to post (r/Python showcase format, a Show HN); Kai has the
+    r/selfhosted megathread comment. Kai posts; never post on Kai's behalf.
   - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Insights tabs incl. CVs,
     Timeline by role, ghosts); show a preview first.
   - Visitor stats for the website: Google Search Console and/or GoatCounter (footer wording
     would change). Needs Kai to create the account.
 - **Noticed, not promised:**
-  - README screenshots don't show ghosts or reply times yet (`recruiters.png`, `person.png`,
-    `next-actions.png`); the demo seed has replies but nobody ghosted.
+  - No Docker image or compose file (r/selfhosted asks for one); a candidate if Kai wants
+    more self-hosters.
+  - README screenshots don't show ghosts, reply times or *Interested* yet (`recruiters.png`,
+    `person.png`, `next-actions.png`, `roles.png`); the demo seed has replies but nobody
+    ghosted and no interested roles.
   - Ghost still missing in: the Timeline *About* select's people, to-do "about" text on Next
     actions and the Overview.
   - Reply times: only weekdays, no bank holidays; waits on people before #73 weren't recorded.
   - CV files: an unticked application stays on offer until it has a CV recorded; files
     attached to applications don't use the "no CV yet" rule.
+  - Roles: a role whose only application was closed before applying shows *Applied*.
   - On phones: Next actions application rows overflow; the header search overlaps the title.
   - The application page's People card ignores a recruiter set through the route.
   - Overview stats show zeros before the first application; its "roles to decide" line isn't
@@ -327,6 +345,9 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   deletes their calls and unlinks the rest (so for duplicates, merge).
 - **Offers:** the newest per application counts; worth a year = salary + bonus + equity +
   employer pension, or day rate × 220.
+- **Interested roles:** a role is *Interested* while every application is in an open stage
+  before Applied; Insights' recruiter conversations count those as *still deciding*, and
+  Next actions' *roles to decide* only lists roles with no application.
 - **Ghosts:** only `closed_as == "ghosted"` gets a ghost (not *Not interested*); taking it off
   is a plain action any time (not "undo" wording), with an Undo toast.
 - **Reply times:** recorded when waiting ends with *They've replied* / *Heard back*, or a move
@@ -342,6 +363,7 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **CV files:** grouped by content (`sha256`); the version gets its own copy; originals never
   touched; role/person files only claim applications without a CV; you tick the applications.
 - **Website:** one landing page, paper palette, docs on GitHub, no analytics.
+- **Promotion:** Claude drafts posts; Kai posts them. Posts say it's built with Claude Code.
 - **Search:** every word must match, accent- and case-insensitive.
 
 ### 8. Gotchas already learned
@@ -417,8 +439,9 @@ tracker answers and report."
 1. **Re-read, don't trust memory:** `CLAUDE.md`, this file, `gh pr list`, `git worktree list`,
    `git branch -a`, `git log --oneline -5` on main and any worktree branch.
 2. **Check the tracker:** `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`.
-   Kai runs it; if it's down, say so and give the command (`uv run jat serve` in the main
-   checkout).
+   This session may be running it as a background job (section 2): if it answers, leave it
+   alone. If it's down, say so and offer to start it again (`uv run jat serve` in the main
+   checkout, as a background job), or Kai runs it in their terminal.
 3. **Open PRs first:** apply review fixes or start a reviewer; merge when clean; deploy.
 4. **Unfinished worktrees:** commit and push, then finish that task.
 5. **Then Kai's latest request.** If there isn't one, report the state in two lines and wait.
