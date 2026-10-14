@@ -384,7 +384,7 @@ compares like with like only roughly: read the rows, not just the total.
 
 Your CVs and cover letters, each with versions ("v3 (fintech)") and the file for each. The
 application page records which version you sent, and the Documents page shows where each
-version went.
+version went. [Insights](#insights) compares how the versions do.
 
 ## Notes
 
@@ -394,8 +394,9 @@ so you can also write and edit them in any editor. Tables, checklists and links 
 
 ## Insights
 
-How the search is going, for all time or the last 30 or 90 days. Two tabs: **Applications**
-and **Recruiter conversations**; **Weekly activity** sits under both.
+How the search is going, for all time or the last 30 or 90 days. Three tabs: **Applications**,
+**Recruiter conversations** and **CVs and cover letters**; **Weekly activity** sits under all
+of them.
 
 **Applications**
 
@@ -428,6 +429,28 @@ the role); roles you found yourself aren't counted here.
 Calls count in a date range by when they happen; roles by when you added them. A call
 counts as held once it's marked *Happened*; one still marked booked after its time waits on
 Next actions for you to say how it went.
+
+**CVs and cover letters**: an A/B test of your CV versions. It works from what you record:
+add a CV on [Documents](#documents) with a new version each time you change it, then on each
+application pick the version you sent (its *Documents sent* card). Two applications got the
+same CV when you picked the same version; the app doesn't read the files.
+
+- **The table**: each CV, and under it each of its versions, against the applications you sent
+  (ones that got to *Applied*, or have a document recorded) added in the date range. For
+  each: how many you **sent**; how many **heard back** (a move past *Applied*, a call, email or
+  message logged, a rejection, an interview round or an offer; *Ghosted* and *Withdrawn*
+  aren't replies, and nor is moving it to *Applied* yourself); how many got a **screen or
+  interview** (a stage past *Applied* that isn't closed, or an interview round that wasn't
+  cancelled); **how sure** that rate is (the dot, with a bar for where it likely really is: a
+  95% range, wide when there are few applications); **offers**; where they are now (open,
+  ghosted, closed); and the **typical reply** time (the median from applying to hearing back).
+  *No CV recorded* is a row of its own, so you can compare with and without. **CVs** /
+  **Cover letters** switches between them; the route filter compares like with like.
+- **Compare**: pick two (versions, whole documents or *No CV recorded*) and a measure
+  (*Heard back*, *Screen or interview* or *Offer*). It says in words whether the gap is
+  **likely real**, **a hint** (worth watching), **could be chance**, or there are **too few to
+  tell** (fewer than five sent on either side), using Fisher's exact test, which holds up with
+  small numbers. It starts on your two most-sent versions.
 
 - **Weekly activity**: applications added and sent, stage moves, interviews, calls held and
   roles pitched per week.

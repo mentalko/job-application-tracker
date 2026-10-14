@@ -34,6 +34,8 @@ filtered by date and route; conversion and median time per stage; direct vs recr
 outcomes; weekly activity; a recruiter and agency scorecard; and a Recruiter
 conversations tab: calls, roles pitched, applied or passed, where pitched roles went, time
 to decide, per person and agency, and why you passed, `GET /api/v1/insights/conversations`),
+an A/B test of CV and cover-letter versions (heard back, screens or interviews, offers, a 95%
+range, and Fisher's exact test between two; `GET /api/v1/insights/documents`),
 offers compared side by side
 (salary, bonus, equity, pension and holiday, or day rate, IR35 and length, with a
 worth-a-year figure and reply deadlines in Next actions), git-backed snapshots, a one-click
@@ -46,7 +48,7 @@ committed to the user's private data repo); React 19, TypeScript, Mantine, TanSt
 Router/Query and d3-sankey. Run with `uv run jat --data-dir <dir> serve`
 (http://127.0.0.1:8770); try demo data with `uv run python scripts/seed_demo.py /tmp/jat-demo`.
 The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live under
-`/api/v1/insights/` (`flow`, `stats`, `activity`, `scorecard`).
+`/api/v1/insights/` (`flow`, `stats`, `activity`, `scorecard`, `conversations`, `documents`).
 
 ## Docs
 - [Website](https://waddington.github.io/job-application-tracker/): the project's landing page
