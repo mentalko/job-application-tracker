@@ -151,4 +151,90 @@ describe("documents", () => {
       expect(post?.body).toMatchObject({ document_version_id: "v3" });
     });
   });
+
+  it("turns CV files on applications into versions, or records the version they already are", async () => {
+    const app = (id: string, company: string, has_it = false) => ({
+      id,
+      company_name: company,
+      role_title: "Backend Engineer",
+      has_it,
+    });
+    const calls = mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/documents": [cv],
+      "GET /api/v1/cv-files": [
+        {
+          sha256: "a".repeat(64),
+          name: "Alex Morgan 2026.pdf",
+          size: 90_000,
+          content_type: "application/pdf",
+          applications: [app("a1", "Contoso"), app("a2", "Fabrikam")],
+          version: null,
+        },
+        {
+          sha256: "b".repeat(64),
+          name: "cv.pdf",
+          size: 80_000,
+          content_type: "application/pdf",
+          applications: [app("a3", "Litware", true), app("a4", "Northwind Traders")],
+          version: { id: "v3", label: "v3 (fintech)", document_id: "d1", document_name: "Backend CV" },
+        },
+        {
+          sha256: "c".repeat(64),
+          name: "Resume template.pdf",
+          size: 10_000,
+          content_type: "application/pdf",
+          applications: [app("a5", "Proseware")],
+          version: null,
+        },
+      ],
+      "POST /api/v1/cv-files/adopt": { document_id: "d2", version_id: "v9", recorded: 2 },
+      "/api/v1/health": {},
+    });
+    renderAt("/documents");
+    const card = (await screen.findByRole("heading", { name: "CV files on your applications" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    expect(within(card).getByRole("link", { name: "Contoso · Backend Engineer" })).toHaveAttribute(
+      "href",
+      "/applications/a1",
+    );
+    // Already a version: only the application missing it is listed, and one click records it.
+    expect(
+      within(card).getByText(/This is Backend CV · v3 \(fintech\), not yet recorded on/),
+    ).toBeInTheDocument();
+    expect(within(card).queryByRole("link", { name: "Litware · Backend Engineer" })).not.toBeInTheDocument();
+    fireEvent.click(within(card).getByRole("button", { name: "Record as sent" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.path.endsWith("/adopt"))?.body).toEqual({
+        sha256: "b".repeat(64),
+        kind: "cv",
+      }),
+    );
+
+    // Not a CV: hidden, and remembered.
+    fireEvent.click(within(card).getByRole("button", { name: "Resume template.pdf is not a CV" }));
+    expect(within(card).queryByText(/Resume template.pdf/)).not.toBeInTheDocument();
+    expect(localStorage.getItem("jat.notACv")).toContain("c".repeat(64));
+
+    // Make the shared file a version of a new CV.
+    fireEvent.click(within(card).getAllByRole("button", { name: "Make it a version" })[0]!);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText("Version")).toHaveValue("Alex Morgan 2026");
+    fireEvent.click(within(dialog).getAllByLabelText("Add it to")[0]!);
+    fireEvent.click(await screen.findByRole("option", { name: "A new CV…", hidden: true }));
+    fireEvent.change(within(dialog).getByLabelText("Name of the new CV"), {
+      target: { value: "Platform CV" },
+    });
+    fireEvent.change(within(dialog).getByLabelText("Version"), { target: { value: "v1" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Make it a version" }));
+    await waitFor(() =>
+      expect(calls.filter((c) => c.path.endsWith("/adopt")).at(-1)?.body).toEqual({
+        sha256: "a".repeat(64),
+        document_name: "Platform CV",
+        kind: "cv",
+        label: "v1",
+      }),
+    );
+  });
 });

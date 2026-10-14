@@ -126,3 +126,25 @@ export function useUnsendDocument(appId: string) {
     onError: notifyError,
   });
 }
+
+export type CvFile = Schemas["CvFile"];
+
+/** CV files attached to applications, not yet recorded as versions sent with them. Under
+ * "attachments", so it refreshes whenever files or documents change. */
+export function useCvFiles() {
+  return useQuery({
+    queryKey: ["attachments", "cv-files"],
+    queryFn: async () => unwrap(await api.GET("/api/v1/cv-files")),
+  });
+}
+
+/** Make a CV file a version (or record the version it already is) on its applications. */
+export function useAdoptCvFile() {
+  const refresh = useRefreshDocuments();
+  return useMutation({
+    mutationFn: async (body: Schemas["CvFileAdopt"]) =>
+      unwrap(await api.POST("/api/v1/cv-files/adopt", { body })),
+    onSuccess: refresh,
+    onError: notifyError,
+  });
+}

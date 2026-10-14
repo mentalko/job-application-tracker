@@ -519,6 +519,16 @@ describe("insights", () => {
 
   it("says how to start when no CV has been recorded", async () => {
     mockInsights({
+      "/api/v1/cv-files": [
+        {
+          sha256: "a".repeat(64),
+          name: "cv.pdf",
+          size: 1,
+          content_type: "application/pdf",
+          applications: [],
+          version: null,
+        },
+      ],
       "/api/v1/insights/documents": {
         applications: 4,
         kinds: [{ kind: "cv", documents: [], none: docTally(4, 1, 0) }],
@@ -527,6 +537,13 @@ describe("insights", () => {
     renderAt("/insights");
     fireEvent.click(await screen.findByRole("tab", { name: "CVs and cover letters" }));
     expect(await screen.findByText(/Nothing to compare yet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 CV file attached to your applications isn't a version yet/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Sort them out on Documents" })).toHaveAttribute(
+      "href",
+      "/documents",
+    );
     expect(screen.getByText(/Nothing to compare yet/).querySelector("a")).toHaveAttribute(
       "href",
       "/documents",
