@@ -1079,8 +1079,9 @@ export interface paths {
          * Role Summaries
          * @description Roles with where they came from and where they stand, oldest first.
          *
-         *     `status`: `to_decide` (no application and not passed), `applied` (has an application) or
-         *     `passed`. Filter by company, by who told you about it, or by the call it came up in.
+         *     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
+         *     all still before Applied), `applied` (an application got to Applied or further) or `passed`.
+         *     Filter by company, by who told you about it, or by the call it came up in.
          */
         get: operations["role_summaries_api_v1_role_summaries_get"];
         put?: never;
@@ -3247,7 +3248,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "to_decide" | "applied" | "passed";
+            status: "to_decide" | "interested" | "applied" | "passed";
             /** Title */
             title: string;
             /**
@@ -6327,7 +6328,7 @@ export interface operations {
     role_summaries_api_v1_role_summaries_get: {
         parameters: {
             query?: {
-                status?: ("to_decide" | "applied" | "passed") | null;
+                status?: ("to_decide" | "interested" | "applied" | "passed") | null;
                 company_id?: string | null;
                 contact_id?: string | null;
                 meeting_id?: string | null;

@@ -39,7 +39,7 @@ from sqlalchemy.orm import Session
 from jat.db.models import Application, ApplicationDocument, Document, DocumentVersion, Event, Interview, Offer
 
 from .applications import STAGE_CHANGE, _effective_moves
-from .insights import stage_rank
+from .insights import applied_rank, stage_rank
 from .scorecard import CONTACT_KINDS, _added_at
 from .workflow import Workflow
 
@@ -110,15 +110,6 @@ class _Outcome:
     offer: bool
     now: str  # open | ghosted | closed
     reply_days: float | None
-
-
-def applied_rank(workflow: Workflow, rank: dict[str, int]) -> int:
-    """Where *Applied* is: the `applied` stage, or the first active stage after the start."""
-    if "applied" in rank:
-        return rank["applied"]
-    active = [st.id for st in workflow.stages if st.is_active]
-    after = active[active.index(workflow.initial) + 1 :] if workflow.initial in active else active
-    return rank[after[0]] if after else rank.get(workflow.initial, 0)
 
 
 def applied_at(

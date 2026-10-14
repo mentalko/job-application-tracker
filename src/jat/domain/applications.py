@@ -110,6 +110,12 @@ def move(
             replied_on=when.astimezone().date(),  # your local day, like the waiting date
             event_id=event.id,
         )
+    from .insights import applied_rank, stage_rank  # insights imports this module
+
+    rank = stage_rank(workflow)
+    kind = next((st.kind for st in workflow.stages if st.id == to_stage), "active")
+    if app.applied_on is None and kind != "closed" and rank.get(to_stage, -1) >= applied_rank(workflow, rank):
+        app.applied_on = when.astimezone().date()  # it's applied now: from Interested, say
     app.stage = to_stage
     app.awaiting_reply_since = None
     app.reply_to_read_since = None

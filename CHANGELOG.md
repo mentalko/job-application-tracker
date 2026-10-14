@@ -111,6 +111,10 @@ brackets are pull requests.
 - **CVs sent to recruiters and roles count too**: CV files on roles and people are found as
   well, for the applications they led to that have no CV yet; each says where it was found,
   and you tick the applications it went out with (#75).
+- **Interested in a role**: an **Interested** button next to Apply tracks a role as an
+  application at your starting stage with no applied date; the role shows *Interested* (and
+  the Roles page has an *Interested* view) until it gets to Applied or is closed; moving an
+  application to Applied fills in its applied date (#77).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

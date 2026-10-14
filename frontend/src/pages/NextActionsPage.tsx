@@ -471,7 +471,11 @@ export function NextActionsPage() {
               />
             ))}
           </Section>
-          <Section title="Roles to decide" count={rolesToDecide.length} hint="Apply or pass on each">
+          <Section
+            title="Roles to decide"
+            count={rolesToDecide.length}
+            hint="Apply, mark interested, or pass on each"
+          >
             {rolesToDecide.map((r) => (
               <RoleLine key={r.id} role={r} />
             ))}

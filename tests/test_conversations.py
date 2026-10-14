@@ -166,3 +166,14 @@ def test_outcomes_best_application_until_and_unmarked_calls(client, seeded):
 
     before = client.get("/api/v1/insights/conversations", params={"until": _at(-1)}).json()["total"]
     assert (before["pitched"], before["calls_held"]) == (0, 0)
+
+
+def test_a_role_youre_only_interested_in_is_still_deciding(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    role = _role(client, seeded["company"]["id"], "Product Engineer", alex)["id"]
+    app = _apply(client, role, stage="interested")
+    total = client.get("/api/v1/insights/conversations").json()["total"]
+    assert (total["pitched"], total["applied"], total["deciding"]) == (1, 0, 1)
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "applied"})
+    total = client.get("/api/v1/insights/conversations").json()["total"]
+    assert (total["applied"], total["deciding"]) == (1, 0)

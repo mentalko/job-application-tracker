@@ -37,6 +37,7 @@ import {
   type RoleSummary,
 } from "../api/roleHooks";
 import type { Schemas } from "../api/client";
+import { beforeApplied } from "../utils/applied";
 import { useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
@@ -328,12 +329,21 @@ export function RoleFormModal({
 }
 
 /** Apply for a role: makes the application (through whoever pitched it) and opens it. */
-export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () => void }) {
+export function ApplyModal({
+  role,
+  onClose,
+  interested = false,
+}: {
+  role: RoleSummary;
+  onClose: () => void;
+  /** Track it at the starting stage (Interested) rather than applying. */
+  interested?: boolean;
+}) {
   const { data: workflow } = useWorkflow();
   const apply = useApplyForRole();
   const router = useRouter();
-  const [picked, setStage] = useState<string | null>(null);
-  const [appliedOn, setAppliedOn] = useState<string | null>(dayjs().format("YYYY-MM-DD"));
+  const [picked, setPicked] = useState<string | null>(null);
+  const [appliedOn, setAppliedOn] = useState<string | null>(interested ? null : dayjs().format("YYYY-MM-DD"));
   const ghost = useGhosted()(role.contact_id) ? " (ghosted)" : "";
   const how = role.agency_id
     ? `Through ${role.agency_name}${role.contact_name ? ` (${role.contact_name}${ghost})` : ""}`
@@ -341,7 +351,17 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
       ? `Directly, with ${role.contact_name}${ghost} as your contact`
       : "Directly";
   const hasApplied = workflow?.stages.some((s) => s.id === "applied");
-  const stage = picked ?? (hasApplied ? "applied" : (workflow?.initial ?? null));
+  const stage = picked ?? (!interested && hasApplied ? "applied" : (workflow?.initial ?? null));
+  // The applied date follows the stage (none before Applied, today from Applied on), until you
+  // set it yourself.
+  const [dateTouched, setDateTouched] = useState(false);
+  const setStage = (next: string | null) => {
+    setPicked(next);
+    if (dateTouched) return;
+    const isClosed = workflow?.stages.find((s) => s.id === next)?.kind === "closed";
+    if (beforeApplied(workflow, next) || isClosed) setAppliedOn(null);
+    else setAppliedOn(dayjs().format("YYYY-MM-DD"));
+  };
 
   const submit = () =>
     apply.mutate(
@@ -363,7 +383,11 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
     );
 
   return (
-    <Modal opened onClose={onClose} title={`Apply: ${role.title} at ${role.company_name}`}>
+    <Modal
+      opened
+      onClose={onClose}
+      title={`${interested ? "Interested" : "Apply"}: ${role.title} at ${role.company_name}`}
+    >
       <Stack>
         <Text size="sm">{how}.</Text>
         <Group grow align="flex-start">
@@ -378,7 +402,10 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
             label="Applied on"
             clearable
             value={appliedOn}
-            onChange={setAppliedOn}
+            onChange={(v) => {
+              setDateTouched(true);
+              setAppliedOn(v);
+            }}
             placeholder="Not yet"
           />
         </Group>
@@ -433,11 +460,15 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
   );
 }
 
-/** Apply / Pass for a role still to decide, Reconsider for one you passed, a link once applied. */
+/** Apply / Interested / Pass for a role still to decide, Reconsider for one you passed, and a
+ * link once there's an application. */
 export function RoleActions({ role }: { role: RoleSummary }) {
-  const [open, setOpen] = useState<"apply" | "pass" | null>(null);
+  const [open, setOpen] = useState<"apply" | "interested" | "pass" | null>(null);
   const save = useSaveRole();
-  if (role.status === "applied")
+  const { data: workflow } = useWorkflow();
+  // Only when your workflow starts before Applied (it does by default: Interested).
+  const canBeInterested = beforeApplied(workflow, workflow?.initial ?? null);
+  if (role.status === "applied" || role.status === "interested")
     return (
       <Anchor component={Link} to={`/applications/${role.application_ids[0]}`} size="xs">
         Open application
@@ -455,6 +486,17 @@ export function RoleActions({ role }: { role: RoleSummary }) {
           >
             Apply
           </Button>
+          {canBeInterested && (
+            <Button
+              size="compact-xs"
+              variant="light"
+              color="cyan"
+              onClick={() => setOpen("interested")}
+              aria-label={`Interested: ${role.title}`}
+            >
+              Interested
+            </Button>
+          )}
           <Button
             size="compact-xs"
             variant="subtle"
@@ -478,6 +520,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
         </Button>
       )}
       {open === "apply" && <ApplyModal role={role} onClose={() => setOpen(null)} />}
+      {open === "interested" && <ApplyModal role={role} interested onClose={() => setOpen(null)} />}
       {open === "pass" && <PassModal role={role} onClose={() => setOpen(null)} />}
     </Group>
   );
@@ -570,7 +613,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
             </ActionIcon>
           </Tooltip>
           {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
-          {role.status !== "applied" && (
+          {role.application_ids.length === 0 && (
             <DeleteButton
               compact
               kind="role"

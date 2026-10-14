@@ -7,6 +7,7 @@ import { RoleFormModal, RoleLine } from "../components/Roles";
 
 const VIEWS: { value: RoleStatus | "all"; label: string }[] = [
   { value: "to_decide", label: "To decide" },
+  { value: "interested", label: "Interested" },
   { value: "applied", label: "Applied" },
   { value: "passed", label: "Passed" },
   { value: "all", label: "All" },
@@ -15,6 +16,8 @@ const VIEWS: { value: RoleStatus | "all"; label: string }[] = [
 const EMPTY: Record<RoleStatus | "all", string> = {
   to_decide:
     "Nothing to decide. After a call with a recruiter, add the roles they mentioned here (or from the call on their page), then apply or pass on each.",
+  interested:
+    "No roles you're interested in but haven't applied for yet. Press Interested on a role to track it.",
   applied: "No roles applied for from here yet.",
   passed: "You haven't passed on any roles.",
   all: "No roles yet.",
@@ -35,7 +38,7 @@ export function RolesPage() {
             <Title order={2}>Roles</Title>
           </Group>
           <Text c="dimmed" size="sm">
-            Roles you might go for, before you apply: decide whether to apply or pass on each.
+            Roles you might go for, before you apply: apply, mark as interested, or pass on each.
           </Text>
         </div>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setAdding(true)}>
