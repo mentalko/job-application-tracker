@@ -226,3 +226,38 @@ def test_a_cv_sent_to_a_recruiter_before_any_application(client, seeded):
     _attach_to(client, "contact", sam, "Resume.pdf", CV)
     [found] = client.get("/api/v1/cv-files").json()
     assert found["applications"] == [] and found["sources"][0]["name"] == "Sam Patel"
+
+
+def test_a_job_ad_on_a_role_and_its_application_isnt_a_cv(client, seeded):
+    role = seeded["role"]["id"]
+    a = post(client, "/api/v1/applications", {"role_id": role, "stage": "applied"})["id"]
+    _attach_to(client, "role", role, "Job description.pdf", AD)
+    _attach(client, a, "Job description.pdf", AD)
+    assert client.get("/api/v1/cv-files").json() == []
+
+
+def test_a_cv_sent_to_someone_on_the_people_card(client, seeded):
+    hm = post(client, "/api/v1/contacts", {"name": "Riley Chen"})["id"]
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied", "applied_on": None})[
+        "id"
+    ]
+    b = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})["id"]
+    for app_id in (a, b):
+        r = client.post(
+            f"/api/v1/applications/{app_id}/contacts", json={"contact_id": hm, "relation": "hiring_manager"}
+        )
+        assert r.status_code in (200, 201), r.text
+    _attach_to(client, "contact", hm, "CV.pdf", CV)
+    [found] = client.get("/api/v1/cv-files").json()
+    assert sorted(x["id"] for x in found["applications"]) == sorted([a, b])
+    # Only one of them got it: the other stays on offer.
+    r = client.post(
+        "/api/v1/cv-files/adopt",
+        json={"sha256": found["sha256"], "document_name": "CV", "label": "v1", "application_ids": [a]},
+    )
+    assert r.json()["recorded"] == 1
+    [again] = client.get("/api/v1/cv-files").json()
+    assert {x["id"]: x["has_it"] for x in again["applications"]} == {a: True, b: False}
+    # Sent on the day the file went to them (no applied date).
+    [sent] = client.get(f"/api/v1/applications/{a}").json()["documents"]
+    assert sent["sent_on"] is not None

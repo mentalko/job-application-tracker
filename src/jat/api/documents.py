@@ -331,7 +331,7 @@ def unsend_document(app_id: str, link_id: str, session: SessionDep):
     return Response(status_code=204)
 
 
-# Files on applications that look like a CV: by name, or the same file on two or more.
+# Files that look like a CV: by name, or the same file in two or more places.
 CV_NAME = re.compile(r"(?<![a-z])(cv|resume|résumé|curriculum)(?![a-z])", re.IGNORECASE)
 CV_TYPES = frozenset(
     {
@@ -427,7 +427,10 @@ def _cv_files(session: Session) -> list[S.CvFile]:
                         counts[app_id] = None
         if not sources:
             continue
-        if len(sources) < 2 and not any(_looks_like_cv(a.original_name) for a in items):
+        # "Several places": a role and its own application are one place (a job ad is often on both).
+        app_roles = {apps[i][0].role_id for k, i in sources if k == "application"}
+        places = {(k, i) for k, i in sources if not (k == "role" and i in app_roles)}
+        if len(places) < 2 and not any(_looks_like_cv(a.original_name) for a in items):
             continue
         newest = matches[-1] if matches else None
         first = items[0]
@@ -477,7 +480,7 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
     the file already is a version, `document_id`, `document_name` and `label` are ignored."""
     found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
     if found is None:
-        raise HTTPException(404, "No CV file like that on your applications (or it's all recorded already).")
+        raise HTTPException(404, "No CV file like that among your attachments (or it's all recorded already).")
     if body.application_ids is not None:
         unknown = set(body.application_ids) - {a.id for a in found.applications}
         if unknown:
@@ -530,26 +533,21 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             session.flush()
         recorded = 0
         kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
-        first_attached = session.scalar(
-            select(func.min(Attachment.created_at)).where(
-                Attachment.sha256 == body.sha256,
-                Attachment.entity_id.in_([x.id for x in found.sources]),
-            )
-        )
         for a in chosen:
             if a.has_it:
                 continue
-            attached = (
-                session.scalar(
-                    select(func.min(Attachment.created_at)).where(
-                        Attachment.sha256 == body.sha256,
-                        Attachment.entity_type == "application",
-                        Attachment.entity_id == a.id,
-                    )
-                )
-                or first_attached
-            )
             application = session.get(Application, a.id)
+            # When it went out: the earliest of this file on the application, its role, or its people.
+            linked = {application.id, application.role_id, application.recruiter_id} | set(
+                session.scalars(select(ApplicationContact.contact_id).where(ApplicationContact.application_id == a.id))
+            )
+            attached = session.scalar(
+                select(func.min(Attachment.created_at)).where(
+                    Attachment.sha256 == body.sha256,
+                    Attachment.entity_type.in_(("application", "role", "contact")),
+                    Attachment.entity_id.in_(linked - {None}),
+                )
+            )
             session.add(
                 ApplicationDocument(
                     application_id=a.id,

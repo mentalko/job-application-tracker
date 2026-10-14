@@ -1990,8 +1990,11 @@ export interface components {
         CvFileSource: {
             /** Id */
             id: string;
-            /** Kind */
-            kind: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "application" | "role" | "contact";
             /** Name */
             name: string;
         };

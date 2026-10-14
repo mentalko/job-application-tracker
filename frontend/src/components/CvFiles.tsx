@@ -140,7 +140,8 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
           </Checkbox.Group>
         ) : (
           <Text size="sm" c="dimmed">
-            No applications for it yet. Once there are, it shows here again so you can record it on them.
+            No applications without a CV yet. Make it a version anyway: it comes back when there are some to
+            record it on.
           </Text>
         )}
         <Text size="xs" c="dimmed">
@@ -183,8 +184,8 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
             {elsewhere.map((x, i) => (
               <span key={`${x.kind}:${x.id}`}>
                 {i ? " · " : ""}
-                {SOURCE_PREFIX[x.kind as keyof typeof SOURCE_PREFIX]}
-                <Anchor component={Link} to={`${HREF[x.kind as keyof typeof HREF]}/${x.id}`} size="xs">
+                {SOURCE_PREFIX[x.kind]}
+                <Anchor component={Link} to={`${HREF[x.kind]}/${x.id}`} size="xs">
                   {x.name}
                 </Anchor>
               </span>
@@ -194,7 +195,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
         <Text size="xs" c="dimmed">
           {missing.length
             ? `${file.version ? "Not yet recorded on" : "For"} ${missing.length} application${missing.length === 1 ? "" : "s"}: `
-            : "No applications for it yet."}
+            : "No applications without a CV yet."}
           {missing.map((a, i) => (
             <span key={a.id}>
               {i ? ", " : ""}
@@ -271,5 +272,5 @@ export function CvFilesCard() {
 export function useCvFilesToSort() {
   const { data: files } = useCvFiles();
   const dismissed = readDismissed();
-  return (files ?? []).filter((f) => !dismissed.has(f.sha256)).length;
+  return (files ?? []).filter((f) => f.version === null && !dismissed.has(f.sha256)).length;
 }

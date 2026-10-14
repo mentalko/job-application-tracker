@@ -2544,6 +2544,11 @@
             "type": "string"
           },
           "kind": {
+            "enum": [
+              "application",
+              "role",
+              "contact"
+            ],
             "title": "Kind",
             "type": "string"
           },

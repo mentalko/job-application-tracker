@@ -211,7 +211,7 @@ describe("documents", () => {
       "href",
       "/applications/a1",
     );
-    expect(within(card).getByText("No applications for it yet.")).toBeInTheDocument();
+    expect(within(card).getByText("No applications without a CV yet.")).toBeInTheDocument();
 
     // Already a version: record it on the application missing it (Litware has it).
     fireEvent.click(within(card).getByRole("button", { name: "Record as sent" }));

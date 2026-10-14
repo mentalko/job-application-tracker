@@ -415,7 +415,8 @@ version went. [Insights](#insights) compares how the versions do.
 application, to a role, or to a person, like the CV you sent a recruiter), the Documents page
 finds them: PDF and Word files (`.pdf`, `.doc`, `.docx`) named like a CV (*cv*, *resume*,
 *résumé*, *curriculum*, e.g. `Resume_2026.pdf`) or where the very same file is attached in two
-or more places. Identical files are one entry (the app compares their contents, not their
+or more places (a role and its own application count as one place, so a job ad on both isn't
+taken for a CV). Identical files are one entry (the app compares their contents, not their
 names), saying where it's attached and which applications it counts for:
 
 - a file on an application counts for that application (archived ones included);
@@ -424,16 +425,21 @@ names), saying where it's attached and which applications it counts for:
   no CV recorded yet, so a CV you sent a recruiter last month doesn't claim the applications
   that went out with a newer one.
 
-A CV sent to a recruiter before any application shows *No applications for it yet*; you can
-still make it a version, and it comes back once there are applications to record it on.
+When every application a role or person led to already has a CV (or there are none yet, say a
+CV you sent a recruiter before anything came of it), it shows *No applications without a CV
+yet*. You can still make it a version; it then drops off the list, and comes back once there's
+an application to record it on.
 
 - **Make it a version**: add it to one of your CVs, or a new one, with a version name (it
   starts as the file name), and tick the applications it went out with (all of them to start
   with). The version gets its own copy of the file, and it's recorded as sent with the ones
-  you ticked, on the day you applied (or, without an applied date, the day you attached it).
-  The files stay where you attached them too.
+  you ticked, on the day you applied (or, without an applied date, the day you attached it to
+  that application, its role or its people). The files stay where you attached them too.
 - **Record as sent**: when the file already is a version (you uploaded the same file as one),
   tick the applications that don't have it yet.
+
+Applications you untick stay on offer here until they're recorded (record the CV they did get
+on the application itself); **Not a CV** hides the whole file.
 - **Not a CV**: hides it (remembered in this browser); **Show … you said aren't CVs** brings
   them back.
 

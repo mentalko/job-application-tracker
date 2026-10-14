@@ -374,7 +374,7 @@ class CvFileApplication(BaseModel):
 
 
 class CvFileSource(BaseModel):
-    kind: str  # application | role | contact
+    kind: Literal["application", "role", "contact"]
     id: str
     name: str  # "Contoso · Backend Engineer", "Platform Engineer at Fabrikam", "Alex Morgan"
 
