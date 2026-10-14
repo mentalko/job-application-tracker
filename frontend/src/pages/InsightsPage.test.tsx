@@ -227,6 +227,60 @@ const CONVERSATIONS = {
   ],
 };
 
+const docTally = (sent: number, heard: number, interviewed: number, extra: Record<string, unknown> = {}) => ({
+  sent,
+  heard_back: heard,
+  interviewed,
+  offers: 0,
+  open: sent - heard,
+  ghosted: 0,
+  closed: heard,
+  reply_rate: sent ? heard / sent : null,
+  interview_rate: sent ? interviewed / sent : null,
+  interview_low: sent ? Math.max(0, interviewed / sent - 0.2) : null,
+  interview_high: sent ? Math.min(1, interviewed / sent + 0.2) : null,
+  median_reply_days: sent ? 4 : null,
+  ...extra,
+});
+
+const DOCUMENTS = {
+  applications: 23,
+  kinds: [
+    {
+      kind: "cv",
+      documents: [
+        {
+          id: "d1",
+          name: "Backend CV",
+          ...docTally(20, 14, 11),
+          versions: [
+            { id: "v1", label: "v1", created_at: "2026-09-01T00:00:00Z", ...docTally(10, 7, 2) },
+            {
+              id: "v2",
+              label: "v2 (impact first)",
+              created_at: "2026-09-20T00:00:00Z",
+              ...docTally(10, 7, 9),
+            },
+          ],
+        },
+      ],
+      none: docTally(3, 1, 0),
+    },
+    {
+      kind: "cover_letter",
+      documents: [
+        {
+          id: "d2",
+          name: "Short letter",
+          ...docTally(4, 2, 1),
+          versions: [{ id: "l1", label: "plain", created_at: "2026-09-01T00:00:00Z", ...docTally(4, 2, 1) }],
+        },
+      ],
+      none: docTally(19, 13, 10),
+    },
+  ],
+};
+
 function mockInsights(overrides: Record<string, unknown> = {}) {
   return mockApi({
     "/api/v1/insights/flow": FLOW,
@@ -234,6 +288,7 @@ function mockInsights(overrides: Record<string, unknown> = {}) {
     "/api/v1/insights/activity": ACTIVITY,
     "/api/v1/insights/scorecard": SCORECARD,
     "/api/v1/insights/conversations": CONVERSATIONS,
+    "/api/v1/insights/documents": DOCUMENTS,
     "/api/v1/health": {},
     ...overrides,
   });
@@ -407,5 +462,74 @@ describe("insights", () => {
       const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/conversations")).at(-1)!;
       expect(last.path).toContain("since=");
     });
+  });
+
+  it("compares CV versions, and says whether a gap is likely real", async () => {
+    const calls = mockInsights();
+    renderAt("/insights");
+    fireEvent.click(await screen.findByRole("tab", { name: "CVs and cover letters" }));
+    const card = (await screen.findByRole("heading", { name: "Which CV works best" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    expect(rows(within(card).getByRole("table")).slice(1)).toEqual([
+      "Backend CV2014 (70%)11 (55%)06 · 0 · 144 days",
+      "v1107 (70%)2 (20%)03 · 0 · 74 days",
+      "v2 (impact first)107 (70%)9 (90%)03 · 0 · 74 days",
+      "No CV recorded31 (33%)0 (0%)02 · 0 · 14 days",
+    ]);
+    expect(within(card).getByRole("img", { name: "Likely between 70% and 100%" })).toBeInTheDocument();
+
+    // The two most-sent versions, on screens and interviews: 9 of 10 against 2 of 10.
+    expect(within(card).getByText("Likely real")).toBeInTheDocument();
+    expect(
+      within(card).getByText(
+        "Likely a real difference: Backend CV · v2 (impact first): 9 of 10 got a screen or interview (90%) and Backend CV · v1: 2 of 10 got a screen or interview (20%).",
+      ),
+    ).toBeInTheDocument();
+    // A CV can't be compared with one of its own versions: they share applications.
+    const withBox = within(card).getAllByLabelText("With")[0]!;
+    fireEvent.click(withBox);
+    const withList = document.getElementById(withBox.getAttribute("aria-controls")!)!;
+    expect(within(withList).getByRole("option", { name: "Backend CV", hidden: true })).toHaveAttribute(
+      "data-combobox-disabled",
+    );
+    expect(
+      within(withList).getByRole("option", { name: "No CV recorded", hidden: true }),
+    ).not.toHaveAttribute("data-combobox-disabled");
+    fireEvent.keyDown(within(card).getAllByLabelText("With")[0]!, { key: "Escape" });
+
+    // Heard back is 7 of 10 each: nothing to see.
+    fireEvent.click(within(card).getByRole("radio", { name: "Heard back" }));
+    expect(await within(card).findByText("Could be chance")).toBeInTheDocument();
+
+    // Cover letters, with and without; four sent is too few to tell.
+    fireEvent.click(within(card).getByRole("radio", { name: "Cover letters" }));
+    expect(await within(card).findByText("Short letter")).toBeInTheDocument();
+    expect(within(card).getByText("No cover letter recorded")).toBeInTheDocument();
+    expect(within(card).getByText("Too few to tell")).toBeInTheDocument();
+
+    // The route narrows it.
+    fireEvent.click(within(card).getAllByLabelText("Route")[0]!);
+    fireEvent.click(await screen.findByRole("option", { name: "Direct", hidden: true }));
+    await waitFor(() => {
+      const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/documents")).at(-1)!;
+      expect(last.path).toContain("route=direct");
+    });
+  });
+
+  it("says how to start when no CV has been recorded", async () => {
+    mockInsights({
+      "/api/v1/insights/documents": {
+        applications: 4,
+        kinds: [{ kind: "cv", documents: [], none: docTally(4, 1, 0) }],
+      },
+    });
+    renderAt("/insights");
+    fireEvent.click(await screen.findByRole("tab", { name: "CVs and cover letters" }));
+    expect(await screen.findByText(/Nothing to compare yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Nothing to compare yet/).querySelector("a")).toHaveAttribute(
+      "href",
+      "/documents",
+    );
   });
 });

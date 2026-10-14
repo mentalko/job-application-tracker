@@ -92,6 +92,10 @@ brackets are pull requests.
   applications and interviews they're on, notes); the Timeline keeps its view, period and
   *About* in the address. Notes on a role now show for its company and the person who pitched
   it (#70).
+- **Which CV works best**: an Insights tab comparing CV and cover-letter versions (an A/B
+  test): heard back, screens or interviews with a 95% range, offers and typical reply time,
+  with and without one recorded; pick two and it says whether the gap is likely real
+  (Fisher's exact test) (#71).
 - **Ghosts are easy to spot**: a ghost before the name of anyone you've marked *Ghosted*, on
   their page and tile, the applications they brought you, calls, Next actions, the Timeline,
   search and Insights; a *Ghosted* filter on the Recruiters page; and **Not a ghost** (or the
