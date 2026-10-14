@@ -27,6 +27,7 @@ import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
+import { GhostMark } from "../components/GhostMark";
 import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
 import { TimelineButton } from "../components/TimelineButton";
 import { NotesCard } from "../components/Notes";
@@ -66,7 +67,13 @@ export function PersonPage() {
       </Anchor>
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm" align="flex-start">
-          <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
+          {contact.closed_as === "ghosted" ? (
+            <span style={{ marginTop: 4 }}>
+              <GhostMark closedAs="ghosted" size={26} />
+            </span>
+          ) : (
+            <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
+          )}
           <div>
             <Title order={2}>{contact.name}</Title>
             <Text c="dimmed">

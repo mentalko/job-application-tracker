@@ -22,6 +22,7 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
 
+import { PersonName } from "./GhostMark";
 import { useApplications, useContacts } from "../api/hooks";
 import {
   MEETING_KINDS,
@@ -252,7 +253,7 @@ export function MeetingLine({
         <Group gap={6}>
           {showWho && (
             <Anchor component={Link} to={`/people/${meeting.contact_id}`} size="xs">
-              {meeting.contact_name}
+              <PersonName id={meeting.contact_id} name={meeting.contact_name} size={12} />
               {where ? ` · ${where}` : ""}
             </Anchor>
           )}

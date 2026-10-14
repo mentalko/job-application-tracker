@@ -20,6 +20,7 @@ import { Link, useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import type { ApplicationDetail } from "../api/client";
 import { useLinkContact, useUnlinkContact } from "../api/detailHooks";
 import { useApplication, useContacts, useRoles, useUpdateApplication } from "../api/hooks";
@@ -148,7 +149,7 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
               <div>
                 {person ? (
                   <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
-                    {person.name}
+                    <PersonName id={person.id} name={person.name} />
                   </Anchor>
                 ) : (
                   <Text size="sm" fw={600}>

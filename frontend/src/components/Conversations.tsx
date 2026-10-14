@@ -22,6 +22,7 @@ import {
   type ConversationPerson,
   type Conversations,
 } from "../api/insightHooks";
+import { PersonName } from "./GhostMark";
 import { formatDate } from "../utils/time";
 import { SankeyChart } from "./SankeyChart";
 
@@ -140,7 +141,7 @@ function WhoTable({ data }: { data: Conversations }) {
                       <>
                         <Group gap={6} wrap="nowrap">
                           <Anchor component={Link} to={`/people/${r.id}`} size="sm" fw={600}>
-                            {r.name}
+                            <PersonName id={r.id} name={r.name} />
                           </Anchor>
                           {r.closed_as && (
                             <Badge

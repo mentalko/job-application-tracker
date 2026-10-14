@@ -2,6 +2,7 @@ import { Anchor, Badge, Card, Group, Loader, SegmentedControl, Table, Text, Titl
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { PersonName } from "./GhostMark";
 import { useScorecard, type Score } from "../api/insightHooks";
 import { ago } from "../utils/time";
 
@@ -101,7 +102,9 @@ export function ScorecardCard({ since }: { since?: string }) {
                         </Anchor>
                       ) : (
                         <>
-                          <Text size="sm">{s.name}</Text>
+                          <Text size="sm">
+                            <PersonName id={s.id} name={s.name} />
+                          </Text>
                           {agencyId && s.agency_name && (
                             <Anchor component={Link} to={`/agencies/${agencyId}`} size="xs" c="dimmed">
                               {s.agency_name}

@@ -19,6 +19,7 @@ import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-ro
 import dayjs from "dayjs";
 import { Fragment, useMemo, useState } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
   CATEGORIES,
@@ -101,7 +102,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
   for (const p of item.people) {
     parts.push(
       <Anchor key={p.id} component={Link} to={`/people/${p.id}`} size="xs">
-        {p.name}
+        <PersonName id={p.id} name={p.name} size={12} />
       </Anchor>,
     );
   }
@@ -201,6 +202,7 @@ function hrefOf(item: TimelineItem): string {
 interface Lane {
   key: string;
   label: string;
+  personId?: string;
   href: string;
   items: TimelineItem[];
 }
@@ -224,7 +226,11 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
     if (by === "company")
       add(item.company_id, item.company_name ?? "", `/companies/${item.company_id}`, item);
     if (by === "agency") add(item.agency_id, item.agency_name ?? "", `/agencies/${item.agency_id}`, item);
-    if (by === "person") for (const p of item.people) add(p.id, p.name, `/people/${p.id}`, item);
+    if (by === "person")
+      for (const p of item.people) {
+        add(p.id, p.name, `/people/${p.id}`, item);
+        lanes.get(p.id)!.personId = p.id;
+      }
   }
   // Items arrive newest first, so a lane's first item is its latest: busiest-lately on top.
   return [...lanes.values()].sort(
@@ -314,7 +320,11 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                     style={{ flexShrink: 0 }}
                     title={lane.label}
                   >
-                    {lane.label}
+                    {lane.personId ? (
+                      <PersonName id={lane.personId} name={lane.label} size={12} />
+                    ) : (
+                      lane.label
+                    )}
                   </Anchor>
                   <Box style={{ position: "relative", flex: 1, height: 28 }}>
                     <Box

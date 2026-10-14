@@ -33,11 +33,12 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { Contact } from "../api/client";
+import { GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
-import { closedLabel } from "../components/PersonChase";
+import { closedLabel, UndoClosed } from "../components/PersonChase";
 import { formatDate } from "../utils/time";
 
 function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
@@ -103,8 +104,9 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               c="inherit"
               truncate="end"
               display="block"
-              title={contact.name}
+              title={contact.closed_as === "ghosted" ? `${contact.name} (ghosted)` : contact.name}
             >
+              <GhostMark closedAs={contact.closed_as} />
               {contact.name}
             </Anchor>
             {contact.title && (
@@ -149,7 +151,13 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               </Badge>
             )}
             {contact.closed_as && (
-              <Badge size="sm" variant="light" color="gray" style={{ textTransform: "none" }}>
+              <Badge
+                size="sm"
+                variant="light"
+                color="gray"
+                style={{ textTransform: "none" }}
+                rightSection={<UndoClosed contact={contact} />}
+              >
                 {closedLabel(contact.closed_as)}
                 {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
               </Badge>
@@ -193,7 +201,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
   );
 }
 
-type Show = "all" | "agency" | "company" | "independent";
+type Show = "all" | "agency" | "company" | "independent" | "ghosted";
 
 export function RecruitersPage() {
   const { data: agencies, isLoading: agenciesLoading } = useAgencies();
@@ -225,6 +233,7 @@ export function RecruitersPage() {
     );
   const shown = (contacts ?? [])
     .filter((c) => {
+      if (show === "ghosted") return c.closed_as === "ghosted";
       const kind = whereOf(c)?.kind ?? "independent";
       return show === "all" || show === kind;
     })
@@ -279,6 +288,10 @@ export function RecruitersPage() {
             { value: "agency", label: "Agencies" },
             { value: "company", label: "Companies" },
             { value: "independent", label: "Independent" },
+            {
+              value: "ghosted",
+              label: `Ghosted · ${(contacts ?? []).filter((c) => c.closed_as === "ghosted").length}`,
+            },
           ]}
         />
       </Group>

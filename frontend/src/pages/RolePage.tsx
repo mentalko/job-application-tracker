@@ -16,6 +16,7 @@ import { IconArrowLeft, IconExternalLink, IconPencil, IconTargetArrow } from "@t
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import { stageLookup, useApplications, useWorkflow } from "../api/hooks";
 import { ROLE_STATUS, useRoleSummary } from "../api/roleHooks";
 import { AttachmentsCard } from "../components/Attachments";
@@ -133,7 +134,7 @@ export function RolePage() {
                 {role.contact_id && (
                   <Fact label="From">
                     <Anchor component={Link} to={`/people/${role.contact_id}`} size="sm">
-                      {role.contact_name}
+                      <PersonName id={role.contact_id} name={role.contact_name ?? ""} />
                     </Anchor>
                     {role.agency_name && role.agency_id && (
                       <>
@@ -181,7 +182,13 @@ export function RolePage() {
                             {a.company_name} · {a.role_title}
                           </Anchor>
                           <Text size="xs" c="dimmed">
-                            {a.recruiter_name ? `via ${a.recruiter_name}` : "Direct"}
+                            {a.recruiter_name ? (
+                              <>
+                                via <PersonName id={a.recruiter_id} name={a.recruiter_name} size={12} />
+                              </>
+                            ) : (
+                              "Direct"
+                            )}
                             {a.applied_on ? ` · applied ${formatDate(a.applied_on)}` : ""}
                           </Text>
                         </Table.Td>

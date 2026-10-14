@@ -28,6 +28,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { GhostMark, useGhosted } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
 import {
   stageLookup,
@@ -111,6 +112,7 @@ function LogActivity({ id }: { id: string }) {
 
 /** Title, company, badges, move/undo and key facts. Used by the drawer and the full page. */
 export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
+  const ghosted = useGhosted();
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
@@ -193,6 +195,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       <Stack gap={4}>
         <Text size="sm">
           <b>Route:</b>{" "}
+          {app.recruiter_name && <GhostMark closedAs={ghosted(app.recruiter_id) ? "ghosted" : null} />}
           {app.route === "agency"
             ? `Through ${[app.recruiter_name, app.agency_name].filter(Boolean).join(" at ") || "an agency"}`
             : app.route === "referral"

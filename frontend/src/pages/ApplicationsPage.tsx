@@ -21,6 +21,7 @@ import { useDebouncedValue, useLocalStorage } from "@mantine/hooks";
 import { IconBriefcase, IconChevronDown, IconChevronUp, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
+import { GhostMark, useGhosted } from "../components/GhostMark";
 import type { ApplicationRow } from "../api/client";
 import {
   stageLookup,
@@ -70,6 +71,7 @@ function routeLabel(row: ApplicationRow): string {
 }
 
 export function ApplicationsPage() {
+  const ghosted = useGhosted();
   const [q, setQ] = useState("");
   const [debouncedQ] = useDebouncedValue(q, 250);
   const [stage, setStage] = useState<string[]>([]);
@@ -254,7 +256,12 @@ export function ApplicationsPage() {
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">{routeLabel(row)}</Text>
+                    <Text size="sm">
+                      {row.route === "agency" && row.recruiter_name && (
+                        <GhostMark closedAs={ghosted(row.recruiter_id) ? "ghosted" : null} />
+                      )}
+                      {routeLabel(row)}
+                    </Text>
                   </Table.Td>
                   <Table.Td>
                     <Stack gap={4} align="flex-start">

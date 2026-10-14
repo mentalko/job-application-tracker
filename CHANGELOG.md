@@ -96,6 +96,10 @@ brackets are pull requests.
   test): heard back, screens or interviews with a 95% range, offers and typical reply time,
   with and without one recorded; pick two and it says whether the gap is likely real
   (Fisher's exact test) (#71).
+- **Ghosts are easy to spot**: a ghost before the name of anyone you've marked *Ghosted*, on
+  their page and tile, the applications they brought you, calls, Next actions, the Timeline,
+  search and Insights; a *Ghosted* filter on the Recruiters page; and **Not a ghost** (or the
+  **×** on their chip) to take it off whenever you like, with an Undo (#72).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

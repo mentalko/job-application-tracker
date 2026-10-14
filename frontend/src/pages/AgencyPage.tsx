@@ -16,6 +16,7 @@ import { IconArrowLeft, IconPencil, IconPlus, IconUsers } from "@tabler/icons-re
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import type { Contact } from "../api/client";
 import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -124,7 +125,12 @@ export function AgencyPage() {
                         </Text>
                         <Text size="xs" c="dimmed">
                           {a.role_title}
-                          {a.recruiter_name ? ` · ${a.recruiter_name}` : ""}
+                          {a.recruiter_name && (
+                            <>
+                              {" · "}
+                              <PersonName id={a.recruiter_id} name={a.recruiter_name} size={12} />
+                            </>
+                          )}
                         </Text>
                       </Table.Td>
                       <Table.Td>

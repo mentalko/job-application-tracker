@@ -1,6 +1,6 @@
-import { Badge, Button, Group, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Text, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconGhost2, IconRefresh, IconSend, IconThumbDown } from "@tabler/icons-react";
+import { IconGhost2, IconRefresh, IconSend, IconThumbDown, IconX } from "@tabler/icons-react";
 import dayjs from "dayjs";
 
 import type { Contact } from "../api/client";
@@ -12,6 +12,11 @@ const CLOSED: Record<string, string> = { ghosted: "Ghosted", not_interested: "No
 export const closedLabel = (closedAs: string) => CLOSED[closedAs] ?? closedAs;
 
 const today = () => dayjs().format("YYYY-MM-DD");
+
+const takenOff = (c: Contact) =>
+  c.closed_as === "ghosted"
+    ? `${c.name}: not a ghost any more`
+    : `${c.name}: not marked Not interested any more`;
 
 /** Where the conversation stood, so an Undo can put it back exactly. */
 const before = (c: Contact) => ({
@@ -28,7 +33,7 @@ const before = (c: Contact) => ({
  * waiting again from today), **Ghosted** or **Not interested** (they leave Next actions). Each
  * says what it did, with an Undo.
  */
-export function PersonChase({ contact, compact }: { contact: Contact; compact?: boolean }) {
+function useAct(contact: Contact) {
   const update = useSetPersonReply();
   const act = (body: Parameters<typeof update.mutate>[0]["body"], message: string) => {
     const was = before(contact);
@@ -58,6 +63,11 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
       },
     );
   };
+  return { act, pending: update.isPending };
+}
+
+export function PersonChase({ contact, compact }: { contact: Contact; compact?: boolean }) {
+  const { act, pending } = useAct(contact);
   const size = compact ? "compact-xs" : "xs";
   return (
     <Group gap={4} wrap="nowrap">
@@ -67,7 +77,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           variant="light"
           color="blue"
           leftSection={<IconSend size={14} />}
-          disabled={update.isPending}
+          disabled={pending}
           onClick={() => act({ chased_on: today() }, `Chased ${contact.name}`)}
           aria-label={`Chased: ${contact.name}`}
         >
@@ -80,7 +90,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           variant="subtle"
           color="gray"
           leftSection={<IconGhost2 size={14} />}
-          disabled={update.isPending}
+          disabled={pending}
           onClick={() =>
             act({ closed_as: "ghosted", closed_on: today() }, `${contact.name}: ghosted, off Next actions`)
           }
@@ -95,7 +105,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           variant="subtle"
           color="gray"
           leftSection={<IconThumbDown size={14} />}
-          disabled={update.isPending}
+          disabled={pending}
           onClick={() =>
             act(
               { closed_as: "not_interested", closed_on: today() },
@@ -121,9 +131,9 @@ export function waitingOrChased(person: Contact, waitingLabel: (since: string) =
   return waitingLabel(since);
 }
 
-/** "Ghosted · 5 Oct 2026" with a Reopen button, for someone you've stopped expecting anything from. */
+/** "Ghosted · 5 Oct 2026" with a button to take it off, for someone you've stopped expecting anything from. */
 export function PersonClosed({ contact }: { contact: Contact }) {
-  const update = useSetPersonReply();
+  const { act, pending } = useAct(contact);
   if (!contact.closed_as) return null;
   return (
     <Group gap={6} wrap="nowrap">
@@ -131,16 +141,47 @@ export function PersonClosed({ contact }: { contact: Contact }) {
         {closedLabel(contact.closed_as)}
         {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
       </Badge>
-      <Button
-        size="xs"
+      <Tooltip
+        label={
+          contact.closed_as === "ghosted"
+            ? "They were just slow, or got back in touch: take Ghosted off, whenever it was set"
+            : "Take Not interested off"
+        }
+      >
+        <Button
+          size="xs"
+          variant="light"
+          color="gray"
+          leftSection={<IconRefresh size={14} />}
+          loading={pending}
+          onClick={() => act({ closed_as: null }, takenOff(contact))}
+        >
+          {contact.closed_as === "ghosted" ? "Not a ghost" : "Remove Not interested"}
+        </Button>
+      </Tooltip>
+    </Group>
+  );
+}
+
+/** A small undo on a Ghosted or Not interested chip (the Recruiters tiles). */
+export function UndoClosed({ contact }: { contact: Contact }) {
+  const { act, pending } = useAct(contact);
+  const what = contact.closed_as === "ghosted" ? "Ghosted" : "Not interested";
+  return (
+    <Tooltip
+      label={contact.closed_as === "ghosted" ? "Not a ghost: take Ghosted off" : "Take Not interested off"}
+    >
+      <ActionIcon
+        size={20}
         variant="subtle"
         color="gray"
-        leftSection={<IconRefresh size={14} />}
-        loading={update.isPending}
-        onClick={() => update.mutate({ id: contact.id, body: { closed_as: null } })}
+        radius="xl"
+        aria-label={`Take ${what} off ${contact.name}`}
+        loading={pending}
+        onClick={() => act({ closed_as: null }, takenOff(contact))}
       >
-        Reopen
-      </Button>
-    </Group>
+        <IconX size={12} />
+      </ActionIcon>
+    </Tooltip>
   );
 }

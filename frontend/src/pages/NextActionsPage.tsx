@@ -16,6 +16,7 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
@@ -128,7 +129,12 @@ function AppLine({
             </Text>
             <Text size="xs" c="dimmed" truncate="end">
               {row.role_title}
-              {row.recruiter_name ? ` · ${row.recruiter_name}` : ""}
+              {row.recruiter_name && (
+                <>
+                  {" · "}
+                  <PersonName id={row.recruiter_id} name={row.recruiter_name} size={12} />
+                </>
+              )}
             </Text>
           </div>
         </Group>
@@ -192,7 +198,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
     <Group justify="space-between" wrap="wrap" gap="xs">
       <div style={{ minWidth: 0 }}>
         <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
-          {person.name}
+          <PersonName id={person.id} name={person.name} />
         </Anchor>
         {where && (
           <Text size="xs" c="dimmed" truncate="end">
