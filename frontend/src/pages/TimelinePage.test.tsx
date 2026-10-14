@@ -6,8 +6,10 @@ import { App } from "../App";
 import { makeRouter } from "../router";
 import { item, mockApi } from "../test/mockApi";
 
-function renderTimeline() {
-  render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/timeline"] }))} />);
+function renderTimeline(url = "/timeline") {
+  const router = makeRouter(createMemoryHistory({ initialEntries: [url] }));
+  render(<App router={router} />);
+  return router;
 }
 
 const now = new Date().toISOString();
@@ -94,6 +96,33 @@ describe("timeline", () => {
     expect(
       within(await screen.findByRole("list", { name: "Alex Recruiter" })).getAllByRole("button"),
     ).toHaveLength(2);
+  });
+
+  it("opens on one person over all time from a link, and keeps the filters in the URL", async () => {
+    const calls = mockApi({
+      "/api/v1/timeline": { items: ITEMS, now },
+      "/api/v1/companies": [{ id: "co2", name: "Fabrikam" }],
+      "/api/v1/agencies": [],
+      "/api/v1/contacts": [{ id: "c2", name: "Riley Chen" }],
+      "/api/v1/health": {},
+    });
+    const router = renderTimeline("/timeline?about=contact%3Ac2&period=all");
+    await screen.findByText("Applied → Screen");
+    const timelineCalls = () =>
+      calls
+        .filter((c) => c.path.startsWith("/api/v1/timeline"))
+        .map((c) => new URL(c.path, "http://localhost"));
+    expect(timelineCalls()[0]!.searchParams.get("contact_id")).toBe("c2");
+    expect(timelineCalls()[0]!.searchParams.get("since")).toBeNull();
+    expect(await screen.findByDisplayValue("Riley Chen")).toBeInTheDocument();
+    fireEvent.click(screen.getByDisplayValue("All time"));
+
+    // Choosing a period writes it back to the URL, keeping the person.
+    fireEvent.click(await screen.findByRole("option", { name: "Last 30 days", hidden: true }));
+    await waitFor(() => expect(router.state.location.search).toEqual({ about: "contact:c2", period: 30 }));
+    const last = timelineCalls().at(-1)!;
+    expect(last.searchParams.get("contact_id")).toBe("c2");
+    expect(last.searchParams.get("since")).toBeTruthy();
   });
 
   it("leaves bookkeeping out until you ask for it", async () => {

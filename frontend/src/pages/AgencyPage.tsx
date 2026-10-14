@@ -21,6 +21,7 @@ import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { TimelineButton } from "../components/TimelineButton";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
@@ -65,6 +66,7 @@ export function AgencyPage() {
           )}
         </Group>
         <Group gap="xs">
+          <TimelineButton kind="agency" id={agency.id} name={agency.name} />
           <Button
             variant="default"
             size="xs"

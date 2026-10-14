@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconTimeline } from "@tabler/icons-react";
-import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Fragment, useMemo, useState } from "react";
 
@@ -407,13 +407,32 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   );
 }
 
-export function TimelinePage() {
-  // ?view=lanes opens straight into lanes (handy for a bookmark).
+/** The view, period and "about" filter live in the URL, so a person's page can link straight to
+ * their timeline (?about=contact:<id>&period=all), and a bookmark or Back keeps them. */
+function useTimelineSearch() {
   const search: Record<string, unknown> = useRouterState({ select: (s) => s.location.search });
-  const [view, setView] = useState<"list" | "lanes">(search.view === "lanes" ? "lanes" : "list");
-  const [period, setPeriod] = useState("90");
+  const navigate = useNavigate();
+  const view: "list" | "lanes" = search.view === "lanes" ? "lanes" : "list";
+  // The router reads ?period=30 as a number.
+  const period = PERIODS.some((p) => p.value === String(search.period)) ? String(search.period) : "90";
+  const about =
+    typeof search.about === "string" && /^(company|agency|contact):./.test(search.about)
+      ? search.about
+      : null;
+  const set = (patch: { view?: string; period?: string; about?: string | null }) => {
+    const next: Record<string, unknown> = { ...search, ...patch };
+    if (next.view === "list") delete next.view;
+    if (next.period === "90") delete next.period;
+    else if (next.period !== undefined && next.period !== "all") next.period = Number(next.period);
+    if (!next.about) delete next.about;
+    void navigate({ to: ".", search: next as never, replace: true });
+  };
+  return { view, period, about, set };
+}
+
+export function TimelinePage() {
+  const { view, period, about, set } = useTimelineSearch();
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
-  const [about, setAbout] = useState<string | null>(null);
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
   const { data: contacts } = useContacts();
@@ -456,7 +475,7 @@ export function TimelinePage() {
         </div>
         <SegmentedControl
           value={view}
-          onChange={(v) => setView(v as "list" | "lanes")}
+          onChange={(v) => set({ view: v })}
           data={[
             { value: "list", label: "List" },
             { value: "lanes", label: "Lanes" },
@@ -470,7 +489,7 @@ export function TimelinePage() {
           label="Period"
           data={PERIODS}
           value={period}
-          onChange={(v) => setPeriod(v ?? "90")}
+          onChange={(v) => set({ period: v ?? "90" })}
           allowDeselect={false}
           w={170}
         />
@@ -479,7 +498,7 @@ export function TimelinePage() {
           placeholder="Everyone and everything"
           data={aboutOptions}
           value={about}
-          onChange={setAbout}
+          onChange={(v) => set({ about: v })}
           searchable
           clearable
           w={260}
