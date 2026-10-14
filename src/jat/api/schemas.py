@@ -373,6 +373,12 @@ class CvFileApplication(BaseModel):
     has_it: bool  # already recorded as sent with the matching version
 
 
+class CvFileSource(BaseModel):
+    kind: Literal["application", "role", "contact"]
+    id: str
+    name: str  # "Contoso · Backend Engineer", "Platform Engineer at Fabrikam", "Alex Morgan"
+
+
 class CvFileVersion(BaseModel):
     id: str
     label: str
@@ -381,13 +387,15 @@ class CvFileVersion(BaseModel):
 
 
 class CvFile(BaseModel):
-    """A file attached to applications that looks like a CV: one per distinct file (by content)."""
+    """A file that looks like a CV, attached to applications, roles or people: one per distinct
+    file (by content)."""
 
     sha256: str
     name: str
     size: int
     content_type: str | None
-    applications: list[CvFileApplication]
+    sources: list[CvFileSource]  # where it's attached: applications, roles, people
+    applications: list[CvFileApplication]  # the applications it counts for
     version: CvFileVersion | None  # a document version with the very same file, if there is one
 
 
@@ -400,6 +408,8 @@ class CvFileAdopt(In):
     document_name: str | None = Field(None, max_length=200)
     kind: DocumentKind = "cv"
     label: str | None = Field(None, max_length=100)
+    # Only these of its applications (all of them when left out).
+    application_ids: list[str] | None = None
 
 
 class CvFileAdopted(BaseModel):

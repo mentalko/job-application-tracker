@@ -34,7 +34,7 @@ filtered by date and route; conversion and median time per stage; direct vs recr
 outcomes; weekly activity; a recruiter and agency scorecard; and a Recruiter
 conversations tab: calls, roles pitched, applied or passed, where pitched roles went, time
 to decide, per person and agency, and why you passed, `GET /api/v1/insights/conversations`),
-an A/B test of CV and cover-letter versions (CV files attached to applications, identical by content, become versions in one go: `GET /api/v1/cv-files`, `POST /api/v1/cv-files/adopt`; heard back, screens or interviews, offers, a 95%
+an A/B test of CV and cover-letter versions (CV files attached to applications, roles or people (a CV sent to a recruiter), identical by content, become versions in one go: `GET /api/v1/cv-files`, `POST /api/v1/cv-files/adopt`, optionally for chosen `application_ids`; heard back, screens or interviews, offers, a 95%
 range, and Fisher's exact test between two; `GET /api/v1/insights/documents`),
 offers compared side by side
 (salary, bonus, equity, pension and holiday, or day rate, IR35 and length, with a

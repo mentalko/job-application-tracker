@@ -586,8 +586,11 @@ export interface paths {
         };
         /**
          * Cv Files
-         * @description CV files attached to applications that aren't recorded as document versions sent with them
-         *     yet: one per distinct file, named like a CV or on two or more applications.
+         * @description CV files attached to applications, roles or people (a CV you sent a recruiter) that aren't
+         *     recorded as document versions sent with their applications yet: one per distinct file, named
+         *     like a CV or attached in two or more places. A file on a role counts for that role's
+         *     applications, and one on a person for the applications they're on, but only ones with no CV
+         *     recorded yet.
          */
         get: operations["cv_files_api_v1_cv_files_get"];
         put?: never;
@@ -610,9 +613,9 @@ export interface paths {
         /**
          * Adopt Cv File
          * @description Make the file a version of a document (copying the file, so the version keeps it), unless
-         *     it already is one, and record that version as sent with every application it's attached to,
-         *     on the day you applied (or, without one, the day you attached it). When the file already is a
-         *     version, `document_id`, `document_name` and `label` are ignored.
+         *     it already is one, and record that version as sent with its applications (or just
+         *     `application_ids`), on the day you applied (or, without one, the day you attached it). When
+         *     the file already is a version, `document_id`, `document_name` and `label` are ignored.
          */
         post: operations["adopt_cv_file_api_v1_cv_files_adopt_post"];
         delete?: never;
@@ -1922,7 +1925,8 @@ export interface components {
         };
         /**
          * CvFile
-         * @description A file attached to applications that looks like a CV: one per distinct file (by content).
+         * @description A file that looks like a CV, attached to applications, roles or people: one per distinct
+         *     file (by content).
          */
         CvFile: {
             /** Applications */
@@ -1935,6 +1939,8 @@ export interface components {
             sha256: string;
             /** Size */
             size: number;
+            /** Sources */
+            sources: components["schemas"]["CvFileSource"][];
             version: components["schemas"]["CvFileVersion"] | null;
         };
         /**
@@ -1943,6 +1949,8 @@ export interface components {
          *     it already is one, record it as sent with the applications it's attached to.
          */
         CvFileAdopt: {
+            /** Application Ids */
+            application_ids?: string[] | null;
             /** Document Id */
             document_id?: string | null;
             /** Document Name */
@@ -1977,6 +1985,18 @@ export interface components {
             id: string;
             /** Role Title */
             role_title: string;
+        };
+        /** CvFileSource */
+        CvFileSource: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "application" | "role" | "contact";
+            /** Name */
+            name: string;
         };
         /** CvFileVersion */
         CvFileVersion: {

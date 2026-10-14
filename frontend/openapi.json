@@ -2348,7 +2348,7 @@
         "type": "object"
       },
       "CvFile": {
-        "description": "A file attached to applications that looks like a CV: one per distinct file (by content).",
+        "description": "A file that looks like a CV, attached to applications, roles or people: one per distinct\nfile (by content).",
         "properties": {
           "applications": {
             "items": {
@@ -2380,6 +2380,13 @@
             "title": "Size",
             "type": "integer"
           },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/CvFileSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
           "version": {
             "anyOf": [
               {
@@ -2396,6 +2403,7 @@
           "name",
           "size",
           "content_type",
+          "sources",
           "applications",
           "version"
         ],
@@ -2406,6 +2414,20 @@
         "additionalProperties": false,
         "description": "Make a file a version of a document (an existing one, or a new one named here), or, when\nit already is one, record it as sent with the applications it's attached to.",
         "properties": {
+          "application_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Ids"
+          },
           "document_id": {
             "anyOf": [
               {
@@ -2513,6 +2535,34 @@
           "has_it"
         ],
         "title": "CvFileApplication",
+        "type": "object"
+      },
+      "CvFileSource": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "application",
+              "role",
+              "contact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "name"
+        ],
+        "title": "CvFileSource",
         "type": "object"
       },
       "CvFileVersion": {
@@ -10601,7 +10651,7 @@
     },
     "/api/v1/cv-files": {
       "get": {
-        "description": "CV files attached to applications that aren't recorded as document versions sent with them\nyet: one per distinct file, named like a CV or on two or more applications.",
+        "description": "CV files attached to applications, roles or people (a CV you sent a recruiter) that aren't\nrecorded as document versions sent with their applications yet: one per distinct file, named\nlike a CV or attached in two or more places. A file on a role counts for that role's\napplications, and one on a person for the applications they're on, but only ones with no CV\nrecorded yet.",
         "operationId": "cv_files_api_v1_cv_files_get",
         "responses": {
           "200": {
@@ -10627,7 +10677,7 @@
     },
     "/api/v1/cv-files/adopt": {
       "post": {
-        "description": "Make the file a version of a document (copying the file, so the version keeps it), unless\nit already is one, and record that version as sent with every application it's attached to,\non the day you applied (or, without one, the day you attached it). When the file already is a\nversion, `document_id`, `document_name` and `label` are ignored.",
+        "description": "Make the file a version of a document (copying the file, so the version keeps it), unless\nit already is one, and record that version as sent with its applications (or just\n`application_ids`), on the day you applied (or, without one, the day you attached it). When\nthe file already is a version, `document_id`, `document_name` and `label` are ignored.",
         "operationId": "adopt_cv_file_api_v1_cv_files_adopt_post",
         "requestBody": {
           "content": {

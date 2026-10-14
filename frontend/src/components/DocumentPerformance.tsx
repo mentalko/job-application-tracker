@@ -302,9 +302,8 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
       {toSort > 0 && (
         <Alert color="blue" variant="light">
           <Text size="sm">
-            {toSort} CV file{toSort === 1 ? "" : "s"} attached to your applications{" "}
-            {toSort === 1 ? "isn't" : "aren't"} a version yet, so {toSort === 1 ? "it isn't" : "they aren't"}{" "}
-            compared here.{" "}
+            {toSort} CV file{toSort === 1 ? "" : "s"} you've attached {toSort === 1 ? "isn't" : "aren't"} a
+            version yet, so {toSort === 1 ? "it isn't" : "they aren't"} compared here.{" "}
             <Anchor component={Link} to="/documents" size="sm">
               Sort them out on Documents
             </Anchor>

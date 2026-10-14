@@ -16,7 +16,17 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, Response, Upl
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ..db.models import Application, ApplicationDocument, Attachment, Company, Document, DocumentVersion, Role
+from ..db.models import (
+    Application,
+    ApplicationContact,
+    ApplicationDocument,
+    Attachment,
+    Company,
+    Contact,
+    Document,
+    DocumentVersion,
+    Role,
+)
 from ..db.types import utcnow
 from ..domain import applications as svc
 from ..domain.workflow import Workflow
@@ -321,7 +331,7 @@ def unsend_document(app_id: str, link_id: str, session: SessionDep):
     return Response(status_code=204)
 
 
-# Files on applications that look like a CV: by name, or the same file on two or more.
+# Files that look like a CV: by name, or the same file in two or more places.
 CV_NAME = re.compile(r"(?<![a-z])(cv|resume|résumé|curriculum)(?![a-z])", re.IGNORECASE)
 CV_TYPES = frozenset(
     {
@@ -343,17 +353,36 @@ def _looks_like_cv(name: str) -> bool:
 
 
 def _cv_files(session: Session) -> list[S.CvFile]:
-    rows = session.execute(
-        select(Attachment, Application.id, Company.name, Role.title)
-        .join(Application, (Attachment.entity_type == "application") & (Attachment.entity_id == Application.id))
-        .join(Role, Application.role_id == Role.id)
-        .join(Company, Role.company_id == Company.id)
-        .order_by(Attachment.created_at)
-    ).all()
-    groups: dict[str, list] = {}
-    for att, app_id, company, title in rows:
-        if _is_cv_type(att):
-            groups.setdefault(att.sha256, []).append((att, app_id, company, title))
+    atts = [
+        a
+        for a in session.scalars(
+            select(Attachment)
+            .where(Attachment.entity_type.in_(("application", "role", "contact")))
+            .order_by(Attachment.created_at)
+        )
+        if _is_cv_type(a)
+    ]
+    groups: dict[str, list[Attachment]] = {}
+    for a in atts:
+        groups.setdefault(a.sha256, []).append(a)
+    apps = {
+        a.id: (a, company, title)
+        for a, company, title in session.execute(
+            select(Application, Company.name, Role.title)
+            .join(Role, Application.role_id == Role.id)
+            .join(Company, Role.company_id == Company.id)
+        )
+    }
+    roles = {r.id: (r, company) for r, company in session.execute(select(Role, Company.name).join(Company))}
+    people = {c.id: c for c in session.scalars(select(Contact))}
+    by_role: dict[str, list[str]] = {}
+    by_person: dict[str, set[str]] = {}
+    for app_id, (a, _, _) in apps.items():
+        by_role.setdefault(a.role_id, []).append(app_id)
+        if a.recruiter_id:
+            by_person.setdefault(a.recruiter_id, set()).add(app_id)
+    for link in session.scalars(select(ApplicationContact)):
+        by_person.setdefault(link.contact_id, set()).add(link.application_id)
     # Every version with each file (the same file can be a version of two documents); the newest
     # is the one to record.
     versions: dict[str, list[tuple[DocumentVersion, Document]]] = {}
@@ -365,28 +394,61 @@ def _cv_files(session: Session) -> list[S.CvFile]:
     ):
         versions.setdefault(sha, []).append((v, d))
     sent = set(session.execute(select(ApplicationDocument.application_id, ApplicationDocument.document_version_id)))
+    # Applications that already have some CV recorded: a CV on a role or a person doesn't claim them.
+    with_cv = set(
+        session.scalars(
+            select(ApplicationDocument.application_id)
+            .join(DocumentVersion, ApplicationDocument.document_version_id == DocumentVersion.id)
+            .join(Document, DocumentVersion.document_id == Document.id)
+            .where(Document.kind == "cv")
+        )
+    )
     out = []
     for sha, items in groups.items():
-        apps = {app_id: (company, title) for _, app_id, company, title in items}
-        first = items[0][0]
-        if len(apps) < 2 and not any(_looks_like_cv(att.original_name) for att, *_ in items):
-            continue
         matches = versions.get(sha, [])
+        mine = {v.id for v, _ in matches}
+        sources: dict[tuple[str, str], str] = {}
+        counts: dict[str, None] = {}  # application ids, in order
+        for a in items:
+            if a.entity_type == "application" and a.entity_id in apps:
+                _, company, title = apps[a.entity_id]
+                sources[("application", a.entity_id)] = f"{company} · {title}"
+                counts[a.entity_id] = None
+            elif a.entity_type == "role" and a.entity_id in roles:
+                role, company = roles[a.entity_id]
+                sources[("role", role.id)] = f"{role.title} at {company}"
+                for app_id in by_role.get(role.id, []):
+                    if app_id not in with_cv or any((app_id, v) in sent for v in mine):
+                        counts[app_id] = None
+            elif a.entity_type == "contact" and a.entity_id in people:
+                sources[("contact", a.entity_id)] = people[a.entity_id].name
+                for app_id in sorted(by_person.get(a.entity_id, ()), key=lambda i: apps[i][0].created_at):
+                    if app_id not in with_cv or any((app_id, v) in sent for v in mine):
+                        counts[app_id] = None
+        if not sources:
+            continue
+        # "Several places": a role and its own application are one place (a job ad is often on both).
+        app_roles = {apps[i][0].role_id for k, i in sources if k == "application"}
+        places = {(k, i) for k, i in sources if not (k == "role" and i in app_roles)}
+        if len(places) < 2 and not any(_looks_like_cv(a.original_name) for a in items):
+            continue
         newest = matches[-1] if matches else None
+        first = items[0]
         out.append(
             S.CvFile(
                 sha256=sha,
                 name=first.original_name,
                 size=first.size,
                 content_type=first.content_type,
+                sources=[S.CvFileSource(kind=k, id=i, name=n) for (k, i), n in sources.items()],
                 applications=[
                     S.CvFileApplication(
                         id=app_id,
-                        company_name=company,
-                        role_title=title,
-                        has_it=any((app_id, v.id) in sent for v, _ in matches),
+                        company_name=apps[app_id][1],
+                        role_title=apps[app_id][2],
+                        has_it=any((app_id, v) in sent for v in mine),
                     )
-                    for app_id, (company, title) in apps.items()
+                    for app_id in counts
                 ],
                 version=S.CvFileVersion(
                     id=newest[0].id, label=newest[0].label, document_id=newest[1].id, document_name=newest[1].name
@@ -402,20 +464,28 @@ def _cv_files(session: Session) -> list[S.CvFile]:
 
 @router.get("/cv-files", response_model=list[S.CvFile])
 def cv_files(session: SessionDep):
-    """CV files attached to applications that aren't recorded as document versions sent with them
-    yet: one per distinct file, named like a CV or on two or more applications."""
+    """CV files attached to applications, roles or people (a CV you sent a recruiter) that aren't
+    recorded as document versions sent with their applications yet: one per distinct file, named
+    like a CV or attached in two or more places. A file on a role counts for that role's
+    applications, and one on a person for the applications they're on, but only ones with no CV
+    recorded yet."""
     return _cv_files(session)
 
 
 @router.post("/cv-files/adopt", response_model=S.CvFileAdopted, status_code=201)
 def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
     """Make the file a version of a document (copying the file, so the version keeps it), unless
-    it already is one, and record that version as sent with every application it's attached to,
-    on the day you applied (or, without one, the day you attached it). When the file already is a
-    version, `document_id`, `document_name` and `label` are ignored."""
+    it already is one, and record that version as sent with its applications (or just
+    `application_ids`), on the day you applied (or, without one, the day you attached it). When
+    the file already is a version, `document_id`, `document_name` and `label` are ignored."""
     found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
     if found is None:
-        raise HTTPException(404, "No CV file like that on your applications (or it's all recorded already).")
+        raise HTTPException(404, "No CV file like that among your attachments (or it's all recorded already).")
+    if body.application_ids is not None:
+        unknown = set(body.application_ids) - {a.id for a in found.applications}
+        if unknown:
+            raise HTTPException(422, "application_ids: only applications this file counts for.")
+    chosen = [a for a in found.applications if body.application_ids is None or a.id in body.application_ids]
     store = FileStore(request.app.state.jat.data_dir)
     stored = None
     try:
@@ -432,11 +502,13 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             else:
                 raise HTTPException(422, "Pick a document to add it to, or name a new one.")
             src = session.scalar(
-                select(Attachment).where(
+                select(Attachment)
+                .where(
                     Attachment.sha256 == body.sha256,
-                    Attachment.entity_type == "application",
-                    Attachment.entity_id.in_([a.id for a in found.applications]),
+                    Attachment.entity_type.in_(("application", "role", "contact")),
+                    Attachment.entity_id.in_([x.id for x in found.sources]),
                 )
+                .order_by(Attachment.created_at)
             )
             try:
                 with store.resolve(src.path).open("rb") as f:
@@ -461,17 +533,21 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             session.flush()
         recorded = 0
         kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
-        for a in found.applications:
+        for a in chosen:
             if a.has_it:
                 continue
+            application = session.get(Application, a.id)
+            # When it went out: the earliest of this file on the application, its role, or its people.
+            linked = {application.id, application.role_id, application.recruiter_id} | set(
+                session.scalars(select(ApplicationContact.contact_id).where(ApplicationContact.application_id == a.id))
+            )
             attached = session.scalar(
                 select(func.min(Attachment.created_at)).where(
                     Attachment.sha256 == body.sha256,
-                    Attachment.entity_type == "application",
-                    Attachment.entity_id == a.id,
+                    Attachment.entity_type.in_(("application", "role", "contact")),
+                    Attachment.entity_id.in_(linked - {None}),
                 )
             )
-            application = session.get(Application, a.id)
             session.add(
                 ApplicationDocument(
                     application_id=a.id,

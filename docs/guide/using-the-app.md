@@ -411,19 +411,35 @@ Your CVs and cover letters, each with versions ("v3 (fintech)") and the file for
 application page records which version you sent, and the Documents page shows where each
 version went. [Insights](#insights) compares how the versions do.
 
-**CV files on your applications.** If you've been attaching your CV to applications as a
-plain file, the Documents page finds them: PDF and Word files (`.pdf`, `.doc`, `.docx`)
-attached to applications (archived ones included) that are named like a CV (*cv*, *resume*,
-*résumé*, *curriculum*, e.g. `Resume_2026.pdf`) or where the very same file is on two or more
-applications. Identical files are one entry (the app compares their contents, not their
-names), with the applications it's on.
+**CV files you've attached.** If you've been attaching your CV as a plain file (to an
+application, to a role, or to a person, like the CV you sent a recruiter), the Documents page
+finds them: PDF and Word files (`.pdf`, `.doc`, `.docx`) named like a CV (*cv*, *resume*,
+*résumé*, *curriculum*, e.g. `Resume_2026.pdf`) or where the very same file is attached in two
+or more places (a role and its own application count as one place, so a job ad on both isn't
+taken for a CV). Identical files are one entry (the app compares their contents, not their
+names), saying where it's attached and which applications it counts for:
+
+- a file on an application counts for that application (archived ones included);
+- a file on a role counts for that role's applications, and one on a person for the
+  applications they're on (as the recruiter, or on its People card), but only ones that have
+  no CV recorded yet, so a CV you sent a recruiter last month doesn't claim the applications
+  that went out with a newer one.
+
+When every application a role or person led to already has a CV (or there are none yet, say a
+CV you sent a recruiter before anything came of it), it shows *No applications without a CV
+yet*. You can still make it a version; it then drops off the list, and comes back once there's
+an application to record it on.
 
 - **Make it a version**: add it to one of your CVs, or a new one, with a version name (it
-  starts as the file name). The version gets its own copy of the file, and it's recorded as
-  sent with every application the file is on, on the day you applied (or, without an applied
-  date, the day you attached it). The files stay on the applications too.
+  starts as the file name), and tick the applications it went out with (all of them to start
+  with). The version gets its own copy of the file, and it's recorded as sent with the ones
+  you ticked, on the day you applied (or, without an applied date, the day you attached it to
+  that application, its role or its people). The files stay where you attached them too.
 - **Record as sent**: when the file already is a version (you uploaded the same file as one),
-  it's recorded on the applications that don't have it yet.
+  tick the applications that don't have it yet.
+
+Applications you untick stay on offer here until they're recorded (record the CV they did get
+on the application itself); **Not a CV** hides the whole file.
 - **Not a CV**: hides it (remembered in this browser); **Show … you said aren't CVs** brings
   them back.
 
@@ -479,7 +495,7 @@ add a CV on [Documents](#documents) with a new version each time you change it, 
 application pick the version you sent (its *Documents sent* card). Two applications got the
 same CV when you picked the same version; the app doesn't read the files. CV files you
 attached to applications as plain files can be made versions in one go: see
-[CV files on your applications](#documents).
+[CV files you've attached](#documents).
 
 - **The table**: each CV, and under it each of its versions (when it has more than one),
   against the applications you sent added in the date range. *Sent* means it got to *Applied*

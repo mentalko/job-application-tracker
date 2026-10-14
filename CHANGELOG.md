@@ -108,6 +108,9 @@ brackets are pull requests.
   applications (by name, or the same file on several; identical files are one) and makes each
   a version recorded as sent with those applications, so Which CV works best can use them
   (#74).
+- **CVs sent to recruiters and roles count too**: CV files on roles and people are found as
+  well, for the applications they led to that have no CV yet; each says where it was found,
+  and you tick the applications it went out with (#75).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
