@@ -77,7 +77,8 @@ describe("recruiters", () => {
   });
 
   it("puts a ghost before the name of someone who ghosted you", async () => {
-    mockApi({
+    const calls = mockApi({
+      "PATCH /api/v1/contacts/c2": { ...contacts[1], closed_as: null },
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/agencies": agencies,
       "/api/v1/contacts": [
@@ -94,6 +95,17 @@ describe("recruiters", () => {
     expect(within(sam).getByRole("img", { name: "Ghosted" })).toBeInTheDocument();
     expect(screen.getAllByRole("img", { name: "Ghosted" })).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Jo Freelance" })).toBeInTheDocument();
+
+    // Ghosted shows only them; the chip's cross takes Ghosted off, however long ago it was set.
+    fireEvent.click(screen.getByText("Ghosted · 1"));
+    await waitFor(() => expect(screen.queryByRole("link", { name: "Alex Morgan" })).not.toBeInTheDocument());
+    expect(screen.queryByRole("link", { name: "Jo Freelance" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Take Ghosted off Sam Patel" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c2")?.body).toEqual({
+        closed_as: null,
+      }),
+    );
   });
 
   it("filters to company contacts, searches by agency name and says when nothing matches", async () => {

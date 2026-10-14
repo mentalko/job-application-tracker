@@ -2,6 +2,7 @@ import { ActionIcon, Anchor, Card, Group, Stack, Text, Tooltip } from "@mantine/
 import { IconBrandLinkedin, IconLink, IconMail, IconPencil, IconPhone, IconPoint } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
+import { GhostMark } from "./GhostMark";
 import type { Contact } from "../api/client";
 import { DeleteButton } from "./DeleteButton";
 
@@ -30,6 +31,7 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
         {/* minWidth 0 lets long details shrink (ending in …) instead of pushing the buttons out */}
         <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
           <Anchor component={Link} to={`/people/${contact.id}`} fw={600} c="inherit">
+            <GhostMark closedAs={contact.closed_as} />
             {contact.name}
           </Anchor>
           {contact.title && (

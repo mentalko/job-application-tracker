@@ -1,6 +1,6 @@
-import { Badge, Button, Group, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Text, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconGhost2, IconRefresh, IconSend, IconThumbDown } from "@tabler/icons-react";
+import { IconGhost2, IconRefresh, IconSend, IconThumbDown, IconX } from "@tabler/icons-react";
 import dayjs from "dayjs";
 
 import type { Contact } from "../api/client";
@@ -131,16 +131,49 @@ export function PersonClosed({ contact }: { contact: Contact }) {
         {closedLabel(contact.closed_as)}
         {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
       </Badge>
-      <Button
-        size="xs"
-        variant="subtle"
-        color="gray"
-        leftSection={<IconRefresh size={14} />}
-        loading={update.isPending}
-        onClick={() => update.mutate({ id: contact.id, body: { closed_as: null } })}
+      <Tooltip
+        label={
+          contact.closed_as === "ghosted"
+            ? "They were just slow, or got back in touch: take Ghosted off, whenever it was set"
+            : "Take Not interested off"
+        }
       >
-        Reopen
-      </Button>
+        <Button
+          size="xs"
+          variant="light"
+          color="gray"
+          leftSection={<IconRefresh size={14} />}
+          loading={update.isPending}
+          onClick={() => update.mutate({ id: contact.id, body: { closed_as: null } })}
+        >
+          {contact.closed_as === "ghosted" ? "Not a ghost" : "Remove Not interested"}
+        </Button>
+      </Tooltip>
     </Group>
+  );
+}
+
+/** A small undo on a Ghosted or Not interested chip (the Recruiters tiles). */
+export function UndoClosed({ contact }: { contact: Contact }) {
+  const update = useSetPersonReply();
+  const what = contact.closed_as === "ghosted" ? "Ghosted" : "Not interested";
+  return (
+    <Tooltip
+      label={contact.closed_as === "ghosted" ? "Not a ghost: take Ghosted off" : "Take Not interested off"}
+    >
+      <ActionIcon
+        size={14}
+        variant="transparent"
+        color="gray"
+        aria-label={`Take ${what} off ${contact.name}`}
+        loading={update.isPending}
+        onClick={(e) => {
+          e.preventDefault();
+          update.mutate({ id: contact.id, body: { closed_as: null } });
+        }}
+      >
+        <IconX size={11} />
+      </ActionIcon>
+    </Tooltip>
   );
 }

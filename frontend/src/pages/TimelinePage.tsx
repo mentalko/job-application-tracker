@@ -19,6 +19,7 @@ import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-ro
 import dayjs from "dayjs";
 import { Fragment, useMemo, useState } from "react";
 
+import { PersonName } from "../components/GhostMark";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
   CATEGORIES,
@@ -101,7 +102,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
   for (const p of item.people) {
     parts.push(
       <Anchor key={p.id} component={Link} to={`/people/${p.id}`} size="xs">
-        {p.name}
+        <PersonName id={p.id} name={p.name} size={12} />
       </Anchor>,
     );
   }

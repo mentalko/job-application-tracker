@@ -252,8 +252,13 @@ actions, and at the top of their page:
   Next actions says *Chased today* instead of how long you've been waiting.
 - **Ghosted** and **Not interested**: you've stopped expecting
   anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
-  *Not interested*, with the date, and **Reopen** clears it. Marking them as waiting or
-  replied again reopens it too.
+  *Not interested*, with the date. Someone who ghosted you gets a ghost before their name
+  wherever it shows: their tile and page, the applications and roles they're on (the list,
+  the board, the quick view, company and agency pages), calls, Next actions, the Timeline and
+  Insights. Roles say *(ghosted)* after the name.
+  To take it off, whenever you like (a week later, say, when they were just slow), press
+  **Not a ghost** on their page (or **Remove Not interested**), or the **×** on the chip on
+  their tile. Marking them as waiting or replied again takes it off too.
 
 Each pops up a message with **Undo**, and goes on the Timeline. (For applications, **Ghosted**
 is a stage: see [Next actions](#next-actions).)
@@ -291,14 +296,14 @@ first. Your data repo's history still has everything until you rewrite it.
 The **Recruiters** page lists everyone as small tiles, A to Z by name: agency recruiters,
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
-stand (or *Ghosted* / *Not interested*; someone who ghosted you also gets a ghost before
-their name, here and on their page), and every email, phone number and link (click to email, call or open; long ones end in
+stand (or *Ghosted* / *Not interested*, with a **×** to take it off; someone who ghosted you
+also gets a ghost before their name), and every email, phone number and link (click to email, call or open; long ones end in
 "…", and hovering shows them in full). The pencil edits a person; open their page to delete
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **All / Agencies / Companies / Independent** narrows it to agency recruiters, people at
-  companies or independents.
+- **All / Agencies / Companies / Independent / Ghosted** narrows it to agency recruiters,
+  people at companies, independents, or everyone who ghosted you (with how many).
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 

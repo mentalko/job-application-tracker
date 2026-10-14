@@ -109,7 +109,7 @@ describe("chasing people", () => {
     expect(await screen.findByText(/^Not interested · /)).toBeInTheDocument();
     // Closed: no chasing buttons until it's reopened.
     expect(screen.queryByRole("button", { name: "Chased: Alex Morgan" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Reopen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove Not interested" }));
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ closed_as: null }));
   });
 });
