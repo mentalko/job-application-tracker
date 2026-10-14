@@ -291,7 +291,8 @@ first. Your data repo's history still has everything until you rewrite it.
 The **Recruiters** page lists everyone as small tiles, A to Z by name: agency recruiters,
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
-stand (or *Ghosted* / *Not interested*), and every email, phone number and link (click to email, call or open; long ones end in
+stand (or *Ghosted* / *Not interested*; someone who ghosted you also gets a ghost before
+their name, here and on their page), and every email, phone number and link (click to email, call or open; long ones end in
 "…", and hovering shows them in full). The pencil edits a person; open their page to delete
 them.
 

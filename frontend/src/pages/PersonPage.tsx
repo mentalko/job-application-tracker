@@ -27,6 +27,7 @@ import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
+import { GhostMark } from "../components/GhostMark";
 import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
 import { TimelineButton } from "../components/TimelineButton";
 import { NotesCard } from "../components/Notes";
@@ -68,7 +69,10 @@ export function PersonPage() {
         <Group gap="sm" align="flex-start">
           <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
           <div>
-            <Title order={2}>{contact.name}</Title>
+            <Title order={2}>
+              <GhostMark closedAs={contact.closed_as} size={24} />
+              {contact.name}
+            </Title>
             <Text c="dimmed">
               {contact.title}
               {contact.title && where ? " · " : ""}

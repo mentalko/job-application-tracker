@@ -30,6 +30,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { GhostMark } from "../components/GhostMark";
 import { useState } from "react";
 
 import type { Contact } from "../api/client";
@@ -103,8 +104,9 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               c="inherit"
               truncate="end"
               display="block"
-              title={contact.name}
+              title={contact.closed_as === "ghosted" ? `${contact.name} (ghosted)` : contact.name}
             >
+              <GhostMark closedAs={contact.closed_as} />
               {contact.name}
             </Anchor>
             {contact.title && (

@@ -76,6 +76,26 @@ describe("recruiters", () => {
     expect(screen.getByText("Sam Patel")).toBeInTheDocument();
   });
 
+  it("puts a ghost before the name of someone who ghosted you", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": agencies,
+      "/api/v1/contacts": [
+        contacts[0],
+        { ...contacts[1], closed_as: "ghosted", closed_on: "2026-10-01" },
+        { ...contacts[2], closed_as: "not_interested", closed_on: "2026-10-01" },
+      ],
+      "/api/v1/companies": [],
+      "/api/v1/applications": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/recruiters");
+    const sam = await screen.findByRole("link", { name: /Sam Patel/ });
+    expect(within(sam).getByRole("img", { name: "Ghosted" })).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: "Ghosted" })).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "Jo Freelance" })).toBeInTheDocument();
+  });
+
   it("filters to company contacts, searches by agency name and says when nothing matches", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,

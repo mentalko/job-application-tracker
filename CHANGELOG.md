@@ -92,6 +92,8 @@ brackets are pull requests.
   applications and interviews they're on, notes); the Timeline keeps its view, period and
   *About* in the address. Notes on a role now show for its company and the person who pitched
   it (#70).
+- **A ghost before the name** of anyone you've marked *Ghosted*, on the Recruiters page and
+  their own page (#72).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
