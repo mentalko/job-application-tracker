@@ -67,12 +67,15 @@ export function PersonPage() {
       </Anchor>
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm" align="flex-start">
-          <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
+          {contact.closed_as === "ghosted" ? (
+            <span style={{ marginTop: 4 }}>
+              <GhostMark closedAs="ghosted" size={26} />
+            </span>
+          ) : (
+            <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
+          )}
           <div>
-            <Title order={2}>
-              <GhostMark closedAs={contact.closed_as} size={24} />
-              {contact.name}
-            </Title>
+            <Title order={2}>{contact.name}</Title>
             <Text c="dimmed">
               {contact.title}
               {contact.title && where ? " · " : ""}
