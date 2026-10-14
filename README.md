@@ -30,8 +30,8 @@ It runs on your own machine and keeps your data in a folder you control. It's bu
 way tech hiring actually works:
 
 - 🧑‍💼 **Recruiters send you several roles.** Track every recruiter and agency, their contact
-  details and your calls with them. Note the roles they pitch, then apply for or pass on each
-  one, and see every role they've put you forward for.
+  details and your calls with them. Note the roles they pitch, then apply, mark interested or
+  pass on each one, and see every role they've put you forward for.
 - 🔀 **Applications have messy, multi-stage processes.** Screen → tech interview → take-home
   → final → offer. Stages are configurable, and every change is timestamped.
 - 📝 **The details are scattered everywhere.** Notes on calls, interviews and roles, Google
@@ -66,7 +66,7 @@ up and what's gone quiet. Follow up, snooze or mark Ghosted in one click.
 ![Next actions: replies to read, your to-dos, offers to answer, waiting to hear back, follow-ups, roles to decide and what's coming up](docs/screenshots/next-actions.png)
 
 **Recruiters, their calls and the roles they pitch.** Book a call with an agenda, note how it
-went, add the roles they mentioned, then apply for or pass on each. Every person has a page
+went, add the roles they mentioned, then apply, mark interested or pass on each. Every person has a page
 like this, and its **Timeline** button shows their calls, pitches, applications and notes over time.
 
 ![A recruiter's page: where things stand with them, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
@@ -76,7 +76,7 @@ application through whoever pitched it; **Interested** tracks it without applyin
 keeps your reason. Each role has its own page:
 drop the job description on it and it follows the role onto your application.
 
-![Roles to decide: two pitched roles with pay, source and Apply or Pass](docs/screenshots/roles.png)
+![Roles to decide: two pitched roles with pay, source and Apply or Pass buttons](docs/screenshots/roles.png)
 
 ![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos and the job description PDF](docs/screenshots/role.png)
 
@@ -301,7 +301,7 @@ anything new is created for you. The **?** button walks through the everyday loo
 **A recruiter called about the market, not a specific role. Where does that go?** On their
 page: **Book a call** (or log one that happened). Once it's marked *Happened*, **Add roles
 from this call** for each
-role they mentioned. Each waits under *Roles* until you apply or pass.
+role they mentioned. Each waits under *Roles* until you decide: apply, mark interested or pass.
 
 **Can I track which interview round I'm at?** Yes. Each application has numbered rounds
 with your own description ("Round 2 · Engineering manager chat", "Round 3 · System design

@@ -10,8 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db.models import Agency, Application, Company, Contact, Meeting, Role
-from ..domain.document_performance import applied_rank
-from ..domain.insights import stage_rank
+from ..domain.insights import before_applied
 from ..domain.workflow import Workflow
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
@@ -49,19 +48,11 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
         ):
             meetings[m.id] = meeting_label(m, name)
 
-    def not_yet_applied(app_stages: list[str]) -> bool:
-        """Every application is still before Applied (Interested, say), and open."""
-        if workflow is None:
-            return False
-        rank = stage_rank(workflow)
-        applied = applied_rank(workflow, rank)
-        kinds = {st.id: st.kind for st in workflow.stages}
-        return all(kinds.get(st) == "active" and rank.get(st, applied) < applied for st in app_stages)
-
     out = []
     for role, company_name, contact, agency in rows:
         if apps[role.id]:
-            status = "interested" if not_yet_applied(stages[role.id]) else "applied"
+            interested = workflow is not None and all(before_applied(workflow, st) for st in stages[role.id])
+            status = "interested" if interested else "applied"
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(

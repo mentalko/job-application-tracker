@@ -43,6 +43,22 @@ def stage_rank(workflow: Workflow) -> dict[str, int]:
     return {s.id: i for i, s in enumerate(order)}
 
 
+def applied_rank(workflow: Workflow, rank: dict[str, int]) -> int:
+    """Where *Applied* is: the `applied` stage, or the first active stage after the start."""
+    if "applied" in rank:
+        return rank["applied"]
+    active = [st.id for st in workflow.stages if st.is_active]
+    after = active[active.index(workflow.initial) + 1 :] if workflow.initial in active else active
+    return rank[after[0]] if after else rank.get(workflow.initial, 0)
+
+
+def before_applied(workflow: Workflow, stage: str) -> bool:
+    """An open stage before Applied (Interested, say): you're interested but haven't applied."""
+    rank = stage_rank(workflow)
+    kinds = {st.id: st.kind for st in workflow.stages}
+    return kinds.get(stage) == "active" and rank.get(stage, len(rank)) < applied_rank(workflow, rank)
+
+
 def stage_path(events: list[Event]) -> list[str]:
     """First stage, then the stages moved to (undone moves left out), in time order."""
     stage_events = [ev for ev in events if ev.kind == STAGE_CHANGE]

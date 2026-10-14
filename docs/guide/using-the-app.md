@@ -50,8 +50,10 @@ any. Add them as **roles** first, then decide on each:
   the date.
 - **Interested** does the same at your starting stage (*Interested* by default) with no
   applied date: you want it but haven't applied yet. The role then shows as *Interested* until
-  its application gets to *Applied* (move it on from the application). In either dialog,
-  picking the starting stage clears the applied date, and picking a later one fills in today.
+  its application gets to *Applied* or is closed (move it on from the application; moving it
+  to *Applied* or later fills in *Applied on* if it's empty). The button only shows when your
+  workflow starts before *Applied*. In either dialog, the applied date follows the stage you
+  pick (empty before *Applied*, today from *Applied* on) until you change the date yourself.
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
   puts it back. The pencil edits a role; the bin deletes it (not once it has an application).
 - Deleting a call keeps the roles from it; they just aren't linked to a call any more.
@@ -116,8 +118,9 @@ What needs doing, in this order:
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
   call: *Happened*, which asks how it went) or *Didn't happen*.
 - **Follow up**: applications whose follow-up date is today or earlier.
-- **Roles to decide**: roles you've added but haven't applied for or passed on (see
-  [Roles to decide](#roles-to-decide)), oldest first, with **Apply** and **Pass**.
+- **Roles to decide**: roles you've added with no application that you haven't passed on
+  (see [Roles to decide](#roles-to-decide)), oldest first, with **Apply**, **Interested** and
+  **Pass**.
 - **Coming up**: interviews, task deadlines and [calls](#calls-and-meetings) in the next two
   weeks, soonest first, then rounds not booked yet.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
@@ -479,7 +482,8 @@ the role); roles you found yourself aren't counted here.
 
 - **The numbers**: calls held (and booked ahead), people you talked to or were pitched by,
   roles pitched, how many you applied for (and the apply rate: applied out of the roles
-  you've decided on), passed on and are still deciding about, interviews and offers that came
+  you've decided on), passed on and are still deciding about (roles you're only *Interested*
+  in count as still deciding), interviews and offers that came
   from pitched roles, ghosted applications from pitches, and the median time to decide (from
   adding the role to applying or passing; a backdated application counts from its first
   stage).

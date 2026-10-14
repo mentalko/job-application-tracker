@@ -73,6 +73,13 @@ describe("roles to decide", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Interested: Platform Engineer at Fabrikam")).toBeInTheDocument();
     expect(within(dialog).getAllByLabelText("Applied on")[0]).toHaveValue("");
+    // Picking Applied fills in today; back to Interested clears it again.
+    fireEvent.click(within(dialog).getAllByLabelText("Stage")[0]!);
+    fireEvent.click(await screen.findByRole("option", { name: "Applied", hidden: true }));
+    await waitFor(() => expect(within(dialog).getAllByLabelText("Applied on")[0]).not.toHaveValue(""));
+    fireEvent.click(within(dialog).getAllByLabelText("Stage")[0]!);
+    fireEvent.click(await screen.findByRole("option", { name: "Interested", hidden: true }));
+    await waitFor(() => expect(within(dialog).getAllByLabelText("Applied on")[0]).toHaveValue(""));
     fireEvent.click(within(dialog).getByRole("button", { name: "Create application" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/applications/a9"));
     expect(calls.find((c) => c.method === "POST")!.body).toMatchObject({
@@ -94,7 +101,11 @@ describe("roles to decide", () => {
       "href",
       "/applications/a9",
     );
-    expect(screen.getAllByText("Interested").length).toBeGreaterThan(1); // the view, and the role's badge
+    // The role's own badge says Interested (as well as the view), and it can't be deleted.
+    expect(screen.getAllByText("Interested").filter((el) => el.closest(".mantine-Badge-root"))).toHaveLength(
+      1,
+    );
+    expect(screen.queryByRole("button", { name: /^Delete/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Apply: Platform Engineer" })).not.toBeInTheDocument();
   });
 

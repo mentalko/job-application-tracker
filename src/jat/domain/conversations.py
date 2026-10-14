@@ -6,7 +6,8 @@ on others. This looks at that part:
   *booked* is scheduled and still to come (a scheduled call that has passed waits on Next
   actions to be marked, and isn't counted);
 - **pitched roles**: roles someone told you about (a role with a person). Each is *applied*
-  (it has an application), *passed* (you passed, with no application) or *deciding*;
+  (an application that got to Applied or further, or was closed), *passed* (you passed, with
+  no application) or *deciding* (neither, including roles you're only *Interested* in);
 - **where applied ones went**: the best outcome among a role's applications: an *offer* (an
   offer logged, or a success stage), *in progress* (an active stage), *ghosted* (a
   `reopen_from` stage, Ghosted by default) or *closed* (any other closed stage);
@@ -33,6 +34,7 @@ from sqlalchemy.orm import Session
 from jat.db.models import Agency, Application, Company, Contact, Event, Interview, Meeting, Offer, Role
 
 from .applications import STAGE_CHANGE
+from .insights import before_applied
 from .workflow import Workflow
 
 OUTCOMES = ("offer", "in_progress", "closed", "ghosted")  # best first
@@ -194,7 +196,8 @@ def conversations(
         targets = (total, person(r.contact_id))
         for t in targets:
             t.pitched += 1
-        if mine:
+        # Interested (every application still before Applied) is still deciding, as on the Roles page.
+        if mine and not all(before_applied(workflow, a.stage) for a in mine):
             best = min((outcome(a) for a in mine), key=OUTCOMES.index)
             days = (added_at(mine[0]) - _aware(r.created_at)).total_seconds() / 86_400
             for t in targets:

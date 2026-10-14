@@ -113,7 +113,8 @@ brackets are pull requests.
   and you tick the applications it went out with (#75).
 - **Interested in a role**: an **Interested** button next to Apply tracks a role as an
   application at your starting stage with no applied date; the role shows *Interested* (and
-  the Roles page has an *Interested* view) until it gets to Applied (#77).
+  the Roles page has an *Interested* view) until it gets to Applied or is closed; moving an
+  application to Applied fills in its applied date (#77).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

@@ -145,3 +145,33 @@ def test_a_role_you_track_at_interested_is_interested_until_you_apply(client, se
     a2 = post(client, "/api/v1/applications", {"role_id": other, "stage": "interested"})["id"]
     client.post(f"/api/v1/applications/{a2}/move", json={"to_stage": "withdrawn"})
     assert client.get(f"/api/v1/role-summaries/{other}").json()["status"] == "applied"
+
+
+def test_moving_on_from_interested_fills_in_the_applied_date(client, seeded):
+    role = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "Data Engineer"})["id"]
+    app = post(client, "/api/v1/applications", {"role_id": role, "stage": "interested"})["id"]
+    assert client.get(f"/api/v1/applications/{app}").json()["applied_on"] is None
+    # Interested roles aren't "to decide" on Next actions.
+    assert role not in [r["id"] for r in client.get("/api/v1/next-actions").json()["roles_to_decide"]]
+    client.post(f"/api/v1/applications/{app}/move", json={"to_stage": "applied"})
+    assert client.get(f"/api/v1/applications/{app}").json()["applied_on"] is not None
+    # A date you already gave is kept.
+    other = post(client, "/api/v1/applications", {"role_id": role, "stage": "interested", "applied_on": "2026-09-01"})[
+        "id"
+    ]
+    client.post(f"/api/v1/applications/{other}/move", json={"to_stage": "screen"})
+    assert client.get(f"/api/v1/applications/{other}").json()["applied_on"] == "2026-09-01"
+
+
+def test_interested_in_a_workflow_without_an_applied_stage(app, client, seeded):
+    (app.state.jat.data_dir / "config.toml").write_text(
+        '[workflow]\ninitial = "lead"\n'
+        '[[workflow.stages]]\nid = "lead"\n'
+        '[[workflow.stages]]\nid = "submitted"\n'
+        '[[workflow.stages]]\nid = "gone"\nkind = "closed"\n'
+    )
+    role = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "SRE"})["id"]
+    a = post(client, "/api/v1/applications", {"role_id": role, "stage": "lead"})["id"]
+    assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "interested"
+    client.post(f"/api/v1/applications/{a}/move", json={"to_stage": "submitted"})
+    assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "applied"

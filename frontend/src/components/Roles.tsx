@@ -37,6 +37,7 @@ import {
   type RoleSummary,
 } from "../api/roleHooks";
 import type { Schemas } from "../api/client";
+import { beforeApplied } from "../utils/applied";
 import { useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
@@ -351,11 +352,15 @@ export function ApplyModal({
       : "Directly";
   const hasApplied = workflow?.stages.some((s) => s.id === "applied");
   const stage = picked ?? (!interested && hasApplied ? "applied" : (workflow?.initial ?? null));
-  // The applied date follows the stage: none at the starting stage, today once it's applied.
+  // The applied date follows the stage (none before Applied, today from Applied on), until you
+  // set it yourself.
+  const [dateTouched, setDateTouched] = useState(false);
   const setStage = (next: string | null) => {
     setPicked(next);
-    if (next === workflow?.initial) setAppliedOn(null);
-    else if (!appliedOn) setAppliedOn(dayjs().format("YYYY-MM-DD"));
+    if (dateTouched) return;
+    const isClosed = workflow?.stages.find((s) => s.id === next)?.kind === "closed";
+    if (beforeApplied(workflow, next) || isClosed) setAppliedOn(null);
+    else setAppliedOn(dayjs().format("YYYY-MM-DD"));
   };
 
   const submit = () =>
@@ -397,7 +402,10 @@ export function ApplyModal({
             label="Applied on"
             clearable
             value={appliedOn}
-            onChange={setAppliedOn}
+            onChange={(v) => {
+              setDateTouched(true);
+              setAppliedOn(v);
+            }}
             placeholder="Not yet"
           />
         </Group>
@@ -452,10 +460,14 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
   );
 }
 
-/** Apply / Pass for a role still to decide, Reconsider for one you passed, a link once applied. */
+/** Apply / Interested / Pass for a role still to decide, Reconsider for one you passed, and a
+ * link once there's an application. */
 export function RoleActions({ role }: { role: RoleSummary }) {
   const [open, setOpen] = useState<"apply" | "interested" | "pass" | null>(null);
   const save = useSaveRole();
+  const { data: workflow } = useWorkflow();
+  // Only when your workflow starts before Applied (it does by default: Interested).
+  const canBeInterested = beforeApplied(workflow, workflow?.initial ?? null);
   if (role.status === "applied" || role.status === "interested")
     return (
       <Anchor component={Link} to={`/applications/${role.application_ids[0]}`} size="xs">
@@ -474,15 +486,17 @@ export function RoleActions({ role }: { role: RoleSummary }) {
           >
             Apply
           </Button>
-          <Button
-            size="compact-xs"
-            variant="light"
-            color="cyan"
-            onClick={() => setOpen("interested")}
-            aria-label={`Interested: ${role.title}`}
-          >
-            Interested
-          </Button>
+          {canBeInterested && (
+            <Button
+              size="compact-xs"
+              variant="light"
+              color="cyan"
+              onClick={() => setOpen("interested")}
+              aria-label={`Interested: ${role.title}`}
+            >
+              Interested
+            </Button>
+          )}
           <Button
             size="compact-xs"
             variant="subtle"
