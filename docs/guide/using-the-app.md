@@ -173,8 +173,12 @@ Archived applications are included.
   application's stage moves, interviews and offers, or passing on it. Switch to one row per
   **person** (their calls and everything they're part of), **company** or **agency**. Click a
   row's name to open it; hover a dot to see what it was, and click it to open its
-  application (or the role, person, company or agency it's about). Bookmark
-  `/timeline?view=lanes` to open straight into lanes.
+  application (or the role, person, company or agency it's about).
+
+The view, period and *About* are in the page's address, so a bookmark or **Back** keeps them:
+`/timeline?view=lanes` opens straight into lanes, and the **Timeline** button on a person's,
+company's or agency's page opens `/timeline?about=contact:<id>&period=all` (or `company:`,
+`agency:`).
 
 ## Applications: list and board
 
@@ -307,8 +311,10 @@ be edited: merge them.
 
 Each **person** has a page, a dossier: their job title and where they work, how to reach
 them, your calls and meetings with them, the roles they've mentioned, every application they're part of (and as what),
-the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Edit**,
-**Merge…** and **Delete** are at the top.
+the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Timeline**,
+**Edit**, **Merge…** and **Delete** are at the top. **Timeline** opens the
+[Timeline](#timeline) on everything about them, over all time: calls, the roles they
+pitched, the applications and interviews they're on, and notes about them.
 
 **Two records of the same person?** On the one to keep, press **Merge…** and pick the other
 (people with the same name, email address or LinkedIn profile are listed first). Everything
@@ -351,8 +357,9 @@ warning**.
 A list of companies with how many applications and how many need chasing. A **company
 page** has its applications, roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
-an *About* box, notes, links and files. **Edit** at the top renames it or sets its website;
-agencies have the same.
+an *About* box, notes, links and files. **Edit** at the top renames it or sets its website,
+and **Timeline** opens the Timeline on everything about it, over all time; agencies have the
+same.
 
 ## Interviews
 
