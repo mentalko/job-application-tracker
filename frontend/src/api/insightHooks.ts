@@ -66,3 +66,16 @@ export function useConversations(since?: string) {
     placeholderData: keepPreviousData,
   });
 }
+
+export type DocumentsPerformance = Schemas["DocumentsOut"];
+export type DocumentKindPerformance = Schemas["DocumentKindPerformance"];
+export type DocumentTally = Schemas["DocumentTally"];
+
+/** CV and cover-letter versions compared, for applications added since `since` (and by `route`). */
+export function useDocumentPerformance(filters: FlowFilters) {
+  return useQuery({
+    queryKey: ["insights", "documents", filters],
+    queryFn: async () => unwrap(await api.GET("/api/v1/insights/documents", { params: { query: filters } })),
+    placeholderData: keepPreviousData,
+  });
+}

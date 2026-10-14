@@ -2409,6 +2409,31 @@
         "title": "DocumentIn",
         "type": "object"
       },
+      "DocumentKindPerformance": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentPerformance"
+            },
+            "title": "Documents",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "none": {
+            "$ref": "#/components/schemas/DocumentTally"
+          }
+        },
+        "required": [
+          "kind",
+          "documents",
+          "none"
+        ],
+        "title": "DocumentKindPerformance",
+        "type": "object"
+      },
       "DocumentOut": {
         "properties": {
           "created_at": {
@@ -2489,6 +2514,230 @@
         "title": "DocumentPatch",
         "type": "object"
       },
+      "DocumentPerformance": {
+        "properties": {
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "heard_back": {
+            "title": "Heard Back",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interview_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview High"
+          },
+          "interview_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Low"
+          },
+          "interview_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Rate"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "median_reply_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Reply Days"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "open": {
+            "title": "Open",
+            "type": "integer"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "sent": {
+            "title": "Sent",
+            "type": "integer"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentVersionPerformance"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sent",
+          "heard_back",
+          "interviewed",
+          "offers",
+          "open",
+          "ghosted",
+          "closed",
+          "reply_rate",
+          "interview_rate",
+          "interview_low",
+          "interview_high",
+          "median_reply_days",
+          "id",
+          "name",
+          "versions"
+        ],
+        "title": "DocumentPerformance",
+        "type": "object"
+      },
+      "DocumentTally": {
+        "properties": {
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "heard_back": {
+            "title": "Heard Back",
+            "type": "integer"
+          },
+          "interview_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview High"
+          },
+          "interview_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Low"
+          },
+          "interview_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Rate"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "median_reply_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Reply Days"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "open": {
+            "title": "Open",
+            "type": "integer"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "sent": {
+            "title": "Sent",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sent",
+          "heard_back",
+          "interviewed",
+          "offers",
+          "open",
+          "ghosted",
+          "closed",
+          "reply_rate",
+          "interview_rate",
+          "interview_low",
+          "interview_high",
+          "median_reply_days"
+        ],
+        "title": "DocumentTally",
+        "type": "object"
+      },
       "DocumentUsage": {
         "description": "One application a version of this document was sent with.",
         "properties": {
@@ -2544,6 +2793,146 @@
           "sent_on"
         ],
         "title": "DocumentUsage",
+        "type": "object"
+      },
+      "DocumentVersionPerformance": {
+        "properties": {
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "heard_back": {
+            "title": "Heard Back",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interview_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview High"
+          },
+          "interview_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Low"
+          },
+          "interview_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview Rate"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "median_reply_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Reply Days"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "open": {
+            "title": "Open",
+            "type": "integer"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "sent": {
+            "title": "Sent",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sent",
+          "heard_back",
+          "interviewed",
+          "offers",
+          "open",
+          "ghosted",
+          "closed",
+          "reply_rate",
+          "interview_rate",
+          "interview_low",
+          "interview_high",
+          "median_reply_days",
+          "id",
+          "label",
+          "created_at"
+        ],
+        "title": "DocumentVersionPerformance",
+        "type": "object"
+      },
+      "DocumentsOut": {
+        "properties": {
+          "applications": {
+            "title": "Applications",
+            "type": "integer"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentKindPerformance"
+            },
+            "title": "Kinds",
+            "type": "array"
+          }
+        },
+        "required": [
+          "applications",
+          "kinds"
+        ],
+        "title": "DocumentsOut",
         "type": "object"
       },
       "DuplicateOut": {
@@ -10465,6 +10854,95 @@
           }
         },
         "summary": "Recruiter Conversations",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/documents": {
+      "get": {
+        "description": "Your CVs and cover letters compared, version by version (an A/B test), on the\napplications added in [since, until) and by route: how many heard back, got a screen or\ninterview, or an offer. Applications with none recorded are a row of their own.",
+        "operationId": "document_performance_api_v1_insights_documents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          },
+          {
+            "in": "query",
+            "name": "route",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "direct",
+                    "agency",
+                    "referral"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Route"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Performance",
         "tags": [
           "insights"
         ]

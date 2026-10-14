@@ -92,6 +92,10 @@ brackets are pull requests.
   applications and interviews they're on, notes); the Timeline keeps its view, period and
   *About* in the address. Notes on a role now show for its company and the person who pitched
   it (#70).
+- **Which CV works best**: an Insights tab comparing CV and cover-letter versions (an A/B
+  test): heard back, screens or interviews with a 95% range, offers and typical reply time,
+  with and without one recorded; pick two and it says whether the gap is likely real
+  (Fisher's exact test) (#71).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

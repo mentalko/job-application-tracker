@@ -49,7 +49,7 @@ const STEPS: { title: string; body: ReactNode }[] = [
     body: (
       <>
         <b>Timeline</b> shows everything that happened, by day or one row per role from the first call to the
-        outcome; <b>Insights</b> shows how the search is going.
+        outcome; <b>Insights</b> shows how the search is going, including which CV version works best.
       </>
     ),
   },

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
 import { ConversationsSection } from "../components/Conversations";
+import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
@@ -28,12 +29,12 @@ function sinceFor(range: Range) {
   return new Date(Date.now() - Number(range) * 86_400_000).toISOString();
 }
 
-type Tab = "applications" | "conversations";
+type Tab = "applications" | "conversations" | "documents";
 
 /**
  * How the search is going (PRD FR19, FR20): applications (the Sankey diagram, stage stats,
- * routes, the scorecard) and recruiter conversations (calls and the roles people pitch), then
- * weekly activity.
+ * routes, the scorecard), recruiter conversations (calls and the roles people pitch) and CVs and
+ * cover letters (version against version), then weekly activity.
  */
 export function InsightsPage() {
   // `since` is fixed when the range is picked, so the query key doesn't change on every render.
@@ -66,6 +67,7 @@ export function InsightsPage() {
         <Tabs.List mb="md">
           <Tabs.Tab value="applications">Applications</Tabs.Tab>
           <Tabs.Tab value="conversations">Recruiter conversations</Tabs.Tab>
+          <Tabs.Tab value="documents">CVs and cover letters</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="applications">
           <Stack>
@@ -115,6 +117,9 @@ export function InsightsPage() {
         </Tabs.Panel>
         <Tabs.Panel value="conversations">
           <ConversationsSection since={range.since} />
+        </Tabs.Panel>
+        <Tabs.Panel value="documents">
+          <DocumentPerformanceSection since={range.since} />
         </Tabs.Panel>
       </Tabs>
       <WeeklyActivity />

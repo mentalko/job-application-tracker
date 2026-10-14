@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
 
 from ..domain import conversations as conv_svc
+from ..domain import document_performance as doc_svc
 from ..domain import insights as svc
 from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
@@ -345,4 +346,98 @@ def recruiter_conversations(
         ],
         agencies=[ConversationAgency(**_tally(a), id=a.id, name=a.name, people=a.people) for a in c.agencies],
         pass_reasons=[PassReasonOut(**vars(r)) for r in c.pass_reasons],
+    )
+
+
+class DocumentTally(BaseModel):
+    sent: int  # applications sent with it
+    heard_back: int  # any sign of life, a rejection included
+    interviewed: int  # got past the CV: a screen or later, or an interview round
+    offers: int
+    open: int  # still in an active stage
+    ghosted: int
+    closed: int  # closed, other than ghosted
+    reply_rate: float | None  # heard_back / sent
+    interview_rate: float | None  # interviewed / sent
+    interview_low: float | None  # 95% Wilson interval for interview_rate
+    interview_high: float | None
+    median_reply_days: float | None  # applying to hearing back
+
+
+class DocumentVersionPerformance(DocumentTally):
+    id: str
+    label: str
+    created_at: datetime
+
+
+class DocumentPerformance(DocumentTally):
+    id: str
+    name: str
+    versions: list[DocumentVersionPerformance]  # oldest first
+
+
+class DocumentKindPerformance(BaseModel):
+    kind: str  # cv | cover_letter | other
+    documents: list[DocumentPerformance]  # most sent first
+    none: DocumentTally  # applications sent without one recorded
+
+
+class DocumentsOut(BaseModel):
+    applications: int  # applications sent (got to Applied, or have a document recorded)
+    kinds: list[DocumentKindPerformance]
+
+
+def _doc_tally(t: doc_svc.Tally) -> dict:
+    interval = doc_svc.wilson(t.interviewed, t.sent)
+    return dict(
+        sent=t.sent,
+        heard_back=t.heard_back,
+        interviewed=t.interviewed,
+        offers=t.offers,
+        open=t.open,
+        ghosted=t.ghosted,
+        closed=t.closed,
+        reply_rate=round(t.heard_back / t.sent, 3) if t.sent else None,
+        interview_rate=round(t.interviewed / t.sent, 3) if t.sent else None,
+        interview_low=round(interval[0], 3) if interval else None,
+        interview_high=round(interval[1], 3) if interval else None,
+        median_reply_days=t.median_reply_days,
+    )
+
+
+@router.get("/documents", response_model=DocumentsOut)
+def document_performance(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+    route: S.Route | None = None,
+):
+    """Your CVs and cover letters compared, version by version (an A/B test), on the
+    applications added in [since, until) and by route: how many heard back, got a screen or
+    interview, or an offer. Applications with none recorded are a row of their own."""
+    r = doc_svc.performance(session, workflow, since=since, until=until, route=route)
+    return DocumentsOut(
+        applications=r.applications,
+        kinds=[
+            DocumentKindPerformance(
+                kind=k.kind,
+                documents=[
+                    DocumentPerformance(
+                        **_doc_tally(d.tally),
+                        id=d.id,
+                        name=d.name,
+                        versions=[
+                            DocumentVersionPerformance(
+                                **_doc_tally(v.tally), id=v.id, label=v.label, created_at=v.created_at
+                            )
+                            for v in d.versions
+                        ],
+                    )
+                    for d in k.documents
+                ],
+                none=DocumentTally(**_doc_tally(k.none)),
+            )
+            for k in r.kinds
+        ],
     )

@@ -384,7 +384,7 @@ compares like with like only roughly: read the rows, not just the total.
 
 Your CVs and cover letters, each with versions ("v3 (fintech)") and the file for each. The
 application page records which version you sent, and the Documents page shows where each
-version went.
+version went. [Insights](#insights) compares how the versions do.
 
 ## Notes
 
@@ -394,8 +394,9 @@ so you can also write and edit them in any editor. Tables, checklists and links 
 
 ## Insights
 
-How the search is going, for all time or the last 30 or 90 days. Two tabs: **Applications**
-and **Recruiter conversations**; **Weekly activity** sits under both.
+How the search is going, for all time or the last 30 or 90 days. Three tabs: **Applications**,
+**Recruiter conversations** and **CVs and cover letters**; **Weekly activity** sits under all
+of them.
 
 **Applications**
 
@@ -428,6 +429,35 @@ the role); roles you found yourself aren't counted here.
 Calls count in a date range by when they happen; roles by when you added them. A call
 counts as held once it's marked *Happened*; one still marked booked after its time waits on
 Next actions for you to say how it went.
+
+**CVs and cover letters**: an A/B test of your CV versions. It works from what you record:
+add a CV on [Documents](#documents) with a new version each time you change it, then on each
+application pick the version you sent (its *Documents sent* card). Two applications got the
+same CV when you picked the same version; the app doesn't read the files.
+
+- **The table**: each CV, and under it each of its versions (when it has more than one),
+  against the applications you sent added in the date range. *Sent* means it got to *Applied*
+  (or past it, or was closed after it), or has a document recorded; one you closed before
+  applying wasn't sent. In a custom workflow without an `applied` stage, *Applied* is the first
+  active stage after the starting one. For each: how many you **sent**; how many **heard back**
+  after applying (a move past *Applied*, a call, email or message logged, a rejection, an
+  interview round or an offer; *Ghosted*, *Withdrawn* and *Declined* aren't replies, and nor
+  is moving it to *Applied* yourself; logged contact has no direction, so a chaser you logged
+  counts too); how many got a **screen or interview** (a stage past *Applied* that isn't
+  closed, or an interview round that wasn't cancelled); **how sure** that rate is (the dot,
+  with a bar for where it likely really is: a 95% range, wide when there are few
+  applications); **offers** (an offer recorded, or the `offer` stage or a success stage);
+  where they are now (open, ghosted, closed); and the **typical reply** time (the median from
+  the day it got to *Applied* to the first reply).
+  *No CV recorded* is a row of its own, so you can compare with and without. **CVs** /
+  **Cover letters** switches between them; the route filter compares like with like.
+- **Compare**: pick two (versions, whole documents or *No CV recorded*) and a measure
+  (*Heard back*, *Screen or interview* or *Offer*). It says in words whether the gap is
+  **likely real**, **a hint** (worth watching), **could be chance**, or there are **too few to
+  tell** (fewer than five sent on either side), using Fisher's exact test, which holds up with
+  small numbers. It starts on your two most-sent versions. A CV can't be compared with one of
+  its own versions (they share applications); two versions sent with the same application
+  share it too, so record the one you actually sent.
 
 - **Weekly activity**: applications added and sent, stage moves, interviews, calls held and
   roles pitched per week.
