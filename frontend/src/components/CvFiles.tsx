@@ -38,7 +38,7 @@ const stem = (name: string) => name.replace(/\.[^.]+$/, "").slice(0, 100);
 
 /** Make a file a version: of an existing document, or a new one. */
 const HREF = { application: "/applications", role: "/roles", contact: "/people" } as const;
-const SOURCE_PREFIX = { application: "", role: "on role ", contact: "sent to " } as const;
+const SOURCE_PREFIX = { application: "", role: "On role ", contact: "Sent to " } as const;
 
 /** Make a file a version (of an existing CV or a new one), or record the version it already is,
  * on the applications you tick. */
@@ -182,7 +182,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
           <Text size="xs" c="dimmed">
             {elsewhere.map((x, i) => (
               <span key={`${x.kind}:${x.id}`}>
-                {i ? ", " : "Attached "}
+                {i ? " · " : ""}
                 {SOURCE_PREFIX[x.kind as keyof typeof SOURCE_PREFIX]}
                 <Anchor component={Link} to={`${HREF[x.kind as keyof typeof HREF]}/${x.id}`} size="xs">
                   {x.name}
@@ -224,7 +224,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
   );
 }
 
-/** The CV files on your applications that aren't recorded as versions yet; nothing when there are none. */
+/** The CV files you've attached that aren't recorded as versions yet; nothing when there are none. */
 export function CvFilesCard() {
   const { data: files } = useCvFiles();
   const [dismissed, setDismissed] = useState(readDismissed);
@@ -246,7 +246,7 @@ export function CvFilesCard() {
     <Card withBorder>
       <Group gap="xs" mb={4}>
         <IconFileCv size={18} />
-        <Title order={4}>CV files on your applications</Title>
+        <Title order={4}>CV files you've attached</Title>
       </Group>
       <Text size="sm" c="dimmed" mb="md">
         Files that look like a CV (named like one, or the same file in several places) attached to

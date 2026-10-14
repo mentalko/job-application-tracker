@@ -198,7 +198,7 @@ describe("documents", () => {
       "/api/v1/health": {},
     });
     renderAt("/documents");
-    const card = (await screen.findByRole("heading", { name: "CV files on your applications" })).closest(
+    const card = (await screen.findByRole("heading", { name: "CV files you've attached" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
     // Where each was found: a person it was sent to, a role; and the applications it counts for.

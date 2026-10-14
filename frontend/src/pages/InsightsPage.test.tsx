@@ -537,9 +537,7 @@ describe("insights", () => {
     renderAt("/insights");
     fireEvent.click(await screen.findByRole("tab", { name: "CVs and cover letters" }));
     expect(await screen.findByText(/Nothing to compare yet/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/1 CV file attached to your applications isn't a version yet/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/1 CV file you've attached isn't a version yet/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sort them out on Documents" })).toHaveAttribute(
       "href",
       "/documents",
