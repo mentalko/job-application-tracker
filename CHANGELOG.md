@@ -92,10 +92,10 @@ brackets are pull requests.
   applications and interviews they're on, notes); the Timeline keeps its view, period and
   *About* in the address. Notes on a role now show for its company and the person who pitched
   it (#70).
-- **Ghosts are clear everywhere**: a ghost before the name of anyone you've marked *Ghosted*,
-  wherever their name shows (people, applications, roles, calls, Next actions, the Timeline,
-  Insights); a *Ghosted* filter on the Recruiters page; and **Not a ghost** (or the **×** on
-  their chip) to take it off whenever you like (#72).
+- **Ghosts are easy to spot**: a ghost before the name of anyone you've marked *Ghosted*, on
+  their page and tile, the applications they brought you, calls, Next actions, the Timeline,
+  search and Insights; a *Ghosted* filter on the Recruiters page; and **Not a ghost** (or the
+  **×** on their chip) to take it off whenever you like, with an Undo (#72).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

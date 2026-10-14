@@ -112,4 +112,31 @@ describe("chasing people", () => {
     fireEvent.click(screen.getByRole("button", { name: "Remove Not interested" }));
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ closed_as: null }));
   });
+
+  it("takes Ghosted off a person whenever you like, with an undo", async () => {
+    const calls = mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/contacts/c1/summary": {
+        contact: alex({ awaiting_reply_since: null, closed_as: "ghosted", closed_on: "2026-09-01" }),
+        applications: [],
+        interviews: [],
+      },
+      "PATCH /api/v1/contacts/c1": alex(),
+      "/api/v1/agencies": [],
+      "/api/v1/companies": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/people/c1");
+    expect((await screen.findAllByRole("img", { name: "Ghosted" })).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Not a ghost" }));
+    await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ closed_as: null }));
+    const toast = (await screen.findByText("Alex Morgan: not a ghost any more")).parentElement!;
+    fireEvent.click(within(toast).getByRole("button", { name: "Undo" }));
+    await waitFor(() =>
+      expect(calls.filter((c) => c.method === "PATCH").at(-1)?.body).toMatchObject({
+        closed_as: "ghosted",
+        closed_on: "2026-09-01",
+      }),
+    );
+  });
 });

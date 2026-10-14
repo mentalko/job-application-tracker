@@ -78,7 +78,7 @@ describe("timeline", () => {
       "/api/v1/timeline": { items: ITEMS, now },
       "/api/v1/companies": [],
       "/api/v1/agencies": [],
-      "/api/v1/contacts": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Recruiter", closed_as: "ghosted" }],
       "/api/v1/health": {},
     });
     renderTimeline();
@@ -96,6 +96,10 @@ describe("timeline", () => {
     expect(
       within(await screen.findByRole("list", { name: "Alex Recruiter" })).getAllByRole("button"),
     ).toHaveLength(2);
+    // Alex ghosted you: their row says so.
+    expect(
+      within(screen.getByRole("link", { name: /Alex Recruiter/ })).getByRole("img", { name: "Ghosted" }),
+    ).toBeInTheDocument();
   });
 
   it("opens on one person over all time from a link, and keeps the filters in the URL", async () => {

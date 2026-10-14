@@ -1,4 +1,5 @@
 import { IconGhost2 } from "@tabler/icons-react";
+import { useMemo } from "react";
 
 import { useContacts } from "../api/hooks";
 
@@ -15,7 +16,10 @@ export function GhostMark({ closedAs, size = 14 }: { closedAs?: string | null; s
 /** Whether a person (by id) has ghosted you, from the people list everyone shares. */
 export function useGhosted() {
   const { data: contacts } = useContacts();
-  const ghosts = new Set((contacts ?? []).filter((c) => c.closed_as === "ghosted").map((c) => c.id));
+  const ghosts = useMemo(
+    () => new Set((contacts ?? []).filter((c) => c.closed_as === "ghosted").map((c) => c.id)),
+    [contacts],
+  );
   return (id: string | null | undefined) => Boolean(id && ghosts.has(id));
 }
 

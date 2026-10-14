@@ -252,13 +252,16 @@ actions, and at the top of their page:
   Next actions says *Chased today* instead of how long you've been waiting.
 - **Ghosted** and **Not interested**: you've stopped expecting
   anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
-  *Not interested*, with the date. Someone who ghosted you gets a ghost before their name
-  wherever it shows: their tile and page, the applications and roles they're on (the list,
-  the board, the quick view, company and agency pages), calls, Next actions, the Timeline and
-  Insights. Roles say *(ghosted)* after the name.
+  *Not interested*, with the date. Someone who ghosted you gets a ghost: in place of the
+  person icon on their page, and before their name on their tile, on the applications they
+  brought you (the list, the board, the quick view, the People card, company, agency and role
+  pages), on calls, Next actions, Timeline entries and per-person rows, search results, and
+  Insights (*Who you talk to* and the recruiter scorecard). Role lines say *(ghosted)* after
+  the name.
   To take it off, whenever you like (a week later, say, when they were just slow), press
   **Not a ghost** on their page (or **Remove Not interested**), or the **×** on the chip on
-  their tile. Marking them as waiting or replied again takes it off too.
+  their tile; it says so, with **Undo**. Marking them as waiting or replied again takes it off
+  too.
 
 Each pops up a message with **Undo**, and goes on the Timeline. (For applications, **Ghosted**
 is a stage: see [Next actions](#next-actions).)

@@ -194,7 +194,8 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </Group>
       <Stack gap={4}>
         <Text size="sm">
-          <b>Route:</b> <GhostMark closedAs={ghosted(app.recruiter_id) ? "ghosted" : null} />
+          <b>Route:</b>{" "}
+          {app.recruiter_name && <GhostMark closedAs={ghosted(app.recruiter_id) ? "ghosted" : null} />}
           {app.route === "agency"
             ? `Through ${[app.recruiter_name, app.agency_name].filter(Boolean).join(" at ") || "an agency"}`
             : app.route === "referral"

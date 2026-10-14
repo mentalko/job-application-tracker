@@ -24,6 +24,8 @@ function useRefreshPeople() {
       ["meetings"],
       ["role-summaries"],
       ["next-actions"], // names in waiting, calls and to-dos
+      ["insights"], // conversations say who ghosted you
+      ["search"],
       ["todos"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
