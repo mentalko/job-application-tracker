@@ -29,7 +29,9 @@ function MakeVersionModal({ file, onClose }: { file: CvFile; onClose: () => void
   const { data: documents } = useDocuments();
   const adopt = useAdoptCvFile();
   const cvs = (documents ?? []).filter((d) => d.kind === "cv");
-  const [documentId, setDocumentId] = useState<string | null>(cvs[0]?.id ?? "new");
+  const [picked, setDocumentId] = useState<string | null>(null);
+  // Your first CV once they've loaded, unless you've picked one.
+  const documentId = picked ?? cvs[0]?.id ?? "new";
   const [name, setName] = useState("CV");
   const [label, setLabel] = useState(stem(file.name));
   const isNew = documentId === "new";
@@ -160,16 +162,19 @@ export function CvFilesCard() {
   const { data: files } = useCvFiles();
   const [dismissed, setDismissed] = useState(readDismissed);
   const shown = (files ?? []).filter((f) => !dismissed.has(f.sha256));
-  if (!shown.length) return null;
-  const dismiss = (sha: string) => {
-    const next = new Set(dismissed).add(sha);
+  const hidden = (files ?? []).length - shown.length;
+  if (!shown.length && !hidden) return null;
+  const remember = (next: Set<string>) => {
     setDismissed(next);
     try {
       localStorage.setItem(NOT_A_CV, JSON.stringify([...next]));
     } catch {
-      // No storage (a private window): hidden until the page reloads.
+      // No storage (a private window): only until the page reloads.
     }
   };
+  const dismiss = (sha: string) => remember(new Set(dismissed).add(sha));
+  // Forget the ones that aren't waiting any more, then show the rest again.
+  const showHidden = () => remember(new Set());
   return (
     <Card withBorder>
       <Group gap="xs" mb={4}>
@@ -184,6 +189,11 @@ export function CvFilesCard() {
         {shown.map((f) => (
           <CvFileRow key={f.sha256} file={f} onDismiss={() => dismiss(f.sha256)} />
         ))}
+        {hidden > 0 && (
+          <Anchor component="button" type="button" size="xs" c="dimmed" ta="left" onClick={showHidden}>
+            Show {hidden} you said {hidden === 1 ? "isn't a CV" : "aren't CVs"}
+          </Anchor>
+        )}
       </Stack>
     </Card>
   );

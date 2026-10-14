@@ -10627,7 +10627,7 @@
     },
     "/api/v1/cv-files/adopt": {
       "post": {
-        "description": "Make the file a version of a document (copying the file, so the version keeps it), unless\nit already is one, and record that version as sent with every application it's attached to.",
+        "description": "Make the file a version of a document (copying the file, so the version keeps it), unless\nit already is one, and record that version as sent with every application it's attached to,\non the day you applied (or, without one, the day you attached it). When the file already is a\nversion, `document_id`, `document_name` and `label` are ignored.",
         "operationId": "adopt_cv_file_api_v1_cv_files_adopt_post",
         "requestBody": {
           "content": {

@@ -412,17 +412,20 @@ application page records which version you sent, and the Documents page shows wh
 version went. [Insights](#insights) compares how the versions do.
 
 **CV files on your applications.** If you've been attaching your CV to applications as a
-plain file, the Documents page finds them: PDF and Word files attached to applications that are
-named like a CV (*cv*, *resume*, *résumé*, *curriculum*) or where the very same file is on two
-or more applications. Identical files are one entry (the app compares their contents, not
-their names), with the applications it's on.
+plain file, the Documents page finds them: PDF and Word files (`.pdf`, `.doc`, `.docx`)
+attached to applications (archived ones included) that are named like a CV (*cv*, *resume*,
+*résumé*, *curriculum*, e.g. `Resume_2026.pdf`) or where the very same file is on two or more
+applications. Identical files are one entry (the app compares their contents, not their
+names), with the applications it's on.
 
 - **Make it a version**: add it to one of your CVs, or a new one, with a version name (it
   starts as the file name). The version gets its own copy of the file, and it's recorded as
-  sent with every application the file is on. The files stay on the applications too.
+  sent with every application the file is on, on the day you applied (or, without an applied
+  date, the day you attached it). The files stay on the applications too.
 - **Record as sent**: when the file already is a version (you uploaded the same file as one),
   it's recorded on the applications that don't have it yet.
-- **Not a CV**: hides it (remembered in this browser).
+- **Not a CV**: hides it (remembered in this browser); **Show … you said aren't CVs** brings
+  them back.
 
 The card goes once there's nothing left to sort out, and the Insights CV tab says how many are
 waiting.

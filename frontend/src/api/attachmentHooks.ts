@@ -58,7 +58,10 @@ function useRefreshFiles() {
     // ["attachments", type] covers one thing's files and every role's at once.
     void qc.invalidateQueries({ queryKey: ["attachments", entityType] });
     void qc.invalidateQueries({ queryKey: ["search"] });
-    if (entityType === "application") invalidateApplicationViews(qc); // "File added" on the timeline
+    if (entityType === "application") {
+      invalidateApplicationViews(qc); // "File added" on the timeline
+      void qc.invalidateQueries({ queryKey: ["attachments", "cv-files"] }); // a CV file to make a version
+    }
   };
 }
 

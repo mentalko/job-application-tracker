@@ -610,7 +610,9 @@ export interface paths {
         /**
          * Adopt Cv File
          * @description Make the file a version of a document (copying the file, so the version keeps it), unless
-         *     it already is one, and record that version as sent with every application it's attached to.
+         *     it already is one, and record that version as sent with every application it's attached to,
+         *     on the day you applied (or, without one, the day you attached it). When the file already is a
+         *     version, `document_id`, `document_name` and `label` are ignored.
          */
         post: operations["adopt_cv_file_api_v1_cv_files_adopt_post"];
         delete?: never;

@@ -216,6 +216,8 @@ describe("documents", () => {
     fireEvent.click(within(card).getByRole("button", { name: "Resume template.pdf is not a CV" }));
     expect(within(card).queryByText(/Resume template.pdf/)).not.toBeInTheDocument();
     expect(localStorage.getItem("jat.notACv")).toContain("c".repeat(64));
+    fireEvent.click(within(card).getByRole("button", { name: "Show 1 you said isn't a CV" }));
+    expect(within(card).getByText(/Resume template.pdf/)).toBeInTheDocument();
 
     // Make the shared file a version of a new CV.
     fireEvent.click(within(card).getAllByRole("button", { name: "Make it a version" })[0]!);

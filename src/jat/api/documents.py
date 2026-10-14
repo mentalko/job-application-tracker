@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import mimetypes
 import re
+import unicodedata
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
 from sqlalchemy import func, select
@@ -321,8 +322,24 @@ def unsend_document(app_id: str, link_id: str, session: SessionDep):
 
 
 # Files on applications that look like a CV: by name, or the same file on two or more.
-CV_NAME = re.compile(r"\b(cv|resume|résumé|curriculum)\b|cv[._ -]|_cv\b", re.IGNORECASE)
-CV_TYPES = ("application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument")
+CV_NAME = re.compile(r"(?<![a-z])(cv|resume|résumé|curriculum)(?![a-z])", re.IGNORECASE)
+CV_TYPES = frozenset(
+    {
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+)
+
+
+def _is_cv_type(att: Attachment) -> bool:
+    """PDF or Word, by its stored type or (when there isn't one) its name."""
+    kind = att.content_type or mimetypes.guess_type(att.original_name)[0]
+    return kind in CV_TYPES
+
+
+def _looks_like_cv(name: str) -> bool:
+    return bool(CV_NAME.search(unicodedata.normalize("NFC", name)))
 
 
 def _cv_files(session: Session) -> list[S.CvFile]:
@@ -335,26 +352,27 @@ def _cv_files(session: Session) -> list[S.CvFile]:
     ).all()
     groups: dict[str, list] = {}
     for att, app_id, company, title in rows:
-        if att.content_type and not att.content_type.startswith(CV_TYPES):
-            continue
-        groups.setdefault(att.sha256, []).append((att, app_id, company, title))
-    versions = {
-        sha: (v, d)
-        for v, d, sha in session.execute(
-            select(DocumentVersion, Document, Attachment.sha256)
-            .join(Document, DocumentVersion.document_id == Document.id)
-            .join(Attachment, DocumentVersion.attachment_id == Attachment.id)
-            .order_by(DocumentVersion.created_at)
-        )
-    }
+        if _is_cv_type(att):
+            groups.setdefault(att.sha256, []).append((att, app_id, company, title))
+    # Every version with each file (the same file can be a version of two documents); the newest
+    # is the one to record.
+    versions: dict[str, list[tuple[DocumentVersion, Document]]] = {}
+    for v, d, sha in session.execute(
+        select(DocumentVersion, Document, Attachment.sha256)
+        .join(Document, DocumentVersion.document_id == Document.id)
+        .join(Attachment, DocumentVersion.attachment_id == Attachment.id)
+        .order_by(DocumentVersion.created_at)
+    ):
+        versions.setdefault(sha, []).append((v, d))
     sent = set(session.execute(select(ApplicationDocument.application_id, ApplicationDocument.document_version_id)))
     out = []
     for sha, items in groups.items():
         apps = {app_id: (company, title) for _, app_id, company, title in items}
         first = items[0][0]
-        if len(apps) < 2 and not CV_NAME.search(first.original_name):
+        if len(apps) < 2 and not any(_looks_like_cv(att.original_name) for att, *_ in items):
             continue
-        match = versions.get(sha)
+        matches = versions.get(sha, [])
+        newest = matches[-1] if matches else None
         out.append(
             S.CvFile(
                 sha256=sha,
@@ -366,14 +384,14 @@ def _cv_files(session: Session) -> list[S.CvFile]:
                         id=app_id,
                         company_name=company,
                         role_title=title,
-                        has_it=bool(match and (app_id, match[0].id) in sent),
+                        has_it=any((app_id, v.id) in sent for v, _ in matches),
                     )
                     for app_id, (company, title) in apps.items()
                 ],
                 version=S.CvFileVersion(
-                    id=match[0].id, label=match[0].label, document_id=match[1].id, document_name=match[1].name
+                    id=newest[0].id, label=newest[0].label, document_id=newest[1].id, document_name=newest[1].name
                 )
-                if match
+                if newest
                 else None,
             )
         )
@@ -392,7 +410,9 @@ def cv_files(session: SessionDep):
 @router.post("/cv-files/adopt", response_model=S.CvFileAdopted, status_code=201)
 def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
     """Make the file a version of a document (copying the file, so the version keeps it), unless
-    it already is one, and record that version as sent with every application it's attached to."""
+    it already is one, and record that version as sent with every application it's attached to,
+    on the day you applied (or, without one, the day you attached it). When the file already is a
+    version, `document_id`, `document_name` and `label` are ignored."""
     found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
     if found is None:
         raise HTTPException(404, "No CV file like that on your applications (or it's all recorded already).")
@@ -412,10 +432,17 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             else:
                 raise HTTPException(422, "Pick a document to add it to, or name a new one.")
             src = session.scalar(
-                select(Attachment).where(Attachment.sha256 == body.sha256, Attachment.entity_type == "application")
+                select(Attachment).where(
+                    Attachment.sha256 == body.sha256,
+                    Attachment.entity_type == "application",
+                    Attachment.entity_id.in_([a.id for a in found.applications]),
+                )
             )
-            with store.resolve(src.path).open("rb") as f:
-                stored = store.save(f, src.original_name)
+            try:
+                with store.resolve(src.path).open("rb") as f:
+                    stored = store.save(f, src.original_name)
+            except (FileError, OSError) as exc:
+                raise HTTPException(409, f"{src.original_name} is missing from your data folder.") from exc
             att = Attachment(
                 id=stored.id,
                 entity_type="document",
@@ -438,22 +465,23 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             if a.has_it:
                 continue
             attached = session.scalar(
-                select(Attachment.created_at).where(
+                select(func.min(Attachment.created_at)).where(
                     Attachment.sha256 == body.sha256,
                     Attachment.entity_type == "application",
                     Attachment.entity_id == a.id,
                 )
             )
+            application = session.get(Application, a.id)
             session.add(
                 ApplicationDocument(
                     application_id=a.id,
                     document_version_id=version.id,
-                    sent_on=attached.astimezone().date() if attached else None,
+                    sent_on=application.applied_on or (attached.astimezone().date() if attached else None),
                 )
             )
             svc.log_activity(
                 session,
-                session.get(Application, a.id),
+                application,
                 "file",
                 summary=f"{kind} sent: {doc.name} {version.label}",
                 data={"document_version_id": version.id},
