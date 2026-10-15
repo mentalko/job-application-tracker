@@ -121,6 +121,8 @@ brackets are pull requests.
   withdrawn stays *Applied* (#79).
 - **Roles in narrow cards** (a company's side column, phones): the buttons wrap under the role
   instead of squashing its name (#79).
+- **Favourite people**: star the recruiters you rate; a gold star before their name across the
+  app, a *Favourites* filter on the Recruiters page, and favourites listed first (#80).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

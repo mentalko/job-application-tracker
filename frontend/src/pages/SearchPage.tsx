@@ -19,7 +19,7 @@ import {
 } from "@tabler/icons-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 
-import { GhostMark, useGhosted } from "../components/GhostMark";
+import { PersonMarks } from "../components/GhostMark";
 import { useSearchResults, type SearchHit } from "../api/searchHooks";
 
 const KINDS: Record<string, { label: string; icon: Icon }> = {
@@ -44,10 +44,9 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
   // In-app paths open in the app; files and outside links in a new tab (web addresses only).
   const external = !hit.link.startsWith("/") || hit.link.startsWith("/api/");
   const safe = hit.link.startsWith("/") || /^https?:\/\//i.test(hit.link);
-  const ghosted = useGhosted();
   const title = (
     <>
-      {hit.kind === "contact" && <GhostMark closedAs={ghosted(hit.id) ? "ghosted" : null} />}
+      {hit.kind === "contact" && <PersonMarks id={hit.id} />}
       <Highlight highlight={words} fw={600} size="sm" span>
         {hit.title}
       </Highlight>

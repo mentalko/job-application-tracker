@@ -77,6 +77,8 @@ class Contact(IdMixin, TimestampMixin, Base):
     # Off Next actions until you're waiting on them (or reading a reply) again.
     closed_as: Mapped[str | None] = mapped_column(String(20))
     closed_on: Mapped[date | None]
+    # One of your favourites (a recruiter you rate): a star by their name.
+    favourite: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
 
 
 class ContactDetail(IdMixin, Base):

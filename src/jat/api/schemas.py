@@ -112,6 +112,7 @@ class ContactIn(In):
     agency_id: str | None = None
     company_id: str | None = None
     details: list[ContactDetailIn] = []
+    favourite: bool = False
 
 
 class MergeIn(In):
@@ -122,7 +123,7 @@ ContactClosed = Literal["ghosted", "not_interested"]
 
 
 class ContactPatch(Patch):
-    not_null = frozenset({"name"})
+    not_null = frozenset({"name", "favourite"})
     name: str | None = Field(default=None, min_length=1, max_length=200)
     title: str | None = None
     agency_id: str | None = None
@@ -133,6 +134,7 @@ class ContactPatch(Patch):
     chased_on: date | None = None  # you chased them: waiting again from this day
     closed_as: ContactClosed | None = None  # ghosted or not interested: off Next actions
     closed_on: date | None = None  # defaults to today when closed_as is set
+    favourite: bool | None = None  # one of your favourites: a star by their name
 
 
 class ContactOut(Out):
@@ -147,6 +149,7 @@ class ContactOut(Out):
     chased_on: date | None = None
     closed_as: ContactClosed | None = None
     closed_on: date | None = None
+    favourite: bool = False
     replies: int = 0  # times they got back to you after you'd been waiting
     usual_reply_days: int | None = None  # median working days to reply, rounded up
     created_at: datetime

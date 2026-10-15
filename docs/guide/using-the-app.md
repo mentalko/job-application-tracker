@@ -325,7 +325,7 @@ first. Your data repo's history still has everything until you rewrite it.
 
 ## People, recruiters and agencies
 
-The **Recruiters** page lists everyone as small tiles, A to Z by name: agency recruiters,
+The **Recruiters** page lists everyone as small tiles, favourites first, then A to Z by name: agency recruiters,
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
 stand (or *Ghosted* / *Not interested*, with a **×** to take it off; someone who ghosted you
@@ -334,10 +334,18 @@ also gets a ghost before their name), and every email, phone number and link (cl
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **All / Agencies / Companies / Independent / Ghosted** narrows it to agency recruiters,
-  people at companies, independents, or everyone who ghosted you (with how many).
+- **All / Agencies / Companies / Independent / Favourites / Ghosted** narrows it to agency
+  recruiters, people at companies, independents, your favourites, or everyone who ghosted you
+  (with how many).
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
+
+**Favourites.** Star the people you rate (a recruiter who's genuinely good to work with): the
+☆ on their tile, or next to their name on their page. A favourite gets a gold star next to
+their name in the same places as the ghost (see *Ghosted* above): their tile and page, the
+applications they brought you, calls, Next actions, the Timeline, search and Insights; role
+lines put a ★ after the name. Favourites come first on the Recruiters page. Click the star
+again to unstar them; editing a person never changes it.
 
 **New agency** and **New person** are at the top right. In a person's form you can also type
 a new agency or company name and pick **+ Add "…"** to create it there and then.
@@ -364,7 +372,7 @@ roles they pitched, the applications and interviews they're on, and notes, links
 to-dos about them. This person's own details win: the other record's job title is used if
 this one has none, its agency or company if this one has neither, and its *waiting*, *reply
 to read*, *ghosted* or *not interested* state if this one has none of those; the later of the
-two *chased* dates stays. Then the other record is deleted. When someone looks like
+two *chased* dates stays, and the favourite star if either had it. Then the other record is deleted. When someone looks like
 a duplicate, their page says so in a yellow note with a one-click **Merge into this one**, or
 **Not the same person** to stop suggesting that pair (remembered in this browser).
 Deleting a person instead takes their calls with them and leaves their roles, applications and

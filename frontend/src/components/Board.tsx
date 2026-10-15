@@ -16,7 +16,7 @@ import { Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@man
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
 
-import { GhostMark, useGhosted } from "./GhostMark";
+import { PersonMarks } from "./GhostMark";
 import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, type Workflow } from "../api/hooks";
 import { buildColumns, canDrop, isSuggested, visibleColumns, type Column } from "../utils/board";
@@ -41,7 +41,6 @@ function announcements(rows: ApplicationRow[], names: Map<string, string>): Anno
 }
 
 function CardBody({ row }: { row: ApplicationRow }) {
-  const ghosted = useGhosted();
   const via =
     row.route === "agency"
       ? row.recruiter_name || row.agency_name
@@ -72,9 +71,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
         </Text>
         {via && (
           <Text size="xs" c="dimmed" lineClamp={1}>
-            {row.route === "agency" && row.recruiter_name && (
-              <GhostMark closedAs={ghosted(row.recruiter_id) ? "ghosted" : null} size={12} />
-            )}
+            {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} size={12} />}
             {via}
           </Text>
         )}

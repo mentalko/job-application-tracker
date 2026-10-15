@@ -79,6 +79,42 @@ describe("recruiters", () => {
     expect(screen.getByText("Sam Patel")).toBeInTheDocument();
   });
 
+  it("stars favourites, lists them first, and filters to them", async () => {
+    const calls = mockApi({
+      "PATCH /api/v1/contacts/c2": { ...contacts[1], favourite: false },
+      "PATCH /api/v1/contacts/c3": { ...contacts[2], favourite: true },
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": agencies,
+      "/api/v1/contacts": [contacts[0], { ...contacts[1], favourite: true }, contacts[2]],
+      "/api/v1/companies": [],
+      "/api/v1/applications": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/recruiters");
+    const tiles = await screen.findAllByRole("link", {
+      name: /^(Favourite)?(Alex Morgan|Jo Freelance|Sam Patel)$/,
+    });
+    expect(tiles.map((t) => t.textContent)).toEqual(["Sam Patel", "Alex Morgan", "Jo Freelance"]);
+    expect(within(tiles[0]!).getByRole("img", { name: "Favourite" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Favourites · 1"));
+    await waitFor(() => expect(screen.queryByRole("link", { name: "Alex Morgan" })).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Favourite: Sam Patel" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c2")?.body).toEqual({
+        favourite: false,
+      }),
+    );
+    fireEvent.click(screen.getByText("All"));
+    fireEvent.click(await screen.findByRole("button", { name: "Favourite: Jo Freelance" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c3")?.body).toEqual({
+        favourite: true,
+      }),
+    );
+  });
+
   it("puts a ghost before the name of someone who ghosted you", async () => {
     const calls = mockApi({
       "PATCH /api/v1/contacts/c2": { ...contacts[1], closed_as: null },

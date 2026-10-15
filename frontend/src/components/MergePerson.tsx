@@ -115,6 +115,7 @@ function MergeModal({
               <List.Item>calls, and the roles they pitched</List.Item>
               <List.Item>the applications and interviews they're on</List.Item>
               <List.Item>notes, links, files and to-dos about them</List.Item>
+              <List.Item>the favourite star, if either has it</List.Item>
               <List.Item>
                 title, agency or company, and waiting or chased, where {person.name} has none
               </List.Item>
