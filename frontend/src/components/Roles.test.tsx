@@ -109,6 +109,25 @@ describe("roles to decide", () => {
     expect(screen.queryByRole("button", { name: "Apply: Platform Engineer" })).not.toBeInTheDocument();
   });
 
+  it("says a role withdrawn while only interested ended there, not applied", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/role-summaries": [
+        { ...pitched, status: "closed", closed_as: "Withdrawn", application_ids: ["a9"] },
+      ],
+      "/api/v1/health": {},
+    });
+    renderAt("/roles");
+    expect(await screen.findByRole("link", { name: "Open application" })).toHaveAttribute(
+      "href",
+      "/applications/a9",
+    );
+    expect(screen.getAllByText("Withdrawn").filter((el) => el.closest(".mantine-Badge-root"))).toHaveLength(
+      1,
+    );
+    expect(screen.queryByText("Applied", { selector: ".mantine-Badge-label" })).not.toBeInTheDocument();
+  });
+
   it("passes on a role with a reason", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,

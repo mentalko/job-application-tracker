@@ -29,7 +29,7 @@ import { useRoleFiles, useUploadFilesTo } from "../api/attachmentHooks";
 import { useCreateCompany } from "../api/detailHooks";
 import { useMeetings } from "../api/meetingHooks";
 import {
-  ROLE_STATUS,
+  roleBadge,
   useApplyForRole,
   useRoleSummaries,
   useSaveRole,
@@ -468,9 +468,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
   const { data: workflow } = useWorkflow();
   // Only when your workflow starts before Applied (it does by default: Interested).
   const canBeInterested = beforeApplied(workflow, workflow?.initial ?? null);
-  if (role.status === "applied" || role.status === "interested")
+  if (role.application_ids.length > 0)
     return (
-      <Anchor component={Link} to={`/applications/${role.application_ids[0]}`} size="xs">
+      <Anchor component={Link} to={`/applications/${role.application_ids.at(-1)}`} size="xs">
         Open application
       </Anchor>
     );
@@ -529,7 +529,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 /** One role: what, where, who pitched it, pay, status and what to do next. */
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
   const ghost = useGhosted()(role.contact_id) ? " (ghosted)" : "";
-  const status = ROLE_STATUS[role.status];
+  const status = roleBadge(role);
   const money = pay(role);
   const [editing, setEditing] = useState(false);
   const [addingTodo, setAddingTodo] = useState(false);
@@ -541,9 +541,10 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
   const files = (roleFiles ?? []).filter((f) => f.entity_id === role.id);
   return (
     <Stack gap={6}>
-      <Group justify="space-between" wrap="nowrap" align="flex-start">
-        <div style={{ minWidth: 0 }}>
-          <Group gap={6} wrap="nowrap">
+      {/* In a narrow column (a company's side card, a phone) the buttons go under the role. */}
+      <Group justify="space-between" wrap="wrap" align="flex-start" gap="xs">
+        <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+          <Group gap={6} wrap="wrap">
             <Anchor
               component={Link}
               to={`/roles/${role.id}`}
@@ -587,41 +588,46 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
               .join(" · ")}
           </Text>
         </div>
-        <Group gap="xs" wrap="nowrap">
-          <Badge size="xs" variant="light" color={status.color}>
-            {status.label}
-          </Badge>
-          <RoleActions role={role} />
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            aria-label={`Edit ${role.title}`}
-            onClick={() => setEditing(true)}
-          >
-            <IconPencil size={14} />
-          </ActionIcon>
-          <Tooltip label="Add a to-do">
+        {/* Two groups that wrap as wholes: the status and its actions, then the icons. */}
+        <Group gap="xs" wrap="wrap" justify="flex-end" style={{ marginLeft: "auto" }}>
+          <Group gap="xs" wrap="nowrap">
+            <Badge size="xs" variant="light" color={status.color}>
+              {status.label}
+            </Badge>
+            <RoleActions role={role} />
+          </Group>
+          <Group gap={4} wrap="nowrap">
             <ActionIcon
               variant="subtle"
               color="gray"
               size="sm"
-              aria-label={`Add a to-do about ${role.title}`}
-              onClick={() => setAddingTodo((v) => !v)}
+              aria-label={`Edit ${role.title}`}
+              onClick={() => setEditing(true)}
             >
-              <IconListCheck size={14} />
+              <IconPencil size={14} />
             </ActionIcon>
-          </Tooltip>
-          {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
-          {role.application_ids.length === 0 && (
-            <DeleteButton
-              compact
-              kind="role"
-              id={role.id}
-              name={role.title}
-              confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
-            />
-          )}
+            <Tooltip label="Add a to-do">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                aria-label={`Add a to-do about ${role.title}`}
+                onClick={() => setAddingTodo((v) => !v)}
+              >
+                <IconListCheck size={14} />
+              </ActionIcon>
+            </Tooltip>
+            {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
+            {role.application_ids.length === 0 && (
+              <DeleteButton
+                compact
+                kind="role"
+                id={role.id}
+                name={role.title}
+                confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
+              />
+            )}
+          </Group>
         </Group>
       </Group>
       {(todos.length > 0 || addingTodo) && (

@@ -9,6 +9,7 @@ const VIEWS: { value: RoleStatus | "all"; label: string }[] = [
   { value: "to_decide", label: "To decide" },
   { value: "interested", label: "Interested" },
   { value: "applied", label: "Applied" },
+  { value: "closed", label: "Closed" },
   { value: "passed", label: "Passed" },
   { value: "all", label: "All" },
 ];
@@ -19,6 +20,7 @@ const EMPTY: Record<RoleStatus | "all", string> = {
   interested:
     "No roles you're interested in but haven't applied for yet. Press Interested on a role to track it.",
   applied: "No roles applied for from here yet.",
+  closed: "No roles closed before you applied (withdrawn while only interested, say).",
   passed: "You haven't passed on any roles.",
   all: "No roles yet.",
 };

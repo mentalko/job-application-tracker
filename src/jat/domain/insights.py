@@ -59,6 +59,46 @@ def before_applied(workflow: Workflow, stage: str) -> bool:
     return kinds.get(stage) == "active" and rank.get(stage, len(rank)) < applied_rank(workflow, rank)
 
 
+def role_progress(workflow: Workflow, apps: list[tuple[str, list[str], bool]]) -> str:
+    """How far a role's applications got, from each one's (current stage, stage path, whether it
+    has an applied date):
+
+    - `applied`: one got to Applied or further at some point (or was recorded straight at a
+      closed stage with an applied date: a past application you logged as Rejected);
+    - `interested`: none has, and one is still in an open stage before Applied;
+    - `closed`: none has, and every one is closed (withdrawn while only interested, say).
+
+    An application with no stage history counts as its current stage.
+    """
+    rank = stage_rank(workflow)
+    applied = applied_rank(workflow, rank)
+    kinds = {st.id: st.kind for st in workflow.stages}
+
+    def got_there(stage: str) -> bool:
+        return kinds.get(stage) != "closed" and rank.get(stage, applied) >= applied
+
+    for stage, path, has_applied_on in apps:
+        path = path or [stage]
+        if any(got_there(st) for st in path) or (kinds.get(path[0]) == "closed" and has_applied_on):
+            return "applied"
+    if all(kinds.get(stage) == "closed" for stage, _, _ in apps):
+        return "closed"
+    if all(kinds.get(stage) == "closed" or before_applied(workflow, stage) for stage, _, _ in apps):
+        return "interested"
+    return "applied"  # a stage the workflow no longer has: assume the furthest
+
+
+def stage_paths(session: Session, app_ids: list[str]) -> dict[str, list[str]]:
+    """Each application's stage path (first stage, then moves not undone), for role_progress."""
+    events: dict[str, list[Event]] = {i: [] for i in app_ids}
+    if app_ids:
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(app_ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
+            events[ev.application_id].append(ev)
+    return {i: stage_path(evs) for i, evs in events.items()}
+
+
 def stage_path(events: list[Event]) -> list[str]:
     """First stage, then the stages moved to (undone moves left out), in time order."""
     stage_events = [ev for ev in events if ev.kind == STAGE_CHANGE]

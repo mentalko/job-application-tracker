@@ -213,14 +213,15 @@ class RoleOut(Out):
     updated_at: datetime
 
 
-RoleStatus = Literal["to_decide", "interested", "applied", "passed"]
+RoleStatus = Literal["to_decide", "interested", "closed", "applied", "passed"]
 
 
 class RoleSummary(RoleOut):
     """A role with where it came from and where it stands: still to decide, applied, or passed."""
 
     company_name: str
-    status: RoleStatus  # applied once it has an application, whatever `decision` says
+    status: RoleStatus  # from its applications once it has any, whatever `decision` says
+    closed_as: str | None = None  # when `closed`: the stage it ended at ("Withdrawn")
     application_ids: list[str]
     contact_name: str | None = None
     agency_id: str | None = None  # the person's agency

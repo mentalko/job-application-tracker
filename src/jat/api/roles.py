@@ -10,7 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db.models import Agency, Application, Company, Contact, Meeting, Role
-from ..domain.insights import before_applied
+from ..domain.insights import before_applied, role_progress, stage_paths
 from ..domain.workflow import Workflow
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
@@ -30,14 +30,17 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
     role_ids = [r.id for r, *_ in rows]
     apps: dict[str, list[str]] = defaultdict(list)
     stages: dict[str, list[str]] = defaultdict(list)
+    dated: set[str] = set()  # applications with an applied date
     if role_ids:
-        for app_id, role_id, stage in session.execute(
-            select(Application.id, Application.role_id, Application.stage)
+        for app_id, role_id, stage, applied_on in session.execute(
+            select(Application.id, Application.role_id, Application.stage, Application.applied_on)
             .where(Application.role_id.in_(role_ids))
             .order_by(Application.created_at)
         ):
             apps[role_id].append(app_id)
             stages[role_id].append(stage)
+            if applied_on is not None:
+                dated.add(app_id)
     meeting_ids = {r.meeting_id for r, *_ in rows if r.meeting_id}
     meetings = {}
     if meeting_ids:
@@ -48,11 +51,33 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
         ):
             meetings[m.id] = meeting_label(m, name)
 
+    names = {st.id: st.name for st in workflow.stages} if workflow is not None else {}
+    kinds = {st.id: st.kind for st in workflow.stages} if workflow is not None else {}
+    # Stage history only matters for roles that might not have been applied for: every
+    # application closed or still before Applied.
+    maybe = [
+        i
+        for rid, ids in apps.items()
+        if workflow is not None and all(kinds.get(st) == "closed" or before_applied(workflow, st) for st in stages[rid])
+        for i in ids
+    ]
+    paths = stage_paths(session, maybe) if maybe else {}
+
     out = []
     for role, company_name, contact, agency in rows:
+        closed_as = None
         if apps[role.id]:
-            interested = workflow is not None and all(before_applied(workflow, st) for st in stages[role.id])
-            status = "interested" if interested else "applied"
+            status = (
+                role_progress(
+                    workflow,
+                    [(st, paths.get(i, []), i in dated) for i, st in zip(apps[role.id], stages[role.id], strict=True)],
+                )
+                if workflow is not None
+                else "applied"
+            )
+            if status == "closed":
+                # The latest application's stage (the one the role links to).
+                closed_as = names.get(stages[role.id][-1], stages[role.id][-1])
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
@@ -60,6 +85,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 **S.RoleOut.model_validate(role).model_dump(),
                 company_name=company_name,
                 status=status,
+                closed_as=closed_as,
                 application_ids=apps[role.id],
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,
@@ -82,7 +108,8 @@ def role_summaries(
     """Roles with where they came from and where they stand, oldest first.
 
     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
-    all still before Applied), `applied` (an application got to Applied or further) or `passed`.
+    all still before Applied), `closed` (all closed before any got to Applied: withdrawn while
+    only interested, say), `applied` (an application got to Applied or further) or `passed`.
     Filter by company, by who told you about it, or by the call it came up in.
     """
     where = []
