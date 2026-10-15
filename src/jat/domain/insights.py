@@ -59,16 +59,17 @@ def before_applied(workflow: Workflow, stage: str) -> bool:
     return kinds.get(stage) == "active" and rank.get(stage, len(rank)) < applied_rank(workflow, rank)
 
 
-def role_progress(workflow: Workflow, apps: list[tuple[str, list[str]]]) -> str:
-    """How far a role's applications got, from each one's (current stage, stage path):
+def role_progress(workflow: Workflow, apps: list[tuple[str, list[str], bool]]) -> str:
+    """How far a role's applications got, from each one's (current stage, stage path, whether it
+    has an applied date):
 
-    - `interested`: every one is still in an open stage before Applied;
-    - `closed`: every one is closed and none ever got to Applied (you withdrew while still only
-      interested, or it was gone before you applied);
-    - `applied`: otherwise (one got to Applied or further at some point).
+    - `applied`: one got to Applied or further at some point (or was recorded straight at a
+      closed stage with an applied date: a past application you logged as Rejected);
+    - `interested`: none has, and one is still in an open stage before Applied;
+    - `closed`: none has, and every one is closed (withdrawn while only interested, say).
+
+    An application with no stage history counts as its current stage.
     """
-    if all(before_applied(workflow, stage) for stage, _ in apps):
-        return "interested"
     rank = stage_rank(workflow)
     applied = applied_rank(workflow, rank)
     kinds = {st.id: st.kind for st in workflow.stages}
@@ -76,11 +77,15 @@ def role_progress(workflow: Workflow, apps: list[tuple[str, list[str]]]) -> str:
     def got_there(stage: str) -> bool:
         return kinds.get(stage) != "closed" and rank.get(stage, applied) >= applied
 
-    if all(kinds.get(stage) == "closed" for stage, _ in apps) and not any(
-        got_there(st) for _, path in apps for st in path
-    ):
+    for stage, path, has_applied_on in apps:
+        path = path or [stage]
+        if any(got_there(st) for st in path) or (kinds.get(path[0]) == "closed" and has_applied_on):
+            return "applied"
+    if all(kinds.get(stage) == "closed" for stage, _, _ in apps):
         return "closed"
-    return "applied"
+    if all(kinds.get(stage) == "closed" or before_applied(workflow, stage) for stage, _, _ in apps):
+        return "interested"
+    return "applied"  # a stage the workflow no longer has: assume the furthest
 
 
 def stage_paths(session: Session, app_ids: list[str]) -> dict[str, list[str]]:

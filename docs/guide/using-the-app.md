@@ -50,9 +50,9 @@ any. Add them as **roles** first, then decide on each:
   the date.
 - **Interested** does the same at your starting stage (*Interested* by default) with no
   applied date: you want it but haven't applied yet. The role then shows as *Interested* until
-  its application gets to *Applied*, or is closed (withdrawn while only interested: the role
-  then says *Withdrawn*, or whichever stage it ended at) (move it on from the application; moving it
-  to *Applied* or later fills in *Applied on* if it's empty). The button only shows when your
+  its application gets to *Applied*, or is closed before then (the role then says how it
+  ended, e.g. *Withdrawn*). Move it on from the application; moving it to *Applied* or later
+  fills in *Applied on* if it's empty. The button only shows when your
   workflow starts before *Applied*. In either dialog, the applied date follows the stage you
   pick (empty before *Applied*, today from *Applied* on) until you change the date yourself.
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
@@ -73,8 +73,10 @@ Next actions, an application's *Role* card, search, the Timeline) to open its pa
 
 The **Roles** page shows roles *To decide* (the default), *Interested* (an application that
 hasn't got to *Applied* yet), *Applied* (one that got to *Applied* at some point, even if it
-was closed later), *Closed* (closed before any got to *Applied*; the badge says how it ended,
-e.g. *Withdrawn*), *Passed* or *All*. Roles
+was closed later), *Closed* (every application closed before any got to *Applied*: withdrawn, rejected or
+ghosted while only interested; the badge says how the latest one ended, e.g. *Withdrawn*, and
+the role links to that one), *Passed* or *All*. An application you record straight at a closed
+stage with an applied date (a past one that was rejected) counts as applied. Roles
 to decide also show on Next actions and count towards *Needs attention* on the Overview. On
 the Timeline you'll see who mentioned which role, and the ones you passed on. A role you
 applied for through **New application** with the same title at the same company counts as
@@ -486,7 +488,8 @@ the role); roles you found yourself aren't counted here.
 - **The numbers**: calls held (and booked ahead), people you talked to or were pitched by,
   roles pitched, how many you applied for (and the apply rate: applied out of the roles
   you've decided on), passed on and are still deciding about (roles you're only *Interested*
-  in count as still deciding; ones withdrawn while only interested count as passed), interviews and offers that came
+  in count as still deciding; ones closed while only interested count as passed, but not
+  towards the time to decide), interviews and offers that came
   from pitched roles, ghosted applications from pitches, and the median time to decide (from
   adding the role to applying or passing; a backdated application counts from its first
   stage).

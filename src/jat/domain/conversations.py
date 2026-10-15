@@ -201,7 +201,11 @@ def conversations(
             t.pitched += 1
         # As on the Roles page: interested (all still before Applied) is still deciding, and closed
         # before ever applying (withdrawn while interested) counts as passed.
-        progress = role_progress(workflow, [(a.stage, paths.get(a.id, [])) for a in mine]) if mine else None
+        progress = (
+            role_progress(workflow, [(a.stage, paths.get(a.id, []), a.applied_on is not None) for a in mine])
+            if mine
+            else None
+        )
         if progress == "applied":
             best = min((outcome(a) for a in mine), key=OUTCOMES.index)
             days = (added_at(mine[0]) - _aware(r.created_at)).total_seconds() / 86_400

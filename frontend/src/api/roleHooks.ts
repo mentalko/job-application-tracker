@@ -17,7 +17,7 @@ export interface RoleFilters {
 export const ROLE_STATUS: Record<RoleStatus, { label: string; color: string }> = {
   to_decide: { label: "To decide", color: "yellow" },
   interested: { label: "Interested", color: "cyan" },
-  closed: { label: "Closed", color: "gray" },
+  closed: { label: "Closed", color: "dark" },
   applied: { label: "Applied", color: "blue" },
   passed: { label: "Passed", color: "gray" },
 };

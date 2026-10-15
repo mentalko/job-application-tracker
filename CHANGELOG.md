@@ -115,9 +115,12 @@ brackets are pull requests.
   application at your starting stage with no applied date; the role shows *Interested* (and
   the Roles page has an *Interested* view) until it gets to Applied or is closed; moving an
   application to Applied fills in its applied date (#77).
-- **Withdrawn while Interested isn't Applied**: a role whose applications were all closed
-  before any got to Applied shows how it ended (*Withdrawn*), with a *Closed* view on the
-  Roles page, and counts as passed in Insights; applied-then-withdrawn stays *Applied* (#79).
+- **Closed while Interested isn't Applied**: a role whose applications were all closed before
+  any got to Applied (withdrawn, rejected or ghosted) shows how it ended, e.g. *Withdrawn*,
+  with a *Closed* view on the Roles page, and counts as passed in Insights; applied and then
+  withdrawn stays *Applied* (#79).
+- **Roles in narrow cards** (a company's side column, phones): the buttons wrap under the role
+  instead of squashing its name (#79).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

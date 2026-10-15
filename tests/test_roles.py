@@ -187,3 +187,52 @@ def test_interested_in_a_workflow_without_an_applied_stage(app, client, seeded):
     assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "interested"
     client.post(f"/api/v1/applications/{a}/move", json={"to_stage": "submitted"})
     assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "applied"
+
+
+def _status(client, role_id):
+    r = client.get(f"/api/v1/role-summaries/{role_id}").json()
+    return r["status"], r["closed_as"]
+
+
+def test_how_far_a_roles_applications_got(client, seeded):
+    company = seeded["company"]["id"]
+
+    def role(title):
+        return post(client, "/api/v1/roles", {"company_id": company, "title": title})["id"]
+
+    def app(role_id, stage, **extra):
+        return post(client, "/api/v1/applications", {"role_id": role_id, "stage": stage, **extra})["id"]
+
+    def move(app_id, stage):
+        r = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": stage})
+        assert r.status_code == 200, r.text
+
+    # A past application logged straight at Rejected, with its applied date: applied.
+    logged = role("Backend Engineer")
+    app(logged, "rejected", applied_on="2026-09-01")
+    assert _status(client, logged) == ("applied", None)
+
+    # Applied, the move undone, then withdrawn: it was never applied for.
+    undone = role("Platform Engineer")
+    a = app(undone, "interested")
+    move(a, "applied")
+    assert client.post(f"/api/v1/applications/{a}/undo").status_code == 200
+    move(a, "withdrawn")
+    assert _status(client, undone) == ("closed", "Withdrawn")
+
+    # Ghosted while interested says so; reopening makes it interested again.
+    ghosted = role("SRE")
+    g = app(ghosted, "interested")
+    move(g, "ghosted")
+    assert _status(client, ghosted) == ("closed", "Ghosted")
+    move(g, "interested")
+    assert _status(client, ghosted) == ("interested", None)
+
+    # One withdrawn and one still interested: interested. Both closed: the latest one's stage.
+    mixed = role("Data Engineer")
+    first = app(mixed, "interested")
+    move(first, "withdrawn")
+    second = app(mixed, "interested")
+    assert _status(client, mixed) == ("interested", None)
+    move(second, "rejected")
+    assert _status(client, mixed) == ("closed", "Rejected")
