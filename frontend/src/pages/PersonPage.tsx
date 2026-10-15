@@ -28,7 +28,7 @@ import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
-import { GhostMark } from "../components/GhostMark";
+import { FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
 import { TimelineButton } from "../components/TimelineButton";
 import { NotesCard } from "../components/Notes";
@@ -76,7 +76,10 @@ export function PersonPage() {
             <IconUser size={26} stroke={1.6} style={{ marginTop: 4 }} />
           )}
           <div>
-            <Title order={2}>{contact.name}</Title>
+            <Group gap={4} wrap="nowrap">
+              <Title order={2}>{contact.name}</Title>
+              <FavouriteToggle contact={contact} size="md" />
+            </Group>
             <Text c="dimmed">
               {contact.title}
               {contact.title && where ? " · " : ""}

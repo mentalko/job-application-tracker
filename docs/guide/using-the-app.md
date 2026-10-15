@@ -334,8 +334,15 @@ also gets a ghost before their name), and every email, phone number and link (cl
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **All / Agencies / Companies / Independent / Ghosted** narrows it to agency recruiters,
-  people at companies, independents, or everyone who ghosted you (with how many).
+- **All / Agencies / Companies / Independent / Favourites / Ghosted** narrows it to agency
+  recruiters, people at companies, independents, your favourites, or everyone who ghosted you
+  (with how many).
+
+**Favourites.** Star the people you rate (a recruiter who's genuinely good to work with): the
+☆ on their tile or next to their name on their page. A favourite gets a gold star before
+their name wherever it shows (the same places as the ghost below), and favourites come first
+on the Recruiters page. Click the star again to unstar them. Merging two people keeps the star
+if either had it.
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 

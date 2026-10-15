@@ -34,7 +34,7 @@ import { useState } from "react";
 
 import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
-import { GhostMark } from "../components/GhostMark";
+import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
@@ -107,6 +107,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               display="block"
               title={contact.closed_as === "ghosted" ? `${contact.name} (ghosted)` : contact.name}
             >
+              <FavouriteMark on={contact.favourite} />
               <GhostMark closedAs={contact.closed_as} />
               {contact.name}
             </Anchor>
@@ -116,17 +117,20 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               </Text>
             )}
           </div>
-          <Tooltip label="Edit">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={onEdit}
-              aria-label={`Edit ${contact.name}`}
-            >
-              <IconPencil size={14} />
-            </ActionIcon>
-          </Tooltip>
+          <Group gap={0} wrap="nowrap">
+            <FavouriteToggle contact={contact} />
+            <Tooltip label="Edit">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={onEdit}
+                aria-label={`Edit ${contact.name}`}
+              >
+                <IconPencil size={14} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         </Group>
         {(where || contact.awaiting_reply_since || contact.reply_to_read_since || contact.closed_as) && (
           <Group gap={4}>
@@ -203,7 +207,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
   );
 }
 
-type Show = "all" | "agency" | "company" | "independent" | "ghosted";
+type Show = "all" | "agency" | "company" | "independent" | "favourites" | "ghosted";
 
 export function RecruitersPage() {
   const { data: agencies, isLoading: agenciesLoading } = useAgencies();
@@ -236,11 +240,17 @@ export function RecruitersPage() {
   const shown = (contacts ?? [])
     .filter((c) => {
       if (show === "ghosted") return c.closed_as === "ghosted";
+      if (show === "favourites") return c.favourite;
       const kind = whereOf(c)?.kind ?? "independent";
       return show === "all" || show === kind;
     })
     .filter(matches)
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    // Favourites first, then A to Z.
+    .sort(
+      (a, b) =>
+        Number(Boolean(b.favourite)) - Number(Boolean(a.favourite)) ||
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
 
   const peopleByAgency = new Map<string, number>();
   for (const c of contacts ?? [])
@@ -291,6 +301,10 @@ export function RecruitersPage() {
             { value: "company", label: "Companies" },
             { value: "independent", label: "Independent" },
             {
+              value: "favourites",
+              label: `Favourites · ${(contacts ?? []).filter((c) => c.favourite).length}`,
+            },
+            {
               value: "ghosted",
               label: `Ghosted · ${(contacts ?? []).filter((c) => c.closed_as === "ghosted").length}`,
             },
@@ -336,7 +350,8 @@ export function RecruitersPage() {
       ) : (
         <>
           <Text size="xs" c="dimmed">
-            {shown.length} {shown.length === 1 ? "person" : "people"}, A to Z
+            {shown.length} {shown.length === 1 ? "person" : "people"},{" "}
+            {shown.some((c) => c.favourite) ? "favourites first, then A to Z" : "A to Z"}
           </Text>
           <SimpleGrid cols={{ base: 1, xs: 2, md: 3, xl: 4 }} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (

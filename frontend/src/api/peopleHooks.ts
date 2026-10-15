@@ -68,7 +68,7 @@ export function useSetPersonReply() {
       id: string;
       body: Pick<
         Schemas["ContactPatch"],
-        "awaiting_reply_since" | "reply_to_read_since" | "chased_on" | "closed_as" | "closed_on"
+        "awaiting_reply_since" | "reply_to_read_since" | "chased_on" | "closed_as" | "closed_on" | "favourite"
       >;
     }) =>
       unwrap(

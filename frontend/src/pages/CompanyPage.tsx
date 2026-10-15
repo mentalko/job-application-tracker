@@ -17,7 +17,7 @@ import { IconArrowLeft, IconBuilding, IconPencil, IconPlus } from "@tabler/icons
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { GhostMark, PersonName, useGhosted } from "../components/GhostMark";
+import { PersonMarks, PersonName } from "../components/GhostMark";
 import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -62,7 +62,6 @@ function Description({ company }: { company: Schemas["CompanyOut"] }) {
 }
 
 export function CompanyPage() {
-  const ghosted = useGhosted();
   const { companyId } = useParams({ from: "/companies/$companyId" });
   const { data, isLoading, isError } = useCompanySummary(companyId);
   const { data: workflow } = useWorkflow();
@@ -158,9 +157,7 @@ export function CompanyPage() {
                             {a.role_title}
                           </Text>
                           <Text size="xs" c="dimmed">
-                            {a.route === "agency" && (
-                              <GhostMark closedAs={ghosted(a.recruiter_id) ? "ghosted" : null} />
-                            )}
+                            {a.route === "agency" && <PersonMarks id={a.recruiter_id} />}
                             {a.route === "agency"
                               ? [a.recruiter_name, a.agency_name].filter(Boolean).join(" · ")
                               : a.route === "referral"
