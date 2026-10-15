@@ -60,6 +60,9 @@ def test_favourite_people(client, seeded):
     assert client.get(f"/api/v1/contacts/{alex}").json()["favourite"] is False
     r = client.patch(f"/api/v1/contacts/{alex}", json={"favourite": True})
     assert r.status_code == 200 and r.json()["favourite"] is True
+    # Changing anything else leaves the star alone.
+    assert client.patch(f"/api/v1/contacts/{alex}", json={"closed_as": "ghosted"}).json()["favourite"] is True
+    assert client.patch(f"/api/v1/contacts/{alex}", json={"title": "Director"}).json()["favourite"] is True
     assert client.patch(f"/api/v1/contacts/{alex}", json={"favourite": None}).status_code == 422
     sam = post(client, "/api/v1/contacts", {"name": "Sam Patel", "favourite": True})
     assert sam["favourite"] is True

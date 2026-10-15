@@ -38,7 +38,7 @@ import {
 } from "../api/roleHooks";
 import type { Schemas } from "../api/client";
 import { beforeApplied } from "../utils/applied";
-import { useGhosted } from "./GhostMark";
+import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
 import { AddTodo, TodoLine } from "./Todos";
@@ -344,7 +344,8 @@ export function ApplyModal({
   const router = useRouter();
   const [picked, setPicked] = useState<string | null>(null);
   const [appliedOn, setAppliedOn] = useState<string | null>(interested ? null : dayjs().format("YYYY-MM-DD"));
-  const ghost = useGhosted()(role.contact_id) ? " (ghosted)" : "";
+  const ghost =
+    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
   const how = role.agency_id
     ? `Through ${role.agency_name}${role.contact_name ? ` (${role.contact_name}${ghost})` : ""}`
     : role.contact_name
@@ -528,7 +529,8 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 
 /** One role: what, where, who pitched it, pay, status and what to do next. */
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
-  const ghost = useGhosted()(role.contact_id) ? " (ghosted)" : "";
+  const ghost =
+    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
   const status = roleBadge(role);
   const money = pay(role);
   const [editing, setEditing] = useState(false);

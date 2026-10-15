@@ -189,3 +189,18 @@ def test_failed_migration_rolls_back(tmp_path):
     eng = make_engine(path)
     assert "companies" not in inspect(eng).get_table_names()
     eng.dispose()
+
+
+def test_0012_existing_people_are_not_favourites(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    migrate(path, "0011")
+    eng = make_engine(path)
+    ts = "'2026-01-01T00:00:00Z'"
+    with eng.begin() as conn:
+        conn.execute(text(f"INSERT INTO contacts (id, name, created_at, updated_at) VALUES ('p', 'P', {ts}, {ts})"))
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        assert conn.execute(text("SELECT favourite FROM contacts WHERE id = 'p'")).scalar_one() == 0
+    eng.dispose()

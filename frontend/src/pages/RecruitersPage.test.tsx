@@ -100,14 +100,14 @@ describe("recruiters", () => {
     fireEvent.click(screen.getByText("Favourites · 1"));
     await waitFor(() => expect(screen.queryByRole("link", { name: "Alex Morgan" })).not.toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: "Unstar Sam Patel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Favourite: Sam Patel" }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c2")?.body).toEqual({
         favourite: false,
       }),
     );
     fireEvent.click(screen.getByText("All"));
-    fireEvent.click(await screen.findByRole("button", { name: "Star Jo Freelance as a favourite" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Favourite: Jo Freelance" }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c3")?.body).toEqual({
         favourite: true,

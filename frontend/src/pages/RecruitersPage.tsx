@@ -105,7 +105,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               c="inherit"
               truncate="end"
               display="block"
-              title={contact.closed_as === "ghosted" ? `${contact.name} (ghosted)` : contact.name}
+              title={`${contact.name}${contact.favourite ? " (favourite)" : ""}${contact.closed_as === "ghosted" ? " (ghosted)" : ""}`}
             >
               <FavouriteMark on={contact.favourite} />
               <GhostMark closedAs={contact.closed_as} />

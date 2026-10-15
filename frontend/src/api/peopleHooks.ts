@@ -85,7 +85,10 @@ export function useSetPersonReply() {
 export function useSaveContact() {
   const refresh = useRefreshPeople();
   return useMutation({
-    mutationFn: async (args: { id?: string; body: Schemas["ContactIn"] }) =>
+    mutationFn: async (args: {
+      id?: string;
+      body: Omit<Schemas["ContactIn"], "favourite"> & { favourite?: boolean };
+    }) =>
       args.id
         ? unwrap(
             await api.PATCH("/api/v1/contacts/{contact_id}", {
@@ -93,7 +96,7 @@ export function useSaveContact() {
               body: args.body,
             }),
           )
-        : unwrap(await api.POST("/api/v1/contacts", { body: args.body })),
+        : unwrap(await api.POST("/api/v1/contacts", { body: { favourite: false, ...args.body } })),
     onSuccess: refresh,
     onError: notifyError,
   });

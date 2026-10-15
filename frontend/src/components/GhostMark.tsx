@@ -23,7 +23,7 @@ export function FavouriteMark({ on, size = 14 }: { on?: boolean | null; size?: n
     <span title="Favourite" role="img" aria-label="Favourite" style={{ marginRight: "0.3em" }}>
       <IconStarFilled
         size={size}
-        style={{ verticalAlign: "-0.12em", color: "var(--mantine-color-yellow-6)" }}
+        style={{ verticalAlign: "-0.12em", color: "var(--mantine-color-yellow-7)" }}
         aria-hidden
       />
     </span>
@@ -40,7 +40,7 @@ export function FavouriteToggle({ contact, size = "sm" }: { contact: Contact; si
         variant="subtle"
         color={on ? "yellow" : "gray"}
         size={size}
-        aria-label={on ? `Unstar ${contact.name}` : `Star ${contact.name} as a favourite`}
+        aria-label={`Favourite: ${contact.name}`}
         aria-pressed={on}
         loading={update.isPending}
         onClick={() => update.mutate({ id: contact.id, body: { favourite: !on } })}
@@ -93,12 +93,9 @@ export function PersonName({
   name: string;
   size?: number;
 }) {
-  const ghosted = useGhosted();
-  const favourite = useFavourite();
   return (
     <>
-      <FavouriteMark on={favourite(id)} size={size} />
-      <GhostMark closedAs={ghosted(id) ? "ghosted" : null} size={size} />
+      <PersonMarks id={id} size={size} />
       {name}
     </>
   );

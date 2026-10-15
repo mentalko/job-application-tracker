@@ -117,7 +117,6 @@ export function ContactFormModal({
           details: values.details
             .filter((d) => d.value.trim())
             .map((d) => ({ kind: d.kind, value: d.value.trim(), label: d.label.trim() || null })),
-          favourite: contact?.favourite ?? false, // editing keeps the star
         },
       },
       {
