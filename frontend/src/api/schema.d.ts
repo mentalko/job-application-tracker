@@ -1080,7 +1080,8 @@ export interface paths {
          * @description Roles with where they came from and where they stand, oldest first.
          *
          *     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
-         *     all still before Applied), `applied` (an application got to Applied or further) or `passed`.
+         *     all still before Applied), `closed` (all closed before any got to Applied: withdrawn while
+         *     only interested, say), `applied` (an application got to Applied or further) or `passed`.
          *     Filter by company, by who told you about it, or by the call it came up in.
          */
         get: operations["role_summaries_api_v1_role_summaries_get"];
@@ -3203,6 +3204,8 @@ export interface components {
             agency_name?: string | null;
             /** Application Ids */
             application_ids: string[];
+            /** Closed As */
+            closed_as?: string | null;
             /** Company Id */
             company_id: string;
             /** Company Name */
@@ -3248,7 +3251,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "to_decide" | "interested" | "applied" | "passed";
+            status: "to_decide" | "interested" | "closed" | "applied" | "passed";
             /** Title */
             title: string;
             /**
@@ -6328,7 +6331,7 @@ export interface operations {
     role_summaries_api_v1_role_summaries_get: {
         parameters: {
             query?: {
-                status?: ("to_decide" | "interested" | "applied" | "passed") | null;
+                status?: ("to_decide" | "interested" | "closed" | "applied" | "passed") | null;
                 company_id?: string | null;
                 contact_id?: string | null;
                 meeting_id?: string | null;

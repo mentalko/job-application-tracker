@@ -59,6 +59,41 @@ def before_applied(workflow: Workflow, stage: str) -> bool:
     return kinds.get(stage) == "active" and rank.get(stage, len(rank)) < applied_rank(workflow, rank)
 
 
+def role_progress(workflow: Workflow, apps: list[tuple[str, list[str]]]) -> str:
+    """How far a role's applications got, from each one's (current stage, stage path):
+
+    - `interested`: every one is still in an open stage before Applied;
+    - `closed`: every one is closed and none ever got to Applied (you withdrew while still only
+      interested, or it was gone before you applied);
+    - `applied`: otherwise (one got to Applied or further at some point).
+    """
+    if all(before_applied(workflow, stage) for stage, _ in apps):
+        return "interested"
+    rank = stage_rank(workflow)
+    applied = applied_rank(workflow, rank)
+    kinds = {st.id: st.kind for st in workflow.stages}
+
+    def got_there(stage: str) -> bool:
+        return kinds.get(stage) != "closed" and rank.get(stage, applied) >= applied
+
+    if all(kinds.get(stage) == "closed" for stage, _ in apps) and not any(
+        got_there(st) for _, path in apps for st in path
+    ):
+        return "closed"
+    return "applied"
+
+
+def stage_paths(session: Session, app_ids: list[str]) -> dict[str, list[str]]:
+    """Each application's stage path (first stage, then moves not undone), for role_progress."""
+    events: dict[str, list[Event]] = {i: [] for i in app_ids}
+    if app_ids:
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(app_ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
+            events[ev.application_id].append(ev)
+    return {i: stage_path(evs) for i, evs in events.items()}
+
+
 def stage_path(events: list[Event]) -> list[str]:
     """First stage, then the stages moved to (undone moves left out), in time order."""
     stage_events = [ev for ev in events if ev.kind == STAGE_CHANGE]

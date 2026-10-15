@@ -177,3 +177,12 @@ def test_a_role_youre_only_interested_in_is_still_deciding(client, seeded):
     client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "applied"})
     total = client.get("/api/v1/insights/conversations").json()["total"]
     assert (total["applied"], total["deciding"]) == (1, 0)
+
+
+def test_a_role_withdrawn_while_only_interested_counts_as_passed(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    role = _role(client, seeded["company"]["id"], "Product Engineer", alex)["id"]
+    app = _apply(client, role, stage="interested")
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "withdrawn"})
+    total = client.get("/api/v1/insights/conversations").json()["total"]
+    assert (total["pitched"], total["applied"], total["passed"], total["deciding"]) == (1, 0, 1, 0)

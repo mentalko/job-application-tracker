@@ -6,8 +6,9 @@ on others. This looks at that part:
   *booked* is scheduled and still to come (a scheduled call that has passed waits on Next
   actions to be marked, and isn't counted);
 - **pitched roles**: roles someone told you about (a role with a person). Each is *applied*
-  (an application that got to Applied or further, or was closed), *passed* (you passed, with
-  no application) or *deciding* (neither, including roles you're only *Interested* in);
+  (an application that got to Applied or further), *passed* (you passed, or every
+  application was closed before it got to Applied: withdrawn while only *Interested*) or
+  *deciding* (neither, including roles you're only *Interested* in);
 - **where applied ones went**: the best outcome among a role's applications: an *offer* (an
   offer logged, or a success stage), *in progress* (an active stage), *ghosted* (a
   `reopen_from` stage, Ghosted by default) or *closed* (any other closed stage);
@@ -34,7 +35,7 @@ from sqlalchemy.orm import Session
 from jat.db.models import Agency, Application, Company, Contact, Event, Interview, Meeting, Offer, Role
 
 from .applications import STAGE_CHANGE
-from .insights import before_applied
+from .insights import role_progress, stage_paths
 from .workflow import Workflow
 
 OUTCOMES = ("offer", "in_progress", "closed", "ghosted")  # best first
@@ -179,6 +180,8 @@ def conversations(
     ):
         added[app_id] = min(added.get(app_id, _aware(at)), _aware(at))
 
+    paths = stage_paths(session, app_ids)
+
     def added_at(a: Application) -> datetime:
         return added.get(a.id, _aware(a.created_at))
 
@@ -196,8 +199,10 @@ def conversations(
         targets = (total, person(r.contact_id))
         for t in targets:
             t.pitched += 1
-        # Interested (every application still before Applied) is still deciding, as on the Roles page.
-        if mine and not all(before_applied(workflow, a.stage) for a in mine):
+        # As on the Roles page: interested (all still before Applied) is still deciding, and closed
+        # before ever applying (withdrawn while interested) counts as passed.
+        progress = role_progress(workflow, [(a.stage, paths.get(a.id, [])) for a in mine]) if mine else None
+        if progress == "applied":
             best = min((outcome(a) for a in mine), key=OUTCOMES.index)
             days = (added_at(mine[0]) - _aware(r.created_at)).total_seconds() / 86_400
             for t in targets:
@@ -205,6 +210,9 @@ def conversations(
                 t.outcomes[best] += 1
                 t.interviewed += any(a.id in interviewed for a in mine)
                 t.decide_days.append(max(days, 0.0))
+        elif progress == "closed":
+            for t in targets:
+                t.passed += 1
         elif r.decision == "passed":
             for t in targets:
                 t.passed += 1

@@ -10,7 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db.models import Agency, Application, Company, Contact, Meeting, Role
-from ..domain.insights import before_applied
+from ..domain.insights import role_progress, stage_paths
 from ..domain.workflow import Workflow
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
@@ -48,11 +48,22 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
         ):
             meetings[m.id] = meeting_label(m, name)
 
+    paths = stage_paths(session, [i for ids in apps.values() for i in ids]) if workflow is not None else {}
+    names = {st.id: st.name for st in workflow.stages} if workflow is not None else {}
+
     out = []
     for role, company_name, contact, agency in rows:
+        closed_as = None
         if apps[role.id]:
-            interested = workflow is not None and all(before_applied(workflow, st) for st in stages[role.id])
-            status = "interested" if interested else "applied"
+            status = (
+                role_progress(
+                    workflow, [(st, paths.get(i, [])) for i, st in zip(apps[role.id], stages[role.id], strict=True)]
+                )
+                if workflow is not None
+                else "applied"
+            )
+            if status == "closed":
+                closed_as = names.get(stages[role.id][-1], stages[role.id][-1])  # the latest one's stage
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
@@ -60,6 +71,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 **S.RoleOut.model_validate(role).model_dump(),
                 company_name=company_name,
                 status=status,
+                closed_as=closed_as,
                 application_ids=apps[role.id],
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,
@@ -82,7 +94,8 @@ def role_summaries(
     """Roles with where they came from and where they stand, oldest first.
 
     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
-    all still before Applied), `applied` (an application got to Applied or further) or `passed`.
+    all still before Applied), `closed` (all closed before any got to Applied: withdrawn while
+    only interested, say), `applied` (an application got to Applied or further) or `passed`.
     Filter by company, by who told you about it, or by the call it came up in.
     """
     where = []

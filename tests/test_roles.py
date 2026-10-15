@@ -140,11 +140,23 @@ def test_a_role_you_track_at_interested_is_interested_until_you_apply(client, se
     r = client.post(f"/api/v1/applications/{app}/move", json={"to_stage": "applied"})
     assert r.status_code == 200, r.text
     assert client.get(f"/api/v1/role-summaries/{role}").json()["status"] == "applied"
-    # Closed before applying (you decided against it after all): no longer interested.
+    # Withdrawn while only interested: closed (not applied), saying how it ended.
     other = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "SRE"})["id"]
     a2 = post(client, "/api/v1/applications", {"role_id": other, "stage": "interested"})["id"]
     client.post(f"/api/v1/applications/{a2}/move", json={"to_stage": "withdrawn"})
-    assert client.get(f"/api/v1/role-summaries/{other}").json()["status"] == "applied"
+    closed = client.get(f"/api/v1/role-summaries/{other}").json()
+    assert (closed["status"], closed["closed_as"]) == ("closed", "Withdrawn")
+    assert [r["id"] for r in _summaries(client, status="closed")] == [other]
+    # Applied and then withdrawn: that one was applied for.
+    third = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "Data Engineer"})["id"]
+    a3 = post(client, "/api/v1/applications", {"role_id": third, "stage": "interested"})["id"]
+    client.post(f"/api/v1/applications/{a3}/move", json={"to_stage": "applied"})
+    client.post(f"/api/v1/applications/{a3}/move", json={"to_stage": "withdrawn"})
+    after = client.get(f"/api/v1/role-summaries/{third}").json()
+    assert (after["status"], after["closed_as"]) == ("applied", None)
+    # Undoing the withdrawal makes it interested again.
+    client.post(f"/api/v1/applications/{a2}/undo")
+    assert client.get(f"/api/v1/role-summaries/{other}").json()["status"] == "interested"
 
 
 def test_moving_on_from_interested_fills_in_the_applied_date(client, seeded):
