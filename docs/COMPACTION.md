@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-14, after PR #77); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-15, after PR #80); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -113,7 +113,7 @@ next action.
 - **Demo GIF.** `python3 scripts/demo_gif/make_demo_gif.py [--out x.gif] [--hold 150]` renders
   `scripts/demo_gif/scene.html` frames with headless Chrome and builds the GIF with
   ImageMagick (1.5 s per scene, 45 frames, ~2.7 MB). Show Kai a preview before replacing it.
-- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0011) and
+- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0012) and
   SQLite in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9,
   TanStack Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
 - **Data folder.** `--data-dir` or `JAT_DATA_DIR` (env var or `.env` in the current
@@ -124,14 +124,13 @@ next action.
 - **Running apps.**
   - **The tracker:** `uv run jat serve` in the main checkout → http://127.0.0.1:8770
     (`/api/docs`), on Kai's data folder via `.env`. It migrates on start and serves
-    `frontend/dist`. Usually Kai runs it in their own terminal; since 2026-10-14 ("start it up")
-    **this session runs it as a background job** (Bash `run_in_background`, task id
-    `b9z5y0c0g` at the time; the id may not survive compaction). Never stop it unless Kai asks.
-    When a merge changes the backend, ask before restarting it (TaskStop, then start it again
-    the same way from the main checkout); a frontend-only change needs only `pnpm build` on
-    main and a page refresh. Check it with
+    `frontend/dist`. **Kai runs it in their own terminal** (as of 2026-10-15: `pgrep -af "jat
+    serve"` shows it). On 2026-10-14 Kai said "start it up" and this session ran it as a
+    background job, but that stopped when the session restarted, and Kai started their own.
+    Never stop Kai's. After a merge that changes the backend, tell Kai to Ctrl+C and rerun it;
+    a frontend-only change needs only `pnpm build` on main and a page refresh. Check it with
     `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`; if it's down,
-    say so and offer to start it.
+    say so and offer to start it as a background job from the main checkout.
   - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (not running; start it if Kai
     asks).
 - **Commands.**
@@ -142,7 +141,7 @@ next action.
   - After API changes: `uv run python -m jat.openapi` then `pnpm --dir frontend gen:api`
     (`tests/test_openapi.py` fails on drift, including docstring changes).
   - Demo: `uv run python scripts/seed_demo.py <new empty dir>` then
-    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8873 was the last
+    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8875 was the last
     port). Rebuild `frontend/dist` in the worktree first so it serves the branch. TaskStop it
     after merging, and tell Kai the URL if they want to look.
   - Screenshots: Playwright with the system Chrome, from a throwaway env:
@@ -182,14 +181,19 @@ next action.
 - **Roles** (`api/roles.py`, `components/Roles.tsx`, `pages/RolesPage.tsx`,
   `pages/RolePage.tsx`): pitched or spotted roles, **Apply** / **Interested** / **Pass** /
   Reconsider; a page per role with its files (shown on the application). Status (#77):
-  `to_decide` (no application, not passed), `interested` (applications all in open stages
-  before Applied: `before_applied` in `domain/insights.py`, which also holds `applied_rank`),
-  `applied` (got to Applied or later, or closed), `passed`; views on the Roles page for each.
+  `to_decide` (no application, not passed), `interested`, `closed` (#79, with `closed_as` =
+  the latest application's stage name, e.g. *Withdrawn*), `applied`, `passed`; a view on the
+  Roles page for each. All from `role_progress` in `domain/insights.py` (also `applied_rank`,
+  `before_applied`, `stage_paths`): *applied* if any application's stage path got to Applied
+  or later (or it was recorded straight at a closed stage with an applied date); else
+  *closed* if every one is closed; else *interested*. Stage history is only loaded for roles
+  that might not be applied. Role lines link to the latest application, and wrap their
+  buttons under the role in narrow cards.
   *Interested* opens `ApplyModal` with `interested` (starting stage, no applied date; hidden
   when the workflow starts at Applied); the dialog's date follows before/after Applied until
   edited (`utils/applied.ts`). `move()` fills in `applied_on` when it reaches Applied or later.
 - **People** (`pages/RecruitersPage.tsx` tiles with All / Agencies / Companies / Independent /
-  *Ghosted · n*; `pages/PersonPage.tsx`): calls, roles mentioned, applications, interviews,
+  *Favourites · n* / *Ghosted · n*, favourites first; `pages/PersonPage.tsx`): calls, roles mentioned, applications, interviews,
   to-dos, notes, links, files; **Timeline**, **Edit**, **Merge…**, **Delete**.
   - Merge and one person per email / LinkedIn (`components/MergePerson.tsx`,
     `domain/people.py`, #68).
@@ -199,6 +203,11 @@ next action.
     Timeline entries and person lanes, search, Insights). Role lines say "(ghosted)". **Not a
     ghost** / **Remove Not interested** on the page, or the × on the tile chip, with Undo
     (`components/PersonChase.tsx`, `useAct`).
+  - **Favourites** (#80): `contacts.favourite` (migration 0012, not null, default false);
+    `FavouriteToggle` (☆, `aria-pressed`, label "Favourite: <name>") on tiles and the person
+    page; a gold star (`FavouriteMark`) via `PersonName` / `PersonMarks` (both marks, used
+    wherever the ghost shows); role lines add " ★". The edit form never sends `favourite`
+    (only create does); merge keeps it if either had it.
   - **Reply times** (#73): `replies` table (migration 0011, backfilled from application
     events), `domain/replies.py` (`working_days` = weekdays after the wait day up to the reply,
     `is_reply_move`, `record`, `take_back_move`, `stats`); `ContactOut.replies` +
@@ -231,39 +240,36 @@ next action.
   `insights/{flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
   (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-14, after #77)
+### 4. Current state (snapshot 2026-10-15, after #80)
 
-- **main at `cd84706`** (merge of #77), plus this doc's PR until it merges. No other open PRs,
+- **main at `5e30dbc`** (merge of #80), plus this doc's PR until it merges. No other open PRs,
   worktrees or remote branches.
-- **Merged since the last snapshot:** #76 compaction doc; #77 roles *Interested* (button, role
-  status, Insights counts it as still deciding, applied date filled on move). Roadmap tasks
-  are `done`.
-- **Tests on main:** 330 backend, 123 frontend. The machine is often heavily loaded (load
+- **Merged since the last snapshot:** #78 compaction doc; #79 roles *Closed* (withdrawn while
+  only interested says *Withdrawn*, not Applied; Insights counts it as passed) and role lines
+  wrapping in narrow cards; #80 favourite people (migration 0012). Roadmap tasks are `done`.
+- **Tests on main:** 335 backend, 125 frontend. The machine is often heavily loaded (load
   average ~30 from other jobs): frontend tests that time out at ~2 s in a full run pass when
   run on their own; rerun those files before suspecting the code.
-- **Kai's tracker** runs from this session as a background job (see section 2), on main
-  `cd84706`, with migrations through 0011; `/api/v1/backup` showed the data repo with its
-  remote, nothing unpushed, not dirty.
-- **Kai's data folder** (read-only check): Kai made CV versions with the CV files card; the
-  snapshot committed them 60 s later (Kai had looked within the minute and thought it was a
-  bug; it isn't).
-- **Kai's latest messages, in order** (since #75): "update the compaction doc" (#76); "i just
-  created the CV versions and now in the data dir there are uncommitted changes, it seems like
-  it doesnt handle that properly" (answered: the 60 s snapshot debounce; it committed; the
-  delay is `[snapshot] debounce_seconds`); "i want to be able to convert a role to interested,
-  not just applied" (#77); "start it up" (started the tracker as a background job); "what
-  reddit could i post this on to get some attention on github" (answered: r/selfhosted first,
-  then r/opensource, r/coolgithubprojects, r/SideProject, r/Python and the r/webdev or
-  r/reactjs showcase slots, r/jobsearchhacks or r/UKJobs, plus a Show HN; offered drafts);
-  "give me the text with formatting chars i can copy and paste" (gave a Reddit-Markdown
-  comment for the r/selfhosted *New Project Megathread* template: Project Name, Repo/Website,
-  Description, Deployment (no Docker image; uv + pnpm from source, localhost, no auth), AI
-  Involvement (built with Claude Code, Kai directing)); then this compaction refresh.
+- **Kai's tracker** runs in Kai's terminal. #79 and #80 changed the backend (#80 adds
+  migration 0012); Kai was told to restart. Read-only check: `GET /api/openapi.json` shows
+  `favourite` on `ContactOut` once restarted.
+- **Kai's latest messages, in order** (since #77): "update /home/kai/…/docs/COMPACTION.md to
+  hep with a new compaction" (#78); "it says applied but its actually withdrawn after being
+  interested" (#79); "UI bug here" (role row squashed in a narrow card; fixed in #79); "I want
+  to be able to mark a recruiter as VIP, or favourite, or very good, etc etc" (#80); "what is
+  screen for? lots of the first stage interview is screening anyway, get to know each other
+  etc" (answered: a default stage for a short recruiter/HR screen, optional; gave Kai a
+  `config.toml` `[workflow]` block for their data folder without Screen; offered to drop it
+  from the defaults, no answer yet; never edit Kai's config ourselves); "if theyre a favourite
+  they should get a gold star next to their name" (that's #80, not merged at the time); "merge
+  it once ready and update local main" (done); then this compaction refresh.
 
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
 - **Offered, waiting on Kai:**
+  - Drop *Screen* from the default workflow for everyone (Kai can already remove it from their
+    own `config.toml` with the block we gave).
   - Drafts for other places to post (r/Python showcase format, a Show HN); Kai has the
     r/selfhosted megathread comment. Kai posts; never post on Kai's behalf.
   - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Insights tabs incl. CVs,
@@ -273,15 +279,14 @@ next action.
 - **Noticed, not promised:**
   - No Docker image or compose file (r/selfhosted asks for one); a candidate if Kai wants
     more self-hosters.
-  - README screenshots don't show ghosts, reply times or *Interested* yet (`recruiters.png`,
-    `person.png`, `next-actions.png`, `roles.png`); the demo seed has replies but nobody
-    ghosted and no interested roles.
-  - Ghost still missing in: the Timeline *About* select's people, to-do "about" text on Next
-    actions and the Overview.
+  - README screenshots don't show ghosts, favourites, reply times or *Interested* yet
+    (`recruiters.png`, `person.png`, `next-actions.png`, `roles.png`); the demo seed has
+    replies but nobody ghosted or starred and no interested roles.
+  - Ghost and star still missing in: the Timeline *About* select's people, to-do "about" text
+    on Next actions and the Overview.
   - Reply times: only weekdays, no bank holidays; waits on people before #73 weren't recorded.
   - CV files: an unticked application stays on offer until it has a CV recorded; files
     attached to applications don't use the "no CV yet" rule.
-  - Roles: a role whose only application was closed before applying shows *Applied*.
   - On phones: Next actions application rows overflow; the header search overlaps the title.
   - The application page's People card ignores a recruiter set through the route.
   - Overview stats show zeros before the first application; its "roles to decide" line isn't
@@ -348,6 +353,14 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **Interested roles:** a role is *Interested* while every application is in an open stage
   before Applied; Insights' recruiter conversations count those as *still deciding*, and
   Next actions' *roles to decide* only lists roles with no application.
+- **Closed roles:** closed before any application got to Applied → *Closed* (badge = how it
+  ended), counted as *passed* in Insights (not in time to decide); applied and then
+  withdrawn stays *Applied*; logged straight at a closed stage with an applied date counts as
+  applied.
+- **Favourites:** one star (not a rating); separate from ghosted (both can show); favourites
+  first on the Recruiters page.
+- **Workflow:** *Screen* stays in the default unless Kai says otherwise; Kai's own stages live
+  in their data folder's `config.toml` (we give snippets, never edit it).
 - **Ghosts:** only `closed_as == "ghosted"` gets a ghost (not *Not interested*); taking it off
   is a plain action any time (not "undo" wording), with an Undo toast.
 - **Reply times:** recorded when waiting ends with *They've replied* / *Heard back*, or a move
@@ -439,9 +452,9 @@ tracker answers and report."
 1. **Re-read, don't trust memory:** `CLAUDE.md`, this file, `gh pr list`, `git worktree list`,
    `git branch -a`, `git log --oneline -5` on main and any worktree branch.
 2. **Check the tracker:** `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`.
-   This session may be running it as a background job (section 2): if it answers, leave it
-   alone. If it's down, say so and offer to start it again (`uv run jat serve` in the main
-   checkout, as a background job), or Kai runs it in their terminal.
+   Kai runs it in their terminal (section 2): if it answers, leave it alone. If it's down, say
+   so and offer to start it (`uv run jat serve` in the main checkout, as a background job), or
+   Kai reruns it themselves.
 3. **Open PRs first:** apply review fixes or start a reviewer; merge when clean; deploy.
 4. **Unfinished worktrees:** commit and push, then finish that task.
 5. **Then Kai's latest request.** If there isn't one, report the state in two lines and wait.
