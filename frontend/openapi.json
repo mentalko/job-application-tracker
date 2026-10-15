@@ -1554,6 +1554,11 @@
             "title": "Details",
             "type": "array"
           },
+          "favourite": {
+            "default": false,
+            "title": "Favourite",
+            "type": "boolean"
+          },
           "name": {
             "maxLength": 200,
             "minLength": 1,
@@ -1665,6 +1670,11 @@
             },
             "title": "Details",
             "type": "array"
+          },
+          "favourite": {
+            "default": false,
+            "title": "Favourite",
+            "type": "boolean"
           },
           "id": {
             "title": "Id",
@@ -1820,6 +1830,17 @@
               }
             ],
             "title": "Details"
+          },
+          "favourite": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Favourite"
           },
           "name": {
             "anyOf": [

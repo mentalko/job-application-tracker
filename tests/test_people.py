@@ -53,3 +53,18 @@ def test_quick_create_direct_with_an_in_house_recruiter(client, seeded):
     assert again["recruiter_id"] == app["recruiter_id"]
     r = client.post("/api/v1/applications/quick", json={**body, "route": "referral"})
     assert r.status_code == 422
+
+
+def test_favourite_people(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    assert client.get(f"/api/v1/contacts/{alex}").json()["favourite"] is False
+    r = client.patch(f"/api/v1/contacts/{alex}", json={"favourite": True})
+    assert r.status_code == 200 and r.json()["favourite"] is True
+    assert client.patch(f"/api/v1/contacts/{alex}", json={"favourite": None}).status_code == 422
+    sam = post(client, "/api/v1/contacts", {"name": "Sam Patel", "favourite": True})
+    assert sam["favourite"] is True
+    # Merging keeps the star if either record had it.
+    riley = post(client, "/api/v1/contacts", {"name": "Riley Chen"})
+    r = client.post(f"/api/v1/contacts/{riley['id']}/merge", json={"from_id": sam["id"]})
+    assert r.status_code == 200, r.text
+    assert r.json()["favourite"] is True

@@ -153,6 +153,7 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
         keep.reply_to_read_since = gone.reply_to_read_since
         keep.closed_as, keep.closed_on = gone.closed_as, gone.closed_on
     keep.chased_on = max(filter(None, (keep.chased_on, gone.chased_on)), default=None)
+    keep.favourite = keep.favourite or gone.favourite
 
     session.execute(update(Role).where(Role.contact_id == gone.id).values(contact_id=keep.id))
     session.execute(update(Application).where(Application.recruiter_id == gone.id).values(recruiter_id=keep.id))

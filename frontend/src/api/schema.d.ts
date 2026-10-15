@@ -1707,6 +1707,11 @@ export interface components {
              * @default []
              */
             details: components["schemas"]["ContactDetailIn"][];
+            /**
+             * Favourite
+             * @default false
+             */
+            favourite: boolean;
             /** Name */
             name: string;
             /** Title */
@@ -1736,6 +1741,11 @@ export interface components {
              * @default []
              */
             details: components["schemas"]["ContactDetailOut"][];
+            /**
+             * Favourite
+             * @default false
+             */
+            favourite: boolean;
             /** Id */
             id: string;
             /** Name */
@@ -1773,6 +1783,8 @@ export interface components {
             company_id?: string | null;
             /** Details */
             details?: components["schemas"]["ContactDetailIn"][] | null;
+            /** Favourite */
+            favourite?: boolean | null;
             /** Name */
             name?: string | null;
             /** Reply To Read Since */
