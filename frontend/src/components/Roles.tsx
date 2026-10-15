@@ -29,7 +29,7 @@ import { useRoleFiles, useUploadFilesTo } from "../api/attachmentHooks";
 import { useCreateCompany } from "../api/detailHooks";
 import { useMeetings } from "../api/meetingHooks";
 import {
-  ROLE_STATUS,
+  roleBadge,
   useApplyForRole,
   useRoleSummaries,
   useSaveRole,
@@ -468,7 +468,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
   const { data: workflow } = useWorkflow();
   // Only when your workflow starts before Applied (it does by default: Interested).
   const canBeInterested = beforeApplied(workflow, workflow?.initial ?? null);
-  if (role.status === "applied" || role.status === "interested")
+  if (role.application_ids.length > 0)
     return (
       <Anchor component={Link} to={`/applications/${role.application_ids[0]}`} size="xs">
         Open application
@@ -529,7 +529,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 /** One role: what, where, who pitched it, pay, status and what to do next. */
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
   const ghost = useGhosted()(role.contact_id) ? " (ghosted)" : "";
-  const status = ROLE_STATUS[role.status];
+  const status = roleBadge(role);
   const money = pay(role);
   const [editing, setEditing] = useState(false);
   const [addingTodo, setAddingTodo] = useState(false);

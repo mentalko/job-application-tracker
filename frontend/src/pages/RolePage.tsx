@@ -18,7 +18,7 @@ import { useState, type ReactNode } from "react";
 
 import { PersonName } from "../components/GhostMark";
 import { stageLookup, useApplications, useWorkflow } from "../api/hooks";
-import { ROLE_STATUS, useRoleSummary } from "../api/roleHooks";
+import { roleBadge, useRoleSummary } from "../api/roleHooks";
 import { AttachmentsCard } from "../components/Attachments";
 import { DeleteButton } from "../components/DeleteButton";
 import { LinksCard } from "../components/Links";
@@ -61,7 +61,7 @@ export function RolePage() {
 
   if (isError) return <Alert color="red">Couldn't load this role. It may have been deleted.</Alert>;
   if (isLoading || !role) return <Loader />;
-  const status = ROLE_STATUS[role.status];
+  const status = roleBadge(role);
   const money = pay(role);
   const applications = (rows ?? []).filter((r) => r.role_id === role.id);
   const terms = [

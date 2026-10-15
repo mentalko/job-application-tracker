@@ -17,9 +17,16 @@ export interface RoleFilters {
 export const ROLE_STATUS: Record<RoleStatus, { label: string; color: string }> = {
   to_decide: { label: "To decide", color: "yellow" },
   interested: { label: "Interested", color: "cyan" },
+  closed: { label: "Closed", color: "gray" },
   applied: { label: "Applied", color: "blue" },
   passed: { label: "Passed", color: "gray" },
 };
+
+/** A role's badge: its status, or for one closed before you applied, the stage it ended at. */
+export function roleBadge(role: RoleSummary): { label: string; color: string } {
+  const status = ROLE_STATUS[role.status];
+  return role.status === "closed" && role.closed_as ? { ...status, label: role.closed_as } : status;
+}
 
 function notifyError(error: Error) {
   notifications.show({ color: "red", title: "That didn't work", message: error.message });
