@@ -97,6 +97,11 @@ color = "dark"
 The board shows stages in the order you list them; the Sankey diagram puts active stages
 first, then outcomes.
 
+`initial` is where every application starts: one you add at a later stage gets a step at
+`initial` a second before (see
+[Every application starts at Interested](using-the-app.md#applications-list-and-board)), so
+make it the first stage you track. Changing `initial` later doesn't rewrite past history.
+
 **Removing a stage** that applications are still in doesn't lose them: they keep their old
 stage. With `transitions = "any"` you can move them on as usual. With strict transitions
 they'd be stuck there, so move them to a stage you're keeping *before* you remove it. (A
@@ -117,11 +122,7 @@ older config files behaved). Add `transitions = "any"` to relax them.
 
 ## Snapshot timing
 
-```
-
-`initial` is where every application starts. One you add at a later stage gets a step at
-`initial` a second before (see [Every application starts at Interested](using-the-app.md#applications-list-and-board)),
-so set it to the first stage you track.toml
+```toml
 [snapshot]
 debounce_seconds = 60   # 0 commits after every change
 ```

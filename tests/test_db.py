@@ -286,3 +286,30 @@ def test_0013_uses_the_data_folders_first_stage(tmp_path):
     _old_history(path, [("a", "applied")])
     migrate(path)
     assert [e[:2] for e in _stage_events(path)["a"]] == [(None, "spotted"), ("spotted", "applied")]
+
+
+def test_0013_stops_when_config_toml_doesnt_load(tmp_path):
+    from jat.db import MigrationError
+
+    (tmp_path / "config.toml").write_text('[workflow]\ninitial = "spotted"\n[[workflow.stages]\n')  # a typo
+    path = tmp_path / "tracker.sqlite3"
+    _old_history(path, [("a", "applied")])
+    with pytest.raises((RuntimeError, MigrationError), match="config.toml"):
+        migrate(path)
+    eng = make_engine(path)
+    assert current_revision(eng) == "0012"
+    eng.dispose()
+    assert [e[:2] for e in _stage_events(path)["a"]] == [(None, "applied")]
+
+
+def test_0013_leaves_unreadable_history_alone(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    _old_history(path, [("a", "applied"), ("b", "applied")])
+    eng = make_engine(path)
+    with eng.begin() as conn:
+        conn.execute(text("UPDATE events SET occurred_at = 'yesterday' WHERE application_id = 'a'"))
+        conn.execute(text("UPDATE events SET data = 'not json' WHERE application_id = 'b'"))
+    eng.dispose()
+    migrate(path)
+    events = _stage_events(path)
+    assert (len(events["a"]), len(events["b"])) == (1, 1)

@@ -164,7 +164,8 @@ Insights. It includes:
 - calls and meetings with people (not ones that didn't happen);
 - roles people pitched to you, and the ones you passed on (with your reason);
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
-  offers, files and documents sent;
+  offers, files and documents sent (an application added past *Interested* shows as one
+  *Added at …* entry, not the step filled in before it);
 - each interview at its own time;
 - notes on people, companies, agencies and roles (a note on a role counts for its company and
   the person who pitched it);
@@ -211,11 +212,13 @@ reverts a mistake. By default you can move between any stages; you can make them
 instead ([Customising](customising.md#strict-jira-style-transitions)).
 
 **Every application starts at Interested** (your workflow's first stage). Add one straight at
-*Applied* (or later, or closed) and its history says *Interested*, then *Applied* a second
-later, so Insights shows every application flowing from *Interested*. That step was filled in
-for you: it doesn't count as time spent at *Interested*, as an update from a recruiter or as a
-reply, and there's nothing to undo. Applications you added before this came in got the same
-step when you upgraded.
+*Applied* (or later, or closed) and its timeline says *Added as Interested*, then
+*Interested → Applied* a second later, so Insights shows every application flowing from
+*Interested*. That step was filled in for you: it doesn't count as time spent at *Interested*,
+as an update from a recruiter or as a reply, and there's nothing to undo. On the
+[Timeline](#timeline) page the pair is one entry, *Added at Applied*. Applications you added
+before this came in got the same step when you upgraded (with the `initial` stage in your
+`config.toml` at the time; ones at a stage you've since removed were left as they were).
 
 ## An application's page
 
@@ -489,7 +492,7 @@ of them.
 **Applications**
 
 - **Where applications go**: a Sankey diagram of applications flowing through the stages,
-  every one starting at *Interested*; filter by route, hover for counts.
+  starting at *Interested*; filter by route, hover for counts.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.

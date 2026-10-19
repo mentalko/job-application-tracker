@@ -38,7 +38,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, ApplicationDocument, Document, DocumentVersion, Event, Interview, Offer
 
-from .applications import STAGE_CHANGE, _effective_moves, is_implied
+from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .insights import applied_rank, stage_rank
 from .scorecard import CONTACT_KINDS, _added_at
 from .workflow import Workflow
@@ -124,7 +124,7 @@ def applied_at(
         and rank.get(first.to_stage, -1) >= applied
     ):
         return first.occurred_at
-    for ev in sorted(_effective_moves(history), key=lambda e: (e.occurred_at, e.seq)):
+    for ev in in_time_order(_effective_moves(history)):
         if ev.occurred_at > now or not ev.to_stage:
             continue
         if kinds.get(ev.to_stage) != "closed" and rank.get(ev.to_stage, -1) >= applied:

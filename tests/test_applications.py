@@ -70,6 +70,18 @@ def test_starting_later_on_fills_in_the_first_stage(session, role):
     assert app.stage == "applied" and not can_undo(session, app)
 
 
+def test_a_backdated_move_still_comes_after_the_filled_in_one(session, role):
+    from jat.domain.insights import stage_path
+    from jat.domain.stats import stays
+
+    app = create_application(session, W, role_id=role.id, stage="applied")
+    move(session, W, app, "screen", occurred_at=datetime.now(UTC) - timedelta(days=3))
+    events = history(session, app.id)
+    assert stage_path(events) == ["interested", "applied", "screen"]
+    assert stage_path(events, implied=False) == ["applied", "screen"]
+    assert [s for s, _, _ in stays(events)] == ["applied", "screen"]
+
+
 def test_move_validates_and_records(session, role):
     app = create_application(session, W, role_id=role.id)
     move(session, W, app, "applied")

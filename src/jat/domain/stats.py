@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, Event, Interview, Meeting, Role
 
-from .applications import STAGE_CHANGE, _effective_moves, is_implied
+from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .insights import closed_stages, fold_forward, stage_path, stage_rank
 from .workflow import Workflow
 
@@ -33,7 +33,7 @@ def stays(events: list[Event]) -> list[tuple[str, datetime, datetime | None]]:
     first = next((ev for ev in events if ev.kind == STAGE_CHANGE and ev.from_stage is None), None)
     if first is None or first.to_stage is None:
         return []
-    moves = sorted(_effective_moves(events), key=lambda ev: (ev.occurred_at, ev.seq))
+    moves = in_time_order(_effective_moves(events))
     result: list[tuple[str, datetime, datetime | None]] = []
     stage, entered = first.to_stage, first.occurred_at
     skip = is_implied(first)

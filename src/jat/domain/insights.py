@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, Event
 
-from .applications import STAGE_CHANGE, _effective_moves, is_implied
+from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .workflow import Workflow
 
 
@@ -111,7 +111,7 @@ def stage_path(events: list[Event], *, implied: bool = True) -> list[str]:
     first = next((ev for ev in stage_events if ev.from_stage is None), None)
     if first is None or first.to_stage is None:
         return []
-    moves = sorted(_effective_moves(events), key=lambda ev: (ev.occurred_at, ev.seq))
+    moves = in_time_order(_effective_moves(events))
     path = [first.to_stage, *(ev.to_stage for ev in moves if ev.to_stage)]
     return path[1:] if not implied and is_implied(first) and len(path) > 1 else path
 

@@ -50,7 +50,8 @@ def create_application(
     session: Session, workflow: Workflow, *, role_id: str, stage: str | None = None, **fields: Any
 ) -> Application:
     """Create an application at `stage`. Every application starts at the workflow's first stage:
-    one created later (at Applied, say) is recorded as created there and moved on at once."""
+    one created at a later stage (Applied, say) is recorded as created at the first stage a
+    second earlier, then moved on to `stage`."""
     stage = stage or workflow.initial
     workflow.stage(stage)
     now = utcnow()
@@ -163,6 +164,12 @@ def move(
     _touch(app, when)
     session.flush()
     return event
+
+
+def in_time_order(moves: list[Event]) -> list[Event]:
+    """Moves by when they happened; a filled-in move (see create_application) always comes first,
+    straight after the creation it follows, even if you backdate a later move before it."""
+    return sorted(moves, key=lambda ev: (not is_implied(ev), ev.occurred_at, ev.seq))
 
 
 def _effective_moves(events: list[Event]) -> list[Event]:

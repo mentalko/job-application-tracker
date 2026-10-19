@@ -4,7 +4,9 @@ An application added at Applied (or any later or closed stage) skipped the workf
 stage. Give it one, as new ones get (see `create_application`): a creation event at the first
 stage a second before, and the old creation event becomes the move on from it. Both are marked
 `implied`, so insights don't count them as a stay, an update or a reply, and they can't be
-undone. The first stage comes from the data folder's config.toml (Interested by default).
+undone. The first stage comes from the data folder's config.toml (Interested by default); a
+config.toml that doesn't load stops the migration rather than guess. Events are otherwise never
+updated: this is the one exception.
 
 Revision ID: 0013
 Revises: 0012
@@ -17,10 +19,11 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import sqlalchemy as sa
-from alembic import op
+from alembic import context, op
 
 import jat.db.types
-from jat.domain.workflow import DEFAULT_WORKFLOW, Workflow, WorkflowError, load_workflow
+from jat.db.types import parse_datetime
+from jat.domain.workflow import DEFAULT_WORKFLOW, Workflow, load_workflow
 
 revision: str = "0013"
 down_revision: str | None = "0012"
@@ -47,10 +50,13 @@ def upgrade() -> None:
     for first in firsts.values():
         if not first.to_stage or not _after_initial(workflow, first.to_stage):
             continue
+        data = _data(first.data)
         try:
-            when = datetime.strptime(str(first.occurred_at), FORMAT).replace(tzinfo=UTC)
+            when = parse_datetime(str(first.occurred_at))
         except ValueError:
             continue  # malformed history: leave it alone
+        if data is None:
+            continue
         seq += 1
         conn.execute(
             sa.text(
@@ -74,7 +80,7 @@ def upgrade() -> None:
                 "UPDATE events SET from_stage = :stage, data = :data,"
                 " summary = NULLIF(summary, 'Application created') WHERE id = :id"
             ),
-            {"stage": workflow.initial, "data": json.dumps({**_data(first.data), "implied": True}), "id": first.id},
+            {"stage": workflow.initial, "data": json.dumps({**data, "implied": True}), "id": first.id},
         )
 
 
@@ -83,7 +89,7 @@ def downgrade() -> None:
     rows = conn.execute(sa.text("SELECT id, from_stage, data FROM events WHERE kind = 'stage_change'")).all()
     for r in rows:
         data = _data(r.data)
-        if not data.get("implied"):
+        if not data or not data.get("implied"):
             continue
         if r.from_stage is None:
             conn.execute(sa.text("DELETE FROM events WHERE id = :id"), {"id": r.id})
@@ -110,19 +116,27 @@ def _after_initial(workflow: Workflow, stage: str) -> bool:
 
 
 def _workflow(conn) -> Workflow:
-    """The data folder's workflow: the database sits in it (a restore builds it there too)."""
-    database = conn.engine.url.database
-    if not database or database == ":memory:":
-        return DEFAULT_WORKFLOW
+    """The data folder's workflow (`migrate` passes the folder; a restore builds the database in
+    it too). No config.toml means the default; one that doesn't load stops the migration."""
+    data_dir = context.config.attributes.get("data_dir")
+    if data_dir is None:
+        database = conn.engine.url.database
+        if not database or database == ":memory:":
+            return DEFAULT_WORKFLOW
+        data_dir = Path(database).parent
     try:
-        return load_workflow(Path(database).parent)
-    except (WorkflowError, OSError):
-        return DEFAULT_WORKFLOW
+        return load_workflow(Path(data_dir))
+    except Exception as exc:
+        raise RuntimeError(
+            f"migration 0013 needs your workflow's first stage, but {Path(data_dir) / 'config.toml'} "
+            f"doesn't load ({exc}). Fix it and start again; nothing was changed."
+        ) from exc
 
 
-def _data(raw) -> dict:
+def _data(raw) -> dict | None:
+    """An event's data ({} when empty), or None when it can't be read: leave that row alone."""
     try:
         data = json.loads(raw) if raw else {}
     except (TypeError, ValueError):
-        return {}
-    return data if isinstance(data, dict) else {}
+        return None
+    return data if isinstance(data, dict) else None
