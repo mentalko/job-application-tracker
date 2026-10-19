@@ -9,7 +9,18 @@ type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
 
 const HEIGHT = 440;
-const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding whether to apply 12")
+const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding on the offer 12")
+const COLUMN_SPACE = 110; // room per column for a label beside a node mid-chart (with its halo, it may cross a flow)
+
+/** How many columns the diagram has: the longest chain of links, plus one. */
+function columnCount(flow: Flow): number {
+  const depth = new Map(flow.nodes.map((n) => [n.id, 0]));
+  for (let i = 0; i < flow.nodes.length; i++) {
+    for (const l of flow.links)
+      depth.set(l.target, Math.max(depth.get(l.target) ?? 0, (depth.get(l.source) ?? 0) + 1));
+  }
+  return Math.max(0, ...depth.values()) + 1;
+}
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
 
@@ -41,22 +52,25 @@ export function SankeyChart({
     return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
   };
   const { ref, width: measured } = useElementSize();
-  // Never narrower than this: on a phone the chart scrolls sideways rather than squash its labels.
-  const width = Math.max(measured || 900, 760);
+  // Never so narrow that labels run into the next column: on a phone it scrolls sideways instead.
+  const width = Math.max(measured || 900, columnCount(flow) * COLUMN_SPACE + LABEL_SPACE);
   const [hover, setHover] = useState<string | null>(null);
 
   const layout = useMemo(() => {
     const order = new Map(flow.nodes.map((n, i) => [n.id, i]));
+    const rank = (n: FlowNode) => (n.kind === "holding" ? -1000 : 0) + (order.get(n.id) ?? 0);
     return (
       sankey<FlowNode, FlowLink>()
         .nodeId((n) => n.id)
         .nodeWidth(14)
         .nodePadding(22)
-        // Active stages by how far along they are; outcomes line up on the right.
+        // Active stages by how far along they are, and where things wait just after their stage
+        // (Deciding whether to apply usually beside Applied); outcomes line up on the right.
         .nodeAlign((n, columns) =>
-          n.kind === "active" || n.sourceLinks?.length ? (n.depth ?? 0) : columns - 1,
+          n.kind === "active" || n.kind === "holding" || n.sourceLinks?.length ? (n.depth ?? 0) : columns - 1,
         )
-        .nodeSort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+        // Within a column, what's waiting sits above the stage that comes next.
+        .nodeSort((a, b) => rank(a) - rank(b))
         .extent([
           [1, 8],
           [width - LABEL_SPACE, HEIGHT - 8],

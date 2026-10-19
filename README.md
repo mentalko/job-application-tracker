@@ -101,7 +101,7 @@ history.
 
 **Insights: the whole picture.** One Sankey diagram of every role, from where it came from
 (through a recruiter, a referral, or you found it) to passing on it, deciding, or applying and
-how far it got, ending with what's still waiting at each stage: deciding whether to apply,
+how far it got, with what's still waiting just after each stage: deciding whether to apply,
 waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
 applications, filtered by route. Date range and counts on hover for both.
 

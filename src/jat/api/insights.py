@@ -53,7 +53,8 @@ def stage_flow(
 
 
 # The whole picture's nodes that aren't stages: (name, kind, color). Sources come first, then
-# the stages, then where things are waiting, then roles you passed on (outcomes, on the right).
+# the stages, then where things are waiting (each just after its stage), then roles you passed on
+# (outcomes, on the right).
 EXTRA_NODES = {
     "source:recruiter": ("Through a recruiter", "active", "indigo"),
     "source:referral": ("Referred", "active", "grape"),
@@ -106,7 +107,8 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
     sources = [f"source:{s}" for s in svc.SOURCES]
 
     def pos(sid: str) -> tuple[int, int, str]:
-        """Sources, active stages, then down the right: what's still waiting, outcomes, passed."""
+        """Sources, active stages, what's still waiting, outcomes, passed (top to bottom within a
+        column: the chart puts what's waiting just after its stage, outcomes on the right)."""
         if sid in sources:
             return (0, sources.index(sid), sid)
         if sid == svc.DECIDING:

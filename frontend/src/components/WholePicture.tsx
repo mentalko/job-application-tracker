@@ -17,8 +17,8 @@ export function WholePicture({ since }: { since?: string }) {
       <Title order={4}>The whole picture</Title>
       <Text size="sm" c="dimmed" mb="md">
         {flow ? roles(flow.applications) : "…"} by the date they were added: where each came from, then
-        passing on it, deciding, or applying and how far it got. On the right, where things are now, including
-        what's still waiting at each stage (one moved back counts at the furthest stage it reached). A role
+        passing on it, deciding, or applying and how far it got. Just after each stage, what's still waiting
+        there (one moved back counts at the furthest stage it reached); on the right, how things ended. A role
         you applied to twice counts twice.
       </Text>
       {isLoading ? (
