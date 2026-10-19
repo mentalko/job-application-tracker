@@ -9,7 +9,18 @@ type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
 
 const HEIGHT = 440;
-const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding whether to apply 12")
+const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding on the offer 12")
+const COLUMN_SPACE = 110; // room per column for a label beside a node mid-chart (with its halo, it may cross a flow)
+
+/** How many columns the diagram has: the longest chain of links, plus one. */
+function columnCount(flow: Flow): number {
+  const depth = new Map(flow.nodes.map((n) => [n.id, 0]));
+  for (let i = 0; i < flow.nodes.length; i++) {
+    for (const l of flow.links)
+      depth.set(l.target, Math.max(depth.get(l.target) ?? 0, (depth.get(l.source) ?? 0) + 1));
+  }
+  return Math.max(0, ...depth.values()) + 1;
+}
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
 
@@ -41,8 +52,8 @@ export function SankeyChart({
     return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
   };
   const { ref, width: measured } = useElementSize();
-  // Never narrower than this: on a phone the chart scrolls sideways rather than squash its labels.
-  const width = Math.max(measured || 900, 760);
+  // Never so narrow that labels run into the next column: on a phone it scrolls sideways instead.
+  const width = Math.max(measured || 900, columnCount(flow) * COLUMN_SPACE + LABEL_SPACE);
   const [hover, setHover] = useState<string | null>(null);
 
   const layout = useMemo(() => {
@@ -54,7 +65,7 @@ export function SankeyChart({
         .nodeWidth(14)
         .nodePadding(22)
         // Active stages by how far along they are, and where things wait just after their stage
-        // (Deciding whether to apply in the same column as Applied); outcomes line up on the right.
+        // (Deciding whether to apply usually beside Applied); outcomes line up on the right.
         .nodeAlign((n, columns) =>
           n.kind === "active" || n.kind === "holding" || n.sourceLinks?.length ? (n.depth ?? 0) : columns - 1,
         )
