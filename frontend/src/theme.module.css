@@ -1,5 +1,21 @@
 /* Today in every calendar: a ring in the primary colour, so you can see where you are. */
-.day[data-today]:not([data-selected], [data-in-range]) {
+.day[data-today][data-highlight-today]:not(
+    [data-selected],
+    [data-in-range],
+    [data-disabled],
+    [data-outside]
+  ) {
   border: 2px solid var(--mantine-primary-color-filled);
   font-weight: 700;
+}
+
+/* A lighter indigo on the dark dropdown, for contrast. */
+:where([data-mantine-color-scheme="dark"])
+  .day[data-today][data-highlight-today]:not(
+    [data-selected],
+    [data-in-range],
+    [data-disabled],
+    [data-outside]
+  ) {
+  border-color: var(--mantine-color-indigo-4);
 }

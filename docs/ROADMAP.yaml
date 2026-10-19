@@ -132,4 +132,4 @@ phases:
       - {id: role-closed, name: "A role withdrawn (or otherwise closed) while only Interested says so, not Applied; Insights counts it as passed", owner: lead, status: done, estimate_h: 1, depends: [role-interested], prd: docs/prd/tracker.md}
       - {id: favourite-people, name: "Mark a person as a favourite: a star before their name everywhere, a Favourites filter, favourites first", owner: lead, status: done, estimate_h: 2, depends: [ghost-icon], prd: docs/prd/tracker.md}
       - {id: compaction-refresh-6, name: "Refresh the compaction prompt after #80: closed roles, favourites, the Screen question, the tracker back in Kai's terminal", owner: lead, status: done, estimate_h: 0.5, depends: [compaction-refresh-5]}
-      - {id: highlight-today, name: "Date pickers ring today so you can see where you are", owner: lead, status: building, estimate_h: 0.5, depends: [interviews], prd: docs/prd/tracker.md}
+      - {id: highlight-today, name: "Date pickers ring today so you can see where you are", owner: lead, status: done, estimate_h: 0.5, depends: [interviews], prd: docs/prd/tracker.md}
