@@ -11537,6 +11537,74 @@
         ]
       }
     },
+    "/api/v1/insights/whole-flow": {
+      "get": {
+        "description": "The whole picture as one Sankey diagram: every application added in [since, until) from\nwhere it came from (a recruiter, a referral, or you found it) through its stages, and every\nrole added then without an application, to passed or still deciding. `applications` counts\nboth.",
+        "operationId": "whole_flow_api_v1_insights_whole_flow_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlowOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Whole Flow",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/interviews": {
       "get": {
         "description": "Interviews, soonest first.\n\n`upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start\nof your local day as `since`; it defaults to the start of today in UTC.",

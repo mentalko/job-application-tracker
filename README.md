@@ -99,10 +99,13 @@ history.
 
 ![An application page: At a glance (what is coming up and key dates as "3 weeks ago"), then interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
 
-**Insights: where do your applications go?** A Sankey diagram of every application's path
-through the stages, filtered by date range and route, with counts on hover.
+**Insights: the whole picture.** One Sankey diagram of every role, from where it came from
+(through a recruiter, a referral, or you found it) to passing on it, deciding, or applying and
+how far it got, ending with what's still waiting at each stage: deciding whether to apply,
+waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
+applications, filtered by route. Date range and counts on hover for both.
 
-![Sankey diagram of a job search funnel: interested, applied, screen, interviewing, final, offer, with rejections and ghosting](docs/screenshots/insights.png)
+![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, rejected, withdrawn, ghosted and passed](docs/screenshots/insights.png)
 
 **Conversion, time in stage, direct vs recruiter, and a recruiter scorecard.** Which stages
 you get stuck at, whether agencies or direct applications do better for you, and which
@@ -173,7 +176,7 @@ to applications, roles or recruiters as plain files? It spots identical ones and
 | 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase; when they reply, **They've replied** puts it at the top of Next actions until you've read it; for people, **Chased**, **Ghosted** or **Not interested** in one click; a ghost marks anyone who ghosted you across the app (their page, applications, calls, Next actions, the Timeline, search and Insights), a *Ghosted* filter lists them, and **Not a ghost** takes it off any time; star your favourite recruiters so they stand out and come first; each person shows how long they *usually* take to reply, in working days, and says when you've been waiting longer than usual | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
-| 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
+| 📈 | **Insights**: the whole picture (every role from where it came from to what's still waiting at each stage), conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
 | 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency | ✅ Available |
 | 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real); CV files attached to applications, roles or recruiters become versions in one click | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |

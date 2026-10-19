@@ -9,7 +9,7 @@ type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
 
 const HEIGHT = 440;
-const LABEL_SPACE = 150; // room for the last column's labels on the right
+const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding whether to apply 12")
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
 
@@ -17,10 +17,20 @@ const colour = (name: string) => `var(--mantine-color-${name}-6)`;
  * Stage-to-stage flows, left to right. Outcomes (success and closed stages, or anything that
  * isn't "active") sit in the last column. `unit` is what the flow counts: applications, or roles.
  */
-export function SankeyChart({ flow, unit = "application" }: { flow: Flow; unit?: "application" | "role" }) {
+export function SankeyChart({
+  flow,
+  unit = "application",
+  label,
+}: {
+  flow: Flow;
+  unit?: "application" | "role";
+  label?: string; // what the diagram shows, for screen readers
+}) {
   const plural = (n: number) => `${n} ${unit}${n === 1 ? "" : "s"}`;
   const nodeText = (n: FlowNode) => {
-    if (unit === "role") return `${n.name}: ${plural(n.reached)}`;
+    // Sources, and where things are waiting, count what's there rather than what "reached" it.
+    if (unit === "role" || n.kind === "holding" || n.id.startsWith("source:"))
+      return `${n.name}: ${plural(n.reached)}`;
     const still = n.current ? `, ${n.current} still there` : "";
     return `${n.name}: ${plural(n.reached)} reached${still}`;
   };
@@ -31,7 +41,8 @@ export function SankeyChart({ flow, unit = "application" }: { flow: Flow; unit?:
     return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
   };
   const { ref, width: measured } = useElementSize();
-  const width = Math.max(measured || 900, 480);
+  // Never narrower than this: on a phone the chart scrolls sideways rather than squash its labels.
+  const width = Math.max(measured || 900, 760);
   const [hover, setHover] = useState<string | null>(null);
 
   const layout = useMemo(() => {
@@ -64,18 +75,19 @@ export function SankeyChart({ flow, unit = "application" }: { flow: Flow; unit?:
   const caption = hoveredLink ? linkText(hoveredLink) : hoveredNode ? nodeText(hoveredNode) : null;
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ overflowX: "auto" }}>
       <svg
         width={width}
         height={HEIGHT}
         viewBox={`0 0 ${width} ${HEIGHT}`}
         role="img"
         aria-label={
-          unit === "role"
+          label ??
+          (unit === "role"
             ? `Sankey diagram of ${plural(flow.applications)} pitched to you, by what happened to them`
-            : `Sankey diagram of ${plural(flow.applications)} moving through the stages`
+            : `Sankey diagram of ${plural(flow.applications)} moving through the stages`)
         }
-        style={{ display: "block", maxWidth: "100%", height: "auto" }}
+        style={{ display: "block" }}
       >
         <g fill="none">
           {layout.links.map((l) => {
@@ -121,6 +133,10 @@ export function SankeyChart({ flow, unit = "application" }: { flow: Flow; unit?:
                 dy="0.35em"
                 fontSize={12}
                 fill="var(--mantine-color-text)"
+                // A halo in the page colour keeps a label readable where it crosses a flow.
+                stroke="var(--mantine-color-body)"
+                strokeWidth={3}
+                paintOrder="stroke"
                 style={{ pointerEvents: "none" }}
               >
                 {n.name}{" "}

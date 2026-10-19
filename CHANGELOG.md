@@ -123,6 +123,10 @@ brackets are pull requests.
   instead of squashing its name (#79).
 - **Favourite people**: star the recruiters you rate; a gold star before their name across the
   app, a *Favourites* filter on the Recruiters page, and favourites listed first (#80).
+- **The whole picture** in Insights: one Sankey diagram of every role, from where it came from
+  (through a recruiter, referred, or you found it) to passed, deciding whether to apply, or its
+  stages; both Sankeys end each stage with a spur to what's still waiting there (*Waiting to hear
+  back*, *Still interviewing*, *Deciding on the offer*…) (#84).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).

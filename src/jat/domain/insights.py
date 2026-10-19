@@ -17,7 +17,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jat.db.models import Application, Event
+from jat.db.models import Application, Event, Role
 
 from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .workflow import Workflow
@@ -168,4 +168,70 @@ def flow(
             result.reached[stage] += 1
         for a, b in zip(path, path[1:], strict=False):
             result.links[(a, b)] += 1
+    return result
+
+
+# Where a role or application came from, for the whole picture.
+SOURCES = ("recruiter", "referral", "found")
+PASSED, DECIDING = "passed", "deciding"
+
+
+def source_of(app: Application | None, role: Role) -> str:
+    """`referral` if the application came by referral; `recruiter` if someone pitched the role or
+    the application went through a recruiter or agency; otherwise `found` (you found it)."""
+    if app is not None and app.route == "referral":
+        return "referral"
+    if role.contact_id or (app is not None and (app.route == "agency" or app.recruiter_id or app.agency_id)):
+        return "recruiter"
+    return "found"
+
+
+def whole_flow(
+    session: Session, workflow: Workflow, *, since: datetime | None = None, until: datetime | None = None
+) -> Flow:
+    """Everything in one flow: each application added in [since, until) from where it came from
+    through its stages, and each role added then with no application, to passed or still deciding.
+
+    Node ids: `source:<SOURCES>`, `passed`, `deciding` and stage ids. `applications` counts both.
+    """
+
+    def within(col):
+        conds = []
+        if since is not None:
+            conds.append(col >= since)
+        if until is not None:
+            conds.append(col < until)
+        return conds
+
+    roles = {r.id: r for r in session.scalars(select(Role))}
+    apps = list(session.scalars(select(Application).where(*within(Application.created_at))))
+    with_apps = set(session.scalars(select(Application.role_id).distinct()))
+    events: dict[str, list[Event]] = {a.id: [] for a in apps}
+    if apps:
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(list(events)), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
+            events[ev.application_id].append(ev)
+
+    rank = stage_rank(workflow)
+    closed = closed_stages(workflow)
+    result = Flow()
+
+    def add(path: list[str]) -> None:
+        result.applications += 1
+        result.current[path[-1]] += 1
+        for node in path:
+            result.reached[node] += 1
+        for a, b in zip(path, path[1:], strict=False):
+            result.links[(a, b)] += 1
+
+    for app in apps:
+        path = fold_forward(stage_path(events[app.id]), rank, closed)
+        if path and app.role_id in roles:
+            add([f"source:{source_of(app, roles[app.role_id])}", *path])
+    since_ok = select(Role.id).where(*within(Role.created_at))
+    for role_id in session.scalars(since_ok):
+        role = roles[role_id]
+        if role_id not in with_apps:
+            add([f"source:{source_of(None, role)}", PASSED if role.decision == "passed" else DECIDING])
     return result

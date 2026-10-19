@@ -22,10 +22,10 @@ router = APIRouter(prefix="/insights", tags=["insights"])
 class FlowNode(BaseModel):
     id: str
     name: str
-    kind: str
+    kind: str  # a stage's kind, "holding" (where things are waiting) or "outcome" (passed)
     color: str
-    reached: int  # applications that got to this stage
-    current: int  # of those, how many are still there
+    reached: int  # applications (or roles, in the whole picture) that got here
+    current: int  # of those, how many got no further (0 on holding and source nodes)
 
 
 class FlowLink(BaseModel):
@@ -49,30 +49,113 @@ def stage_flow(
     route: S.Route | None = None,
 ):
     """Stage-to-stage flows for a Sankey diagram, for applications added in [since, until)."""
-    result = svc.flow(session, workflow, since=since, until=until, route=route)
+    return _flow_out(svc.flow(session, workflow, since=since, until=until, route=route), workflow)
+
+
+# The whole picture's nodes that aren't stages: (name, kind, color). Sources come first, then
+# the stages, then where things are waiting, then roles you passed on (outcomes, on the right).
+EXTRA_NODES = {
+    "source:recruiter": ("Through a recruiter", "active", "indigo"),
+    "source:referral": ("Referred", "active", "grape"),
+    "source:found": ("You found it", "active", "teal"),
+    svc.DECIDING: ("Deciding whether to apply", "holding", "yellow"),
+    svc.PASSED: ("Passed", "outcome", "gray"),
+}
+
+# Where something still at an active stage is waiting, by the default stage ids; other stages
+# get "Still at <name>". The first stage's is DECIDING, shared with roles not yet applied for.
+HOLDING_NAMES = {
+    "applied": "Waiting to hear back",
+    "screen": "Still screening",
+    "interviewing": "Still interviewing",
+    "final": "In final rounds",
+    "offer": "Deciding on the offer",
+}
+
+
+def _holding(workflow, sid: str) -> str:
+    """The first stage, if it's before Applied, waits at DECIDING (with roles not yet applied
+    for); any other stage at its own `holding:<id>`."""
+    if sid == workflow.initial and svc.before_applied(workflow, sid):
+        return svc.DECIDING
+    return f"holding:{sid}"
+
+
+def _with_holding(result: svc.Flow, workflow) -> svc.Flow:
+    """A spur from each active stage to where its applications are waiting: those that got no
+    further (an application moved back counts at the furthest stage it reached)."""
+    out = svc.Flow(
+        applications=result.applications,
+        reached=result.reached.copy(),
+        links=result.links.copy(),
+        current=result.current.copy(),
+    )
+    for st in workflow.stages:
+        n = result.current[st.id]
+        if st.kind == "active" and n:
+            hid = _holding(workflow, st.id)
+            out.links[(st.id, hid)] += n
+            out.reached[hid] += n
+    return out
+
+
+def _flow_out(result: svc.Flow, workflow) -> FlowOut:
+    result = _with_holding(result, workflow)
     rank = svc.stage_rank(workflow)
     stages = {s.id: s for s in workflow.stages}
+    sources = [f"source:{s}" for s in svc.SOURCES]
 
-    def pos(sid: str) -> tuple[int, str]:
-        return (rank.get(sid, len(rank)), sid)  # unknown (removed) stages last
+    def pos(sid: str) -> tuple[int, int, str]:
+        """Sources, active stages, then down the right: what's still waiting, outcomes, passed."""
+        if sid in sources:
+            return (0, sources.index(sid), sid)
+        if sid == svc.DECIDING:
+            return (2, -1, sid)
+        if sid.startswith("holding:"):
+            return (2, rank.get(sid.removeprefix("holding:"), len(rank)), sid)
+        if sid in EXTRA_NODES:
+            return (4, list(EXTRA_NODES).index(sid), sid)
+        if sid in stages and stages[sid].kind == "active":
+            return (1, rank[sid], sid)
+        return (3, rank.get(sid, len(rank)), sid)  # outcomes; unknown (removed) stages last
 
-    order = sorted(result.reached, key=pos)
-    nodes = [
-        FlowNode(
-            id=sid,
-            name=stages[sid].name if sid in stages else sid,
-            kind=stages[sid].kind if sid in stages else "unknown",
-            color=stages[sid].color if sid in stages else "gray",
-            reached=result.reached[sid],
-            current=result.current[sid],
+    def describe(sid: str) -> tuple[str, str, str]:
+        if sid in EXTRA_NODES:
+            return EXTRA_NODES[sid]
+        if sid.startswith("holding:"):
+            st = stages[sid.removeprefix("holding:")]
+            return HOLDING_NAMES.get(st.id, f"Still at {st.name}"), "holding", st.color
+        if sid in stages:
+            return stages[sid].name, stages[sid].kind, stages[sid].color
+        return sid, "unknown", "gray"
+
+    nodes = []
+    for sid in sorted(result.reached, key=pos):
+        name, kind, color = describe(sid)
+        nodes.append(
+            FlowNode(
+                id=sid, name=name, kind=kind, color=color, reached=result.reached[sid], current=result.current[sid]
+            )
         )
-        for sid in order
-    ]
     links = [
         FlowLink(source=a, target=b, value=n)
         for (a, b), n in sorted(result.links.items(), key=lambda kv: (pos(kv[0][0]), pos(kv[0][1])))
     ]
     return FlowOut(applications=result.applications, nodes=nodes, links=links)
+
+
+@router.get("/whole-flow", response_model=FlowOut)
+def whole_flow(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """The whole picture as one Sankey diagram: every application added in [since, until) from
+    where it came from (a recruiter, a referral, or you found it) through its stages, and every
+    role added then without an application, to passed or still deciding. `applications` counts
+    both."""
+    return _flow_out(svc.whole_flow(session, workflow, since=since, until=until), workflow)
 
 
 class StageStatsOut(BaseModel):

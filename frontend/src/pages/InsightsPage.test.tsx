@@ -34,6 +34,27 @@ const FLOW = {
   ],
 };
 
+const WHOLE = {
+  applications: 4,
+  nodes: [
+    node("source:recruiter", "Through a recruiter", "active", "indigo", 3, 0),
+    node("source:found", "You found it", "active", "teal", 1, 0),
+    node("interested", "Interested", "active", "gray", 3, 0),
+    node("applied", "Applied", "active", "blue", 2, 2),
+    node("deciding", "Deciding whether to apply", "holding", "yellow", 1, 0),
+    node("holding:applied", "Waiting to hear back", "holding", "blue", 2, 0),
+    node("passed", "Passed", "outcome", "gray", 1, 1),
+  ],
+  links: [
+    { source: "source:recruiter", target: "interested", value: 2 },
+    { source: "source:recruiter", target: "passed", value: 1 },
+    { source: "source:found", target: "interested", value: 1 },
+    { source: "interested", target: "applied", value: 2 },
+    { source: "interested", target: "deciding", value: 1 },
+    { source: "applied", target: "holding:applied", value: 2 },
+  ],
+};
+
 const stage = (id: string, name: string, kind: string, extra: Record<string, unknown>) => ({
   id,
   name,
@@ -284,6 +305,7 @@ const DOCUMENTS = {
 function mockInsights(overrides: Record<string, unknown> = {}) {
   return mockApi({
     "/api/v1/insights/flow": FLOW,
+    "/api/v1/insights/whole-flow": WHOLE,
     "/api/v1/insights/stats": STATS,
     "/api/v1/insights/activity": ACTIVITY,
     "/api/v1/insights/scorecard": SCORECARD,
@@ -301,10 +323,38 @@ const rows = (table: HTMLElement) =>
 
 afterEach(() => vi.unstubAllGlobals());
 
+async function openApplications() {
+  fireEvent.click(await screen.findByRole("tab", { name: "Applications" }));
+}
+
 describe("insights", () => {
+  it("opens on the whole picture: where roles came from to where they're waiting", async () => {
+    const calls = mockInsights();
+    renderAt("/insights");
+    const chart = await screen.findByRole("img", {
+      name: "Sankey diagram of 4 roles, from where they came from to where they are now",
+    });
+    expect(chart.querySelectorAll("rect")).toHaveLength(7);
+    const rect = (name: RegExp) =>
+      [...chart.querySelectorAll("rect")].find((r) =>
+        name.test(r.querySelector("title")?.textContent ?? ""),
+      )!;
+    // Where things are waiting, and sources, count what's there: no "reached".
+    fireEvent.mouseEnter(rect(/^Waiting to hear back/));
+    expect(screen.getByText("Waiting to hear back: 2 roles", { selector: "p" })).toBeInTheDocument();
+    fireEvent.mouseEnter(rect(/^Through a recruiter/));
+    expect(screen.getByText("Through a recruiter: 3 roles", { selector: "p" })).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Last 30 days"));
+    await waitFor(() => {
+      const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/whole-flow")).at(-1)!;
+      expect(new URL(last.path, "http://localhost").searchParams.get("since")).not.toBeNull();
+    });
+  });
+
   it("draws the flow and shows counts on hover", async () => {
     mockInsights();
     renderAt("/insights");
+    await openApplications();
     const chart = await screen.findByRole("img", { name: /Sankey diagram of 3 applications/ });
     expect(chart.querySelectorAll("path")).toHaveLength(3);
     expect(chart.querySelectorAll("rect")).toHaveLength(4);
@@ -324,6 +374,7 @@ describe("insights", () => {
   it("shows conversion and time per stage, routes side by side, and weekly activity", async () => {
     mockInsights();
     renderAt("/insights");
+    await openApplications();
     const stages = (await screen.findByRole("heading", { name: "Stage by stage" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
@@ -355,6 +406,7 @@ describe("insights", () => {
   it("filters by date range and route", async () => {
     const calls = mockInsights();
     renderAt("/insights");
+    await openApplications();
     await screen.findByRole("img", { name: /Sankey diagram/ });
     // Activity asks for twelve weeks from a local Monday, in the browser's time zone.
     const activity = calls.find((c) => c.path.startsWith("/api/v1/insights/activity"))!;
@@ -391,6 +443,7 @@ describe("insights", () => {
       "/api/v1/insights/stats": { applications: 0, stages: [], routes: [] },
     });
     renderAt("/insights");
+    await openApplications();
     expect(await screen.findByText("No applications match these filters.")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Stage by stage" })).not.toBeInTheDocument();
   });
@@ -398,6 +451,7 @@ describe("insights", () => {
   it("scores recruiters and agencies", async () => {
     const calls = mockInsights();
     renderAt("/insights");
+    await openApplications();
     const card = (await screen.findByRole("heading", { name: "Recruiter scorecard" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
