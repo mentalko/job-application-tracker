@@ -485,14 +485,31 @@ so you can also write and edit them in any editor. Tables, checklists and links 
 
 ## Insights
 
-How the search is going, for all time or the last 30 or 90 days. Three tabs: **Applications**,
-**Recruiter conversations** and **CVs and cover letters**; **Weekly activity** sits under all
-of them.
+How the search is going, for all time or the last 30 or 90 days. Four tabs: **The whole
+picture**, **Applications**, **Recruiter conversations** and **CVs and cover letters**;
+**Weekly activity** sits under all of them.
+
+**The whole picture** (the tab Insights opens on) is everything in one Sankey diagram: every
+role, from where it came from to where it is now.
+
+- On the left, where it came from: **Through a recruiter** (someone pitched the role, or the
+  application went through a recruiter or agency), **Referred** (a referral) or **You found
+  it** (anything else).
+- Then roles you passed on go to **Passed**, roles with no application yet to **Deciding whether
+  to apply**, and applications through their stages from *Interested*.
+- On the right, where things are now: outcomes (Rejected, Ghosted, Accepted…) and, from each
+  stage, a spur to what's still waiting there.
+
+It counts roles and applications added in the date range; a role you applied to twice counts
+twice.
 
 **Applications**
 
 - **Where applications go**: a Sankey diagram of applications flowing through the stages,
-  starting at *Interested*; filter by route, hover for counts.
+  starting at *Interested*; filter by route, hover for counts. Each stage has a spur to where
+  the applications still there are waiting: *Deciding whether to apply* (Interested), *Waiting
+  to hear back* (Applied), *Still screening*, *Still interviewing*, *In final rounds*, *Deciding
+  on the offer*, or *Still at …* for stages of your own. They're listed above the outcomes.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
