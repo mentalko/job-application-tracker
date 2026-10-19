@@ -210,6 +210,13 @@ Every stage change is timestamped on the application's timeline, and **Undo last
 reverts a mistake. By default you can move between any stages; you can make them strict
 instead ([Customising](customising.md#strict-jira-style-transitions)).
 
+**Every application starts at Interested** (your workflow's first stage). Add one straight at
+*Applied* (or later, or closed) and its history says *Interested*, then *Applied* a second
+later, so Insights shows every application flowing from *Interested*. That step was filled in
+for you: it doesn't count as time spent at *Interested*, as an update from a recruiter or as a
+reply, and there's nothing to undo. Applications you added before this came in got the same
+step when you upgraded.
+
 ## An application's page
 
 Everything about one application:
@@ -481,8 +488,8 @@ of them.
 
 **Applications**
 
-- **Where applications go**: a Sankey diagram of applications flowing through the stages;
-  filter by route, hover for counts.
+- **Where applications go**: a Sankey diagram of applications flowing through the stages,
+  every one starting at *Interested*; filter by route, hover for counts.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.

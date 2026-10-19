@@ -123,6 +123,9 @@ brackets are pull requests.
   instead of squashing its name (#79).
 - **Favourite people**: star the recruiters you rate; a gold star before their name across the
   app, a *Favourites* filter on the Recruiters page, and favourites listed first (#80).
+- **Every application starts at Interested**: one added at *Applied* (or later) gets an
+  *Interested* step a second before, so Insights shows every application flowing from
+  *Interested*; existing applications are filled in by migration 0013 (#83).
 - **Today stands out in date pickers**: every calendar rings today in indigo, so you can see
   where you are when booking a round, a call or a follow-up (#82).
 

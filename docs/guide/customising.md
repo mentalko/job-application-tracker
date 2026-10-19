@@ -46,7 +46,7 @@ gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, o
 
 ```toml
 [workflow]
-initial = "applied"          # the stage new applications start in
+initial = "applied"          # the stage every application starts in
 transitions = "any"          # see below
 skip_forward = true          # allow jumping ahead to any later active stage
 reopen_from = ["ghosted"]    # stages that can go back to an active one
@@ -117,7 +117,11 @@ older config files behaved). Add `transitions = "any"` to relax them.
 
 ## Snapshot timing
 
-```toml
+```
+
+`initial` is where every application starts. One you add at a later stage gets a step at
+`initial` a second before (see [Every application starts at Interested](using-the-app.md#applications-list-and-board)),
+so set it to the first stage you track.toml
 [snapshot]
 debounce_seconds = 60   # 0 commits after every change
 ```
