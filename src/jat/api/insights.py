@@ -52,15 +52,18 @@ def stage_flow(
     return _flow_out(svc.flow(session, workflow, since=since, until=until, route=route), workflow)
 
 
+# Roles you passed on, in the diagrams ("Passed" alone reads like passing an interview).
+PASSED_NAME = "Decided not to apply"
+
 # The whole picture's nodes that aren't stages: (name, kind, color). Sources come first, then
-# the stages, then where things are waiting (each just after its stage), then roles you passed on
-# (outcomes, on the right).
+# the stages, then where things are waiting, then roles you passed on (the chart places each just
+# after what leads to it).
 EXTRA_NODES = {
     "source:recruiter": ("Through a recruiter", "active", "indigo"),
     "source:referral": ("Referred", "active", "grape"),
     "source:found": ("You found it", "active", "teal"),
     svc.DECIDING: ("Deciding whether to apply", "holding", "yellow"),
-    svc.PASSED: ("Passed", "outcome", "gray"),
+    svc.PASSED: (PASSED_NAME, "outcome", "gray"),
 }
 
 # Where something still at an active stage is waiting, by the default stage ids; other stages
@@ -107,8 +110,8 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
     sources = [f"source:{s}" for s in svc.SOURCES]
 
     def pos(sid: str) -> tuple[int, int, str]:
-        """Sources, active stages, what's still waiting, outcomes, passed (top to bottom within a
-        column: the chart puts what's waiting just after its stage, outcomes on the right)."""
+        """Sources, active stages, what's still waiting, outcomes, passed: the order nodes are listed
+        in (the chart places and orders them itself)."""
         if sid in sources:
             return (0, sources.index(sid), sid)
         if sid == svc.DECIDING:
@@ -375,16 +378,18 @@ def _tally(t: conv_svc.Tally) -> dict:
 
 
 def _role_flow(t: conv_svc.Tally) -> FlowOut:
-    """Pitched roles as a Sankey diagram: pitched, then applied / passed / deciding, then outcomes."""
+    """Pitched roles as a Sankey diagram: pitched, then applied / deciding / decided not to apply,
+    then outcomes. Deciding and in progress are where things wait, and decided not to apply sits
+    with deciding (the chart places them just after what leads to them, usually beside Applied)."""
     nodes = [
         ("pitched", "Pitched to you", "active", "indigo", t.pitched),
+        ("deciding", "Deciding whether to apply", "holding", "yellow", t.deciding),
         ("applied", "Applied", "active", "blue", t.applied),
-        ("passed", "Passed", "outcome", "gray", t.passed),
-        ("deciding", "Still deciding", "outcome", "yellow", t.deciding),
-        ("in_progress", "In progress", "outcome", "cyan", t.outcomes["in_progress"]),
+        ("in_progress", "In progress", "holding", "cyan", t.outcomes["in_progress"]),
         ("offer", "Offer", "outcome", "green", t.outcomes["offer"]),
         ("closed", "Closed", "outcome", "red", t.outcomes["closed"]),
         ("ghosted", "Ghosted", "outcome", "dark", t.outcomes["ghosted"]),
+        ("passed", PASSED_NAME, "outcome", "gray", t.passed),
     ]
     links = [
         FlowLink(source="pitched", target=target, value=n)

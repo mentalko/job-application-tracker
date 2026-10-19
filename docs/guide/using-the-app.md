@@ -495,11 +495,11 @@ role, from where it came from to where it is now.
 - On the left, where it came from: **Through a recruiter** (someone pitched the role, or the
   application went through a recruiter or agency), **Referred** (a referral) or **You found
   it** (anything else).
-- Then roles you passed on go to **Passed**, roles with no application yet to **Deciding whether
-  to apply**, and applications through their stages from *Interested*.
+- Then roles you passed on go to **Decided not to apply**, roles with no application yet to
+  **Deciding whether to apply**, and applications through their stages from *Interested*.
 - From each stage, a spur to what's still waiting there, just after the stage (*Deciding
-  whether to apply* usually sits above *Applied*); on the right, how things ended (Rejected, Ghosted,
-  Accepted…) and what you passed on.
+  whether to apply* and *Decided not to apply* usually sit beside *Applied*). How things ended
+  (Rejected, Withdrawn, Ghosted, Accepted…) can follow any stage, so it lines up on the right.
 
 It counts roles and applications added in the date range; a role you applied to twice counts
 twice. As in *Where applications go*, an application moved back counts at the furthest stage it
@@ -512,8 +512,9 @@ reached.
   the applications still there are waiting: *Deciding whether to apply* (Interested, if your
   first stage comes before Applied), *Waiting to hear back* (Applied), *Still screening*, *Still
   interviewing*, *In final rounds*, *Deciding on the offer*, or *Still at …* for stages of your
-  own. Each sits just after its stage, at the top of that column. On a narrow screen the
-  diagram scrolls sideways.
+  own. These sit just after their stage; how things ended lines up on the right. The diagram
+  arranges each column so flows cross each other, or run through a stage, as little as it can.
+  A label too long for the gap wraps; on a narrow screen the diagram scrolls sideways.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
@@ -532,9 +533,11 @@ the role); roles you found yourself aren't counted here.
   from pitched roles, ghosted applications from pitches, and the median time to decide (from
   adding the role to applying or passing; a backdated application counts from its first
   stage).
-- **Where pitched roles go**: a Sankey diagram from *Pitched to you* to *Applied*, *Passed*
-  or *Still deciding*, and from *Applied* to *In progress*, *Offer*, *Closed* or *Ghosted*
-  (a role's best application counts once).
+- **Where pitched roles go**: a Sankey diagram from *Pitched to you* to *Applied*, *Decided
+  not to apply* or *Deciding whether to apply*, and from *Applied* to *In progress*, *Offer*,
+  *Closed* or *Ghosted* (a role's best application counts once). As in the other diagrams,
+  *Deciding whether to apply* and *Decided not to apply* sit beside *Applied*, and where
+  applications ended up on the right.
 - **Who you talk to**: per person or per agency, calls held, the last call, roles pitched,
   applied, passed, deciding, the apply rate, interviews, and where the applications went. A
   person you've marked *Ghosted* or *Not interested* says so.
