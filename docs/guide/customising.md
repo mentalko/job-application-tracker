@@ -46,7 +46,7 @@ gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, o
 
 ```toml
 [workflow]
-initial = "applied"          # the stage new applications start in
+initial = "applied"          # the stage every application starts in
 transitions = "any"          # see below
 skip_forward = true          # allow jumping ahead to any later active stage
 reopen_from = ["ghosted"]    # stages that can go back to an active one
@@ -96,6 +96,11 @@ color = "dark"
 
 The board shows stages in the order you list them; the Sankey diagram puts active stages
 first, then outcomes.
+
+`initial` is where every application starts: one you add at a later stage gets a step at
+`initial` a second before (see
+[Every application starts at Interested](using-the-app.md#applications-list-and-board)), so
+make it the first stage you track. Changing `initial` later doesn't rewrite past history.
 
 **Removing a stage** that applications are still in doesn't lose them: they keep their old
 stage. With `transitions = "any"` you can move them on as usual. With strict transitions

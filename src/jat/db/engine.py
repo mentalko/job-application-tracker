@@ -82,6 +82,7 @@ def migrate(path: Path, revision: str = "head", *, wal: bool = True) -> None:
         with engine.begin() as conn:
             cfg = alembic_config(path)
             cfg.attributes["connection"] = conn
+            cfg.attributes["data_dir"] = path.parent  # for migrations that read config.toml
             try:
                 command.upgrade(cfg, revision)
             except CommandError as exc:

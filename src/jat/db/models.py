@@ -151,7 +151,8 @@ class ApplicationContact(IdMixin, Base):
 
 
 class Event(IdMixin, Base):
-    """Append-only application history (FR7, FR8). Never updated or deleted by the app."""
+    """Append-only application history (FR7, FR8). Never updated or deleted by the app (migration
+    0013, which filled in a skipped first stage, is the one exception)."""
 
     __tablename__ = "events"
     __table_args__ = (UniqueConstraint("seq", name="uq_events_seq"),)

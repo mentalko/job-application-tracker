@@ -32,7 +32,7 @@ from ..db.models import (
 )
 from ..domain import interviews as interviews_svc
 from ..domain import offers as offers_svc
-from ..domain.applications import STAGE_CHANGE
+from ..domain.applications import STAGE_CHANGE, is_implied
 from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
 from .notes import _sync
@@ -107,6 +107,8 @@ def _event_category(event: Event) -> Category:
 
 
 def _event_title(event: Event, stage_names: dict[str, str]) -> str:
+    if event.kind == STAGE_CHANGE and event.to_stage and is_implied(event):
+        return f"Added at {stage_names.get(event.to_stage, event.to_stage)}"
     if event.kind == STAGE_CHANGE and event.from_stage and event.to_stage:
         name = stage_names.get
         return f"{name(event.from_stage, event.from_stage)} → {name(event.to_stage, event.to_stage)}"
@@ -202,6 +204,8 @@ def timeline(
     items: list[TimelineItem] = []
 
     for e in session.scalars(select(Event).order_by(Event.occurred_at, Event.seq)):
+        if e.kind == STAGE_CHANGE and e.from_stage is None and is_implied(e):
+            continue  # the app filled in the first stage: its move on reads "Added at …"
         if e.application_id in apps:
             items.append(
                 on_app(

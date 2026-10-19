@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Agency, Application, Contact, Event, Interview
 
-from .applications import STAGE_CHANGE, _effective_moves
+from .applications import STAGE_CHANGE, _effective_moves, is_implied
 from .workflow import Workflow
 
 CONTACT_KINDS = ("call", "email", "message")
@@ -61,7 +61,7 @@ def _added_at(created: datetime, events: list[Event]) -> datetime:
 
 
 def _first_update(added: datetime, events: list[Event], closed: set[str], now: datetime) -> datetime | None:
-    moves = [ev.occurred_at for ev in _effective_moves(events) if ev.to_stage not in closed]
+    moves = [ev.occurred_at for ev in _effective_moves(events) if ev.to_stage not in closed and not is_implied(ev)]
     contacts = [ev.occurred_at for ev in events if ev.kind in CONTACT_KINDS]
     times = [t for t in moves + contacts if added <= t <= now]
     return min(times) if times else None

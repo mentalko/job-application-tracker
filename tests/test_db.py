@@ -204,3 +204,112 @@ def test_0012_existing_people_are_not_favourites(tmp_path):
     with eng.connect() as conn:
         assert conn.execute(text("SELECT favourite FROM contacts WHERE id = 'p'")).scalar_one() == 0
     eng.dispose()
+
+
+def _old_history(path, rows):
+    """A database at 0012 with one application per (id, first stage, summary)."""
+    migrate(path, "0012")
+    eng = make_engine(path)
+    ts = "'2026-01-01T09:00:00Z'"
+    with eng.begin() as conn:
+        conn.execute(text(f"INSERT INTO companies (id, name, created_at, updated_at) VALUES ('c', 'C', {ts}, {ts})"))
+        conn.execute(
+            text(
+                f"INSERT INTO roles (id, company_id, title, created_at, updated_at) VALUES ('r', 'c', 'T', {ts}, {ts})"
+            )
+        )
+        for seq, (app_id, stage) in enumerate(rows, start=1):
+            conn.execute(
+                text(
+                    "INSERT INTO applications (id, role_id, route, stage, last_activity_at, tags, archived, "
+                    f"created_at, updated_at) VALUES ('{app_id}', 'r', 'direct', '{stage}', {ts}, '[]', 0, {ts}, {ts})"
+                )
+            )
+            conn.execute(
+                text(
+                    "INSERT INTO events (id, seq, application_id, kind, occurred_at, to_stage, summary, data, "
+                    f"created_at) VALUES ('e-{app_id}', {seq}, '{app_id}', 'stage_change', {ts}, '{stage}', "
+                    f"'Application created', '{{}}', {ts})"
+                )
+            )
+    eng.dispose()
+
+
+def _stage_events(path):
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT application_id, from_stage, to_stage, occurred_at, summary, data FROM events "
+                "ORDER BY application_id, occurred_at, seq"
+            )
+        ).all()
+    eng.dispose()
+    out: dict[str, list[tuple]] = {}
+    for r in rows:
+        out.setdefault(r.application_id, []).append((r.from_stage, r.to_stage, r.occurred_at, r.summary, r.data))
+    return out
+
+
+def test_0013_fills_in_interested_before_applications_added_later_on(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    _old_history(path, [("a", "applied"), ("b", "interested"), ("c", "rejected"), ("d", "gone")])
+    migrate(path)
+    events = _stage_events(path)
+    implied = '{"implied": true}'
+    assert events["a"] == [
+        (None, "interested", "2026-01-01T08:59:59Z", "Application created", implied),
+        ("interested", "applied", "2026-01-01T09:00:00Z", None, implied),
+    ]
+    assert events["c"][0][:2] == (None, "interested") and events["c"][1][:2] == ("interested", "rejected")
+    assert len(events["b"]) == 1  # already started at Interested
+    assert len(events["d"]) == 1  # a stage no longer in the workflow: left alone
+
+    # Down again: the history is as it was.
+    from alembic import command
+
+    from jat.db.engine import alembic_config
+
+    command.downgrade(alembic_config(path), "0012")
+    events = _stage_events(path)
+    assert events["a"] == [(None, "applied", "2026-01-01T09:00:00Z", "Application created", "{}")]
+    assert len(events["c"]) == 1
+
+
+def test_0013_uses_the_data_folders_first_stage(tmp_path):
+    (tmp_path / "config.toml").write_text(
+        '[workflow]\ninitial = "spotted"\n'
+        '[[workflow.stages]]\nid = "spotted"\nname = "Spotted"\n'
+        '[[workflow.stages]]\nid = "applied"\nname = "Applied"\n'
+    )
+    path = tmp_path / "tracker.sqlite3"
+    _old_history(path, [("a", "applied")])
+    migrate(path)
+    assert [e[:2] for e in _stage_events(path)["a"]] == [(None, "spotted"), ("spotted", "applied")]
+
+
+def test_0013_stops_when_config_toml_doesnt_load(tmp_path):
+    from jat.db import MigrationError
+
+    (tmp_path / "config.toml").write_text('[workflow]\ninitial = "spotted"\n[[workflow.stages]\n')  # a typo
+    path = tmp_path / "tracker.sqlite3"
+    _old_history(path, [("a", "applied")])
+    with pytest.raises((RuntimeError, MigrationError), match="config.toml"):
+        migrate(path)
+    eng = make_engine(path)
+    assert current_revision(eng) == "0012"
+    eng.dispose()
+    assert [e[:2] for e in _stage_events(path)["a"]] == [(None, "applied")]
+
+
+def test_0013_leaves_unreadable_history_alone(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    _old_history(path, [("a", "applied"), ("b", "applied")])
+    eng = make_engine(path)
+    with eng.begin() as conn:
+        conn.execute(text("UPDATE events SET occurred_at = 'yesterday' WHERE application_id = 'a'"))
+        conn.execute(text("UPDATE events SET data = 'not json' WHERE application_id = 'b'"))
+    eng.dispose()
+    migrate(path)
+    events = _stage_events(path)
+    assert (len(events["a"]), len(events["b"])) == (1, 1)

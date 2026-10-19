@@ -89,6 +89,16 @@ def test_moving_it_to_applied_yourself_isnt_hearing_back(client, seeded):
     assert (version["sent"], version["heard_back"], version["median_reply_days"]) == (1, 0, None)
 
 
+def test_adding_it_at_screen_has_no_reply_time(client, seeded):
+    # Added at Screen: past the CV, but the move on from Interested is the app's, not a reply.
+    cv = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})["id"]
+    v1 = _version(client, cv, "v1")
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "screen"})["id"]
+    _send(client, a, v1)
+    [version] = client.get("/api/v1/insights/documents").json()["kinds"][0]["documents"][0]["versions"]
+    assert (version["sent"], version["heard_back"], version["median_reply_days"]) == (1, 1, None)
+
+
 def test_no_documents_yet(client, seeded):
     out = client.get("/api/v1/insights/documents").json()
     assert out == {
