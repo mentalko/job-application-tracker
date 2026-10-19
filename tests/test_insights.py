@@ -159,3 +159,41 @@ def test_whole_flow_from_where_roles_came_from(client, seeded):
     }
     future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
     assert client.get("/api/v1/insights/whole-flow", params={"since": future}).json()["applications"] == 0
+
+
+def test_whole_flow_with_your_own_stages_and_sources(app, client, seeded):
+    # A workflow that starts at Applied: nothing waits at "Deciding" but roles not applied for.
+    (app.state.jat.data_dir / "config.toml").write_text(
+        '[workflow]\ninitial = "applied"\n'
+        '[[workflow.stages]]\nid = "applied"\nname = "Applied"\n'
+        '[[workflow.stages]]\nid = "phone"\nname = "Phone call"\n'
+        '[[workflow.stages]]\nid = "gone"\nkind = "closed"\n'
+    )
+    company, recruiter, agency = seeded["company"]["id"], seeded["recruiter"]["id"], seeded["agency"]["id"]
+
+    def role(title, contact=None):
+        body = {"company_id": company, "title": title} | ({"contact_id": contact} if contact else {})
+        return post(client, "/api/v1/roles", body)["id"]
+
+    # Someone pitched it, but a friend referred you: the referral counts.
+    post(client, "/api/v1/applications", {"role_id": role("A", recruiter), "route": "referral"})
+    # Nobody on the role, but the application went through an agency: a recruiter.
+    b = post(client, "/api/v1/applications", {"role_id": role("B"), "route": "agency", "agency_id": agency})
+    _move(client, b["id"], "phone")
+
+    flow = client.get("/api/v1/insights/whole-flow").json()
+    nodes = {n["id"]: n for n in flow["nodes"]}
+    links = {(link["source"], link["target"]): link["value"] for link in flow["links"]}
+    assert links == {
+        ("source:referral", "applied"): 1,
+        ("source:recruiter", "applied"): 1,
+        ("source:found", "deciding"): 1,  # the seeded role, no application
+        ("applied", "phone"): 1,
+        ("applied", "holding:applied"): 1,
+        ("phone", "holding:phone"): 1,
+    }
+    assert nodes["holding:applied"]["name"] == "Waiting to hear back"
+    assert nodes["holding:phone"]["name"] == "Still at Phone call"
+    # The same spurs on the applications-only flow.
+    plain = {n["id"] for n in client.get("/api/v1/insights/flow").json()["nodes"]}
+    assert plain == {"applied", "phone", "holding:applied", "holding:phone"}

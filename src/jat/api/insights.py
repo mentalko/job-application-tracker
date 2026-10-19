@@ -22,10 +22,10 @@ router = APIRouter(prefix="/insights", tags=["insights"])
 class FlowNode(BaseModel):
     id: str
     name: str
-    kind: str
+    kind: str  # a stage's kind, "holding" (where things are waiting) or "outcome" (passed)
     color: str
-    reached: int  # applications that got to this stage
-    current: int  # of those, how many are still there
+    reached: int  # applications (or roles, in the whole picture) that got here
+    current: int  # of those, how many got no further (0 on holding and source nodes)
 
 
 class FlowLink(BaseModel):
@@ -74,11 +74,16 @@ HOLDING_NAMES = {
 
 
 def _holding(workflow, sid: str) -> str:
-    return svc.DECIDING if sid == workflow.initial else f"holding:{sid}"
+    """The first stage, if it's before Applied, waits at DECIDING (with roles not yet applied
+    for); any other stage at its own `holding:<id>`."""
+    if sid == workflow.initial and svc.before_applied(workflow, sid):
+        return svc.DECIDING
+    return f"holding:{sid}"
 
 
 def _with_holding(result: svc.Flow, workflow) -> svc.Flow:
-    """A spur from each active stage to where its applications are waiting (those still there)."""
+    """A spur from each active stage to where its applications are waiting: those that got no
+    further (an application moved back counts at the furthest stage it reached)."""
     out = svc.Flow(
         applications=result.applications,
         reached=result.reached.copy(),
@@ -124,17 +129,14 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
             return stages[sid].name, stages[sid].kind, stages[sid].color
         return sid, "unknown", "gray"
 
-    nodes = [
-        FlowNode(
-            id=sid,
-            name=describe(sid)[0],
-            kind=describe(sid)[1],
-            color=describe(sid)[2],
-            reached=result.reached[sid],
-            current=result.current[sid],
+    nodes = []
+    for sid in sorted(result.reached, key=pos):
+        name, kind, color = describe(sid)
+        nodes.append(
+            FlowNode(
+                id=sid, name=name, kind=kind, color=color, reached=result.reached[sid], current=result.current[sid]
+            )
         )
-        for sid in sorted(result.reached, key=pos)
-    ]
     links = [
         FlowLink(source=a, target=b, value=n)
         for (a, b), n in sorted(result.links.items(), key=lambda kv: (pos(kv[0][0]), pos(kv[0][1])))

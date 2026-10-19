@@ -41,7 +41,8 @@ export function SankeyChart({
     return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
   };
   const { ref, width: measured } = useElementSize();
-  const width = Math.max(measured || 900, 480);
+  // Never narrower than this: on a phone the chart scrolls sideways rather than squash its labels.
+  const width = Math.max(measured || 900, 760);
   const [hover, setHover] = useState<string | null>(null);
 
   const layout = useMemo(() => {
@@ -74,7 +75,7 @@ export function SankeyChart({
   const caption = hoveredLink ? linkText(hoveredLink) : hoveredNode ? nodeText(hoveredNode) : null;
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ overflowX: "auto" }}>
       <svg
         width={width}
         height={HEIGHT}
@@ -86,7 +87,7 @@ export function SankeyChart({
             ? `Sankey diagram of ${plural(flow.applications)} pitched to you, by what happened to them`
             : `Sankey diagram of ${plural(flow.applications)} moving through the stages`)
         }
-        style={{ display: "block", maxWidth: "100%", height: "auto" }}
+        style={{ display: "block" }}
       >
         <g fill="none">
           {layout.links.map((l) => {
@@ -132,6 +133,10 @@ export function SankeyChart({
                 dy="0.35em"
                 fontSize={12}
                 fill="var(--mantine-color-text)"
+                // A halo in the page colour keeps a label readable where it crosses a flow.
+                stroke="var(--mantine-color-body)"
+                strokeWidth={3}
+                paintOrder="stroke"
                 style={{ pointerEvents: "none" }}
               >
                 {n.name}{" "}

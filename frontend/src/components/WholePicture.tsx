@@ -8,16 +8,18 @@ import { SankeyChart } from "./SankeyChart";
  * it) to passing on it, still deciding, or applying and where that went, with a spur from each
  * stage to what's still waiting there.
  */
+const roles = (n: number) => `${n} role${n === 1 ? "" : "s"}`;
+
 export function WholePicture({ since }: { since?: string }) {
   const { data: flow, isLoading, isError } = useWholeFlow(since);
   return (
     <Card withBorder>
       <Title order={4}>The whole picture</Title>
       <Text size="sm" c="dimmed" mb="md">
-        {flow ? `${flow.applications} role${flow.applications === 1 ? "" : "s"}` : "…"} by the date they were
-        added: where each came from, then passing on it, deciding, or applying and how far it got. On the
-        right, where things are now, including what's still waiting at each stage. A role you applied to twice
-        counts twice.
+        {flow ? roles(flow.applications) : "…"} by the date they were added: where each came from, then
+        passing on it, deciding, or applying and how far it got. On the right, where things are now, including
+        what's still waiting at each stage (one moved back counts at the furthest stage it reached). A role
+        you applied to twice counts twice.
       </Text>
       {isLoading ? (
         <Loader />
@@ -31,7 +33,7 @@ export function WholePicture({ since }: { since?: string }) {
         <SankeyChart
           flow={flow}
           unit="role"
-          label={`Sankey diagram of ${flow.applications} roles, from where they came from to where they are now`}
+          label={`Sankey diagram of ${roles(flow.applications)}, from where they came from to where they are now`}
         />
       )}
     </Card>

@@ -335,8 +335,15 @@ describe("insights", () => {
       name: "Sankey diagram of 4 roles, from where they came from to where they are now",
     });
     expect(chart.querySelectorAll("rect")).toHaveLength(7);
-    fireEvent.mouseEnter(chart.querySelectorAll("rect")[5]!);
+    const rect = (name: RegExp) =>
+      [...chart.querySelectorAll("rect")].find((r) =>
+        name.test(r.querySelector("title")?.textContent ?? ""),
+      )!;
+    // Where things are waiting, and sources, count what's there: no "reached".
+    fireEvent.mouseEnter(rect(/^Waiting to hear back/));
     expect(screen.getByText("Waiting to hear back: 2 roles", { selector: "p" })).toBeInTheDocument();
+    fireEvent.mouseEnter(rect(/^Through a recruiter/));
+    expect(screen.getByText("Through a recruiter: 3 roles", { selector: "p" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("Last 30 days"));
     await waitFor(() => {
       const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/whole-flow")).at(-1)!;

@@ -501,13 +501,14 @@ role, from where it came from to where it is now.
   stage, a spur to what's still waiting there.
 
 It counts roles and applications added in the date range; a role you applied to twice counts
-twice.
+twice. As in *Where applications go*, an application moved back counts at the furthest stage it
+reached.
 
 **Applications**
 
 - **Where applications go**: a Sankey diagram of applications flowing through the stages,
   starting at *Interested*; filter by route, hover for counts. Each stage has a spur to where
-  the applications still there are waiting: *Deciding whether to apply* (Interested), *Waiting
+  the applications still there are waiting: *Deciding whether to apply* (Interested, if your first stage comes before Applied), *Waiting
   to hear back* (Applied), *Still screening*, *Still interviewing*, *In final rounds*, *Deciding
   on the offer*, or *Still at …* for stages of your own. They're listed above the outcomes.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
