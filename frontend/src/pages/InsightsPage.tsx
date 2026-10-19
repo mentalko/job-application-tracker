@@ -8,6 +8,7 @@ import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
+import { WholePicture } from "../components/WholePicture";
 
 type Range = "all" | "90" | "30";
 
@@ -29,10 +30,11 @@ function sinceFor(range: Range) {
   return new Date(Date.now() - Number(range) * 86_400_000).toISOString();
 }
 
-type Tab = "applications" | "conversations" | "documents";
+type Tab = "whole" | "applications" | "conversations" | "documents";
 
 /**
- * How the search is going (PRD FR19, FR20): applications (the Sankey diagram, stage stats,
+ * How the search is going (PRD FR19, FR20): the whole picture (every role, from where it came
+ * from to where it is now), applications (the Sankey diagram, stage stats,
  * routes, the scorecard), recruiter conversations (calls and the roles people pitch) and CVs and
  * cover letters (version against version), then weekly activity.
  */
@@ -40,7 +42,7 @@ export function InsightsPage() {
   // `since` is fixed when the range is picked, so the query key doesn't change on every render.
   const [range, setRange] = useState<{ range: Range; since?: string }>({ range: "all" });
   const [route, setRoute] = useState("any");
-  const [tab, setTab] = useState<Tab>("applications");
+  const [tab, setTab] = useState<Tab>("whole");
   const filters: FlowFilters = {
     since: range.since,
     route: route === "any" ? undefined : (route as FlowFilters["route"]),
@@ -63,12 +65,16 @@ export function InsightsPage() {
           onChange={(value) => setRange({ range: value as Range, since: sinceFor(value as Range) })}
         />
       </Group>
-      <Tabs value={tab} onChange={(v) => setTab((v as Tab) ?? "applications")} keepMounted={false}>
+      <Tabs value={tab} onChange={(v) => setTab((v as Tab) ?? "whole")} keepMounted={false}>
         <Tabs.List mb="md">
+          <Tabs.Tab value="whole">The whole picture</Tabs.Tab>
           <Tabs.Tab value="applications">Applications</Tabs.Tab>
           <Tabs.Tab value="conversations">Recruiter conversations</Tabs.Tab>
           <Tabs.Tab value="documents">CVs and cover letters</Tabs.Tab>
         </Tabs.List>
+        <Tabs.Panel value="whole">
+          <WholePicture since={range.since} />
+        </Tabs.Panel>
         <Tabs.Panel value="applications">
           <Stack>
             <Card withBorder>

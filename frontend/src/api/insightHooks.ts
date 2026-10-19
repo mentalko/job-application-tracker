@@ -22,6 +22,16 @@ export function useFlow(filters: FlowFilters) {
   });
 }
 
+/** Everything in one flow: where roles came from, through passed, deciding and every stage. */
+export function useWholeFlow(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "whole-flow", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/whole-flow", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+  });
+}
+
 /** Conversion and time per stage, and outcomes by route, for applications added since `since`. */
 export function useStats(since?: string) {
   return useQuery({
