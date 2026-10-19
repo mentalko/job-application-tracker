@@ -38,7 +38,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, ApplicationDocument, Document, DocumentVersion, Event, Interview, Offer
 
-from .applications import STAGE_CHANGE, _effective_moves
+from .applications import STAGE_CHANGE, _effective_moves, is_implied
 from .insights import applied_rank, stage_rank
 from .scorecard import CONTACT_KINDS, _added_at
 from .workflow import Workflow
@@ -149,9 +149,10 @@ def _outcome(
     kinds = {s.id: s.kind for s in workflow.stages}
     yours = NOT_A_REPLY | set(workflow.reopen_from)
     moves = [ev for ev in _effective_moves(history) if ev.occurred_at <= now]
+    real_moves = [ev for ev in moves if not is_implied(ev)]  # the app's fill-ins aren't signs
     signs = [
         ev.occurred_at
-        for ev in moves
+        for ev in real_moves
         if ev.to_stage
         and (
             # Moving it to Applied (or before) is yours; past it, or a rejection, is theirs.

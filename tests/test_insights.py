@@ -41,12 +41,15 @@ def test_flow(client, seeded):
     flow = client.get("/api/v1/insights/flow").json()
     assert flow["applications"] == 3
     nodes = {n["id"]: n for n in flow["nodes"]}
-    assert [n["id"] for n in flow["nodes"]] == ["applied", "screen", "interviewing", "offer", "rejected"]
+    # Added at Applied: each starts at Interested, filled in by the app.
+    assert [n["id"] for n in flow["nodes"]] == ["interested", "applied", "screen", "interviewing", "offer", "rejected"]
+    assert (nodes["interested"]["reached"], nodes["interested"]["current"]) == (3, 0)
     assert (nodes["applied"]["reached"], nodes["applied"]["current"]) == (3, 1)
     assert (nodes["screen"]["reached"], nodes["offer"]["current"], nodes["rejected"]["current"]) == (2, 1, 1)
     assert nodes["offer"]["name"] == "Offer" and nodes["rejected"]["kind"] == "closed"
     links = {(link["source"], link["target"]): link["value"] for link in flow["links"]}
     assert links == {
+        ("interested", "applied"): 3,
         ("applied", "screen"): 2,
         ("screen", "interviewing"): 1,
         ("interviewing", "offer"): 1,
@@ -54,7 +57,12 @@ def test_flow(client, seeded):
     }
 
     by_agency = client.get("/api/v1/insights/flow", params={"route": "agency"}).json()
-    assert by_agency["applications"] == 1 and {n["id"] for n in by_agency["nodes"]} == {"applied", "screen", "rejected"}
+    assert by_agency["applications"] == 1 and {n["id"] for n in by_agency["nodes"]} == {
+        "interested",
+        "applied",
+        "screen",
+        "rejected",
+    }
     future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
     assert client.get("/api/v1/insights/flow", params={"since": future}).json() == {
         "applications": 0,
@@ -71,7 +79,7 @@ def test_flow_folds_backward_moves_and_filters_by_date(client, seeded):
 
     flow = client.get("/api/v1/insights/flow").json()
     links = {(link["source"], link["target"]): link["value"] for link in flow["links"]}
-    assert links == {("applied", "interviewing"): 1, ("interviewing", "final"): 1}
+    assert links == {("interested", "applied"): 1, ("applied", "interviewing"): 1, ("interviewing", "final"): 1}
     assert "screen" not in {n["id"] for n in flow["nodes"]}
 
     created = client.get(f"/api/v1/applications/{a['id']}").json()["created_at"]

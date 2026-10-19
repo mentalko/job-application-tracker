@@ -6,7 +6,7 @@ history. Nothing here updates or deletes an event: undo appends a correcting eve
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -19,6 +19,9 @@ from .workflow import Workflow, WorkflowError
 
 STAGE_CHANGE = "stage_change"
 ACTIVITY_KINDS = ("call", "email", "message", "note", "file", "interview", "manual")
+# Marks the events of a first stage you skipped (see create_application); a second apart.
+IMPLIED = "implied"
+IMPLIED_GAP = timedelta(seconds=1)
 
 
 class TransitionError(WorkflowError):
@@ -30,25 +33,63 @@ def _touch(app: Application, when: datetime) -> None:
         app.last_activity_at = when
 
 
+def is_implied(event: Event) -> bool:
+    """A step the app filled in, not one you made: the first stage before one you started later at."""
+    return bool((event.data or {}).get(IMPLIED))
+
+
+def starts_after_initial(workflow: Workflow, stage: str) -> bool:
+    """True when an application starting at `stage` skipped the first stage (Interested, by default)."""
+    ids = [s.id for s in workflow.stages]
+    if stage == workflow.initial or workflow.initial not in ids or stage not in ids:
+        return False
+    return workflow.stage(stage).kind != "active" or ids.index(stage) > ids.index(workflow.initial)
+
+
 def create_application(
     session: Session, workflow: Workflow, *, role_id: str, stage: str | None = None, **fields: Any
 ) -> Application:
+    """Create an application at `stage`. Every application starts at the workflow's first stage:
+    one created later (at Applied, say) is recorded as created there and moved on at once."""
     stage = stage or workflow.initial
     workflow.stage(stage)
     now = utcnow()
     app = Application(role_id=role_id, stage=stage, last_activity_at=now, **fields)
     session.add(app)
     session.flush()
-    session.add(
-        Event(
-            application_id=app.id,
-            kind=STAGE_CHANGE,
-            from_stage=None,
-            to_stage=stage,
-            occurred_at=now,
-            summary="Application created",
+    if starts_after_initial(workflow, stage):
+        session.add(
+            Event(
+                application_id=app.id,
+                kind=STAGE_CHANGE,
+                from_stage=None,
+                to_stage=workflow.initial,
+                occurred_at=now - IMPLIED_GAP,
+                summary="Application created",
+                data={IMPLIED: True},
+            )
         )
-    )
+        session.add(
+            Event(
+                application_id=app.id,
+                kind=STAGE_CHANGE,
+                from_stage=workflow.initial,
+                to_stage=stage,
+                occurred_at=now,
+                data={IMPLIED: True},
+            )
+        )
+    else:
+        session.add(
+            Event(
+                application_id=app.id,
+                kind=STAGE_CHANGE,
+                from_stage=None,
+                to_stage=stage,
+                occurred_at=now,
+                summary="Application created",
+            )
+        )
     session.flush()
     return app
 
@@ -139,15 +180,20 @@ def _effective_moves(events: list[Event]) -> list[Event]:
     ]
 
 
+def _undoable(session: Session, app: Application) -> list[Event]:
+    """Moves you can undo: not undone, and not filled in by the app (see create_application)."""
+    return [ev for ev in _effective_moves(_recorded(session, app.id)) if not is_implied(ev)]
+
+
 def can_undo(session: Session, app: Application) -> bool:
     """True when there's a recorded move that hasn't been undone and matches the current stage."""
-    moves = _effective_moves(_recorded(session, app.id))
+    moves = _undoable(session, app)
     return bool(moves) and moves[-1].to_stage == app.stage
 
 
 def undo_last_move(session: Session, app: Application, *, note: str | None = None) -> Event:
     """Revert the most recently recorded stage move by appending a correcting event."""
-    moves = _effective_moves(_recorded(session, app.id))
+    moves = _undoable(session, app)
     if not moves:
         raise TransitionError("nothing to undo")
     last = moves[-1]

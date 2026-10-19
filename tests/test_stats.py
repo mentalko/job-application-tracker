@@ -58,7 +58,10 @@ def test_stats(client, seeded):
     out = client.get("/api/v1/insights/stats").json()
     assert out["applications"] == 3
     stages = {s["id"]: s for s in out["stages"]}
-    assert [s["id"] for s in out["stages"]] == ["applied", "screen", "interviewing", "rejected"]
+    assert [s["id"] for s in out["stages"]] == ["interested", "applied", "screen", "interviewing", "rejected"]
+    # Interested was filled in by the app: reached, but no time spent there.
+    assert (stages["interested"]["reached"], stages["interested"]["moved_on"]) == (3, 3)
+    assert stages["interested"]["stays"] == 0 and stages["interested"]["median_days"] is None
     # Applied: 3 reached, 2 got to Screen. Screen: 2 reached, 1 went on (the other was rejected).
     assert (stages["applied"]["reached"], stages["applied"]["moved_on"], stages["applied"]["conversion"]) == (
         3,
@@ -70,8 +73,12 @@ def test_stats(client, seeded):
     assert stages["applied"]["stays"] == 2 and stages["applied"]["median_days"] == 0.0
     assert stages["interviewing"]["stays"] == 0 and stages["interviewing"]["median_days"] is None
     assert out["routes"] == [
-        {"route": "direct", "applications": 2, "reached": {"applied": 2, "screen": 1, "interviewing": 1}},
-        {"route": "agency", "applications": 1, "reached": {"applied": 1, "screen": 1, "rejected": 1}},
+        {
+            "route": "direct",
+            "applications": 2,
+            "reached": {"interested": 2, "applied": 2, "screen": 1, "interviewing": 1},
+        },
+        {"route": "agency", "applications": 1, "reached": {"interested": 1, "applied": 1, "screen": 1, "rejected": 1}},
     ]
 
     future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
@@ -139,5 +146,5 @@ def test_stats_count_reopened_applications_where_they_went(client, seeded):
         _move(client, a["id"], stage)
     stages = {s["id"]: s for s in client.get("/api/v1/insights/stats").json()["stages"]}
     # Screen was only visited going back, and Ghosted was reopened: neither is on the path.
-    assert list(stages) == ["applied", "interviewing", "final"]
+    assert list(stages) == ["interested", "applied", "interviewing", "final"]
     assert (stages["applied"]["moved_on"], stages["interviewing"]["moved_on"]) == (1, 1)

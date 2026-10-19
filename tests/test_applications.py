@@ -7,8 +7,10 @@ from jat.db import db_path, make_engine, migrate, session_factory
 from jat.db.models import Company, Role
 from jat.domain.applications import (
     TransitionError,
+    can_undo,
     create_application,
     history,
+    is_implied,
     log_activity,
     move,
     undo_last_move,
@@ -46,6 +48,26 @@ def test_create_records_initial_stage(session, role):
     assert stages(session, app) == [(None, "interested")]
     app2 = create_application(session, W, role_id=role.id, stage="applied")
     assert app2.stage == "applied"
+
+
+def test_starting_later_on_fills_in_the_first_stage(session, role):
+    for stage in ("applied", "rejected"):
+        app = create_application(session, W, role_id=role.id, stage=stage)
+        events = [e for e in history(session, app.id) if e.kind == "stage_change"]
+        assert [(e.from_stage, e.to_stage) for e in events] == [(None, "interested"), ("interested", stage)]
+        assert all(is_implied(e) for e in events)
+        assert events[1].occurred_at - events[0].occurred_at == timedelta(seconds=1)
+        assert events[0].summary == "Application created"
+        # Not a move you made, so there's nothing to undo.
+        assert not can_undo(session, app)
+        with pytest.raises(TransitionError):
+            undo_last_move(session, app)
+    # Your own moves after it undo as usual, but never past it.
+    app = create_application(session, W, role_id=role.id, stage="applied")
+    move(session, W, app, "interviewing")
+    assert can_undo(session, app)
+    undo_last_move(session, app)
+    assert app.stage == "applied" and not can_undo(session, app)
 
 
 def test_move_validates_and_records(session, role):

@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, Event, Interview, Meeting, Role
 
-from .applications import STAGE_CHANGE, _effective_moves
+from .applications import STAGE_CHANGE, _effective_moves, is_implied
 from .insights import closed_stages, fold_forward, stage_path, stage_rank
 from .workflow import Workflow
 
@@ -26,17 +26,23 @@ ROUTES = ("direct", "agency", "referral")
 
 
 def stays(events: list[Event]) -> list[tuple[str, datetime, datetime | None]]:
-    """(stage, entered, left) for each stay, in order; the current stay has left=None."""
+    """(stage, entered, left) for each stay, in order; the current stay has left=None.
+
+    A first stage the app filled in (you started later on) isn't a stay.
+    """
     first = next((ev for ev in events if ev.kind == STAGE_CHANGE and ev.from_stage is None), None)
     if first is None or first.to_stage is None:
         return []
     moves = sorted(_effective_moves(events), key=lambda ev: (ev.occurred_at, ev.seq))
     result: list[tuple[str, datetime, datetime | None]] = []
     stage, entered = first.to_stage, first.occurred_at
+    skip = is_implied(first)
     for ev in moves:
         if not ev.to_stage:
             continue
-        result.append((stage, entered, ev.occurred_at))
+        if not skip:
+            result.append((stage, entered, ev.occurred_at))
+        skip = False
         stage, entered = ev.to_stage, ev.occurred_at
     result.append((stage, entered, None))
     return result
@@ -153,6 +159,8 @@ def weekly_activity(session: Session, first: date, weeks: int, tz: tzinfo) -> li
     # is itself in or after the window.
     changes = list(session.scalars(select(Event).where(Event.kind == STAGE_CHANGE, Event.occurred_at >= start)))
     for ev in _effective_moves(changes):
+        if is_implied(ev):
+            continue  # filled in by the app, not a move you made
         if ev.occurred_at < end and (week := bucket(ev.occurred_at)):
             week.moves += 1
 

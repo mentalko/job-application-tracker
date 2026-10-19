@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Application, Event
 
-from .applications import STAGE_CHANGE, _effective_moves
+from .applications import STAGE_CHANGE, _effective_moves, is_implied
 from .workflow import Workflow
 
 
@@ -89,24 +89,31 @@ def role_progress(workflow: Workflow, apps: list[tuple[str, list[str], bool]]) -
 
 
 def stage_paths(session: Session, app_ids: list[str]) -> dict[str, list[str]]:
-    """Each application's stage path (first stage, then moves not undone), for role_progress."""
+    """Each application's stage path (first stage, then moves not undone), for role_progress.
+
+    A first stage the app filled in is left out: the path starts where you started it.
+    """
     events: dict[str, list[Event]] = {i: [] for i in app_ids}
     if app_ids:
         for ev in session.scalars(
             select(Event).where(Event.application_id.in_(app_ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
         ):
             events[ev.application_id].append(ev)
-    return {i: stage_path(evs) for i, evs in events.items()}
+    return {i: stage_path(evs, implied=False) for i, evs in events.items()}
 
 
-def stage_path(events: list[Event]) -> list[str]:
-    """First stage, then the stages moved to (undone moves left out), in time order."""
+def stage_path(events: list[Event], *, implied: bool = True) -> list[str]:
+    """First stage, then the stages moved to (undone moves left out), in time order.
+
+    `implied=False` leaves out a first stage the app filled in (see `create_application`).
+    """
     stage_events = [ev for ev in events if ev.kind == STAGE_CHANGE]
     first = next((ev for ev in stage_events if ev.from_stage is None), None)
     if first is None or first.to_stage is None:
         return []
     moves = sorted(_effective_moves(events), key=lambda ev: (ev.occurred_at, ev.seq))
-    return [first.to_stage, *(ev.to_stage for ev in moves if ev.to_stage)]
+    path = [first.to_stage, *(ev.to_stage for ev in moves if ev.to_stage)]
+    return path[1:] if not implied and is_implied(first) and len(path) > 1 else path
 
 
 def fold_forward(path: list[str], rank: dict[str, int], closed: frozenset[str] = frozenset()) -> list[str]:
