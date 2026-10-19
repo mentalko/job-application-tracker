@@ -105,7 +105,7 @@ how far it got, with what's still waiting just after each stage: deciding whethe
 waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
 applications, filtered by route. Date range and counts on hover for both.
 
-![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, rejected, withdrawn, ghosted and passed](docs/screenshots/insights.png)
+![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted](docs/screenshots/insights.png)
 
 **Conversion, time in stage, direct vs recruiter, and a recruiter scorecard.** Which stages
 you get stuck at, whether agencies or direct applications do better for you, and which

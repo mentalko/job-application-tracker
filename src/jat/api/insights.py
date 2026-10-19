@@ -379,8 +379,8 @@ def _tally(t: conv_svc.Tally) -> dict:
 
 def _role_flow(t: conv_svc.Tally) -> FlowOut:
     """Pitched roles as a Sankey diagram: pitched, then applied / deciding / decided not to apply,
-    then outcomes. Deciding and in progress are where things wait, next to Applied and above the
-    outcomes, as in the other diagrams."""
+    then outcomes. Deciding and in progress are where things wait, and decided not to apply sits
+    with deciding (the chart places them just after what leads to them, usually beside Applied)."""
     nodes = [
         ("pitched", "Pitched to you", "active", "indigo", t.pitched),
         ("deciding", "Deciding whether to apply", "holding", "yellow", t.deciding),

@@ -16,7 +16,7 @@ const ROW_SPACE = 64; // height per node in the busiest column, so small nodes a
 const CHAR_WIDTH = 6.6; // roughly, at 12px
 
 /** How many columns the diagram has (the longest chain of links, plus one), and the most nodes in one. */
-function shape(flow: Flow): { columns: number; busiest: number } {
+export function shape(flow: Flow): { columns: number; busiest: number } {
   const depth = new Map(flow.nodes.map((n) => [n.id, 0]));
   for (let i = 0; i < flow.nodes.length; i++) {
     for (const l of flow.links)
@@ -27,16 +27,18 @@ function shape(flow: Flow): { columns: number; busiest: number } {
   return { columns: Math.max(0, ...depth.values()) + 1, busiest: Math.max(0, ...perColumn.values()) };
 }
 
-/** A label split into lines that fit in `room` pixels (the count goes on the last line). */
+/** A label split into lines that fit in `room` pixels, the count on the last line with the last
+ * word (a single word too long for the room gets a line of its own and runs over). */
 export function wrap(name: string, count: number, room: number): string[] {
+  const words = name.split(" ").filter(Boolean);
+  words.push(`${words.pop() ?? ""} ${count}`.trim()); // the count never sits alone
   const lines: string[] = [];
-  for (const word of name.split(" ")) {
+  for (const word of words) {
     const last = lines.at(-1);
     if (last !== undefined && (last.length + 1 + word.length) * CHAR_WIDTH <= room)
       lines[lines.length - 1] = `${last} ${word}`;
     else lines.push(word);
   }
-  lines[lines.length - 1] += ` ${count}`; // the count stays with the last word
   return lines;
 }
 
@@ -77,9 +79,9 @@ export function tangle(layout: Layout): number {
   return score;
 }
 
-/** Every ordering of a few items; for more, each one swapped with its neighbour. */
-function orderings<T>(items: T[]): T[][] {
-  if (items.length > 5) {
+/** Every ordering of up to four items; for more, each one swapped with its neighbour. */
+export function orderings<T>(items: T[]): T[][] {
+  if (items.length > 4) {
     return items.slice(1).map((_, i) => {
       const swapped = [...items];
       [swapped[i], swapped[i + 1]] = [swapped[i + 1]!, swapped[i]!];
@@ -92,32 +94,71 @@ function orderings<T>(items: T[]): T[][] {
   );
 }
 
+const MAX_LAYOUTS = 300; // the search stops here: a few hundred layouts take a blink
+
 /**
- * The least tangled layout we can find: starting from d3's own, try each column's nodes in
- * every order (a few sweeps across the columns), keeping whichever crosses least.
+ * The order of nodes in each column that tangles least, as far as we can find: starting from
+ * d3's own layout, try each column's nodes in other orders (a few sweeps across the columns),
+ * keeping whichever crosses least. Undefined if d3's own can't be beaten.
  */
-function untangle(build: (order?: Map<string, number>) => Layout): Layout {
-  let best = build();
-  let bestScore = tangle(best);
+export function untangle(build: (order?: Map<string, number>) => Layout): Map<string, number> | undefined {
+  const first = build();
+  let bestScore = tangle(first);
+  let best: Map<string, number> | undefined;
+  let tries = 1;
   const columns = new Map<number, string[]>();
-  for (const n of [...best.nodes].sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0)))
+  for (const n of [...first.nodes].sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0)))
     columns.set(Math.round(n.x0 ?? 0), [...(columns.get(Math.round(n.x0 ?? 0)) ?? []), n.id]);
   const orderOf = () => new Map([...columns.values()].flatMap((ids) => ids.map((id, i) => [id, i] as const)));
   for (let sweep = 0; sweep < 3 && bestScore > 0; sweep++) {
     let improved = false;
-    for (const [layer, ids] of [...columns]) {
+    // Left to right.
+    for (const [layer, ids] of [...columns].sort(([a], [b]) => a - b)) {
       let keep = ids;
       for (const candidate of orderings(ids)) {
+        if (tries++ >= MAX_LAYOUTS) break;
         columns.set(layer, candidate);
-        const layout = build(orderOf());
-        const score = tangle(layout);
-        if (score < bestScore) [best, bestScore, keep, improved] = [layout, score, candidate, true];
+        const order = orderOf();
+        const score = tangle(build(order));
+        if (score < bestScore) [best, bestScore, keep, improved] = [order, score, candidate, true];
       }
       columns.set(layer, keep);
     }
     if (!improved) break;
   }
   return best;
+}
+
+/** How things ended: a node nothing flows on from that isn't an active stage, somewhere things
+ * are waiting, or a role you decided against (that's a choice before applying, beside Deciding). */
+function endsOnTheRight(n: FlowNode & { sourceLinks?: unknown[] }): boolean {
+  return n.kind !== "active" && n.kind !== "holding" && n.id !== "passed" && !n.sourceLinks?.length;
+}
+
+/** The diagram laid out in `width` by `height`, in d3's own order or the one given. */
+function layoutAt(flow: Flow, width: number, height: number, order?: Map<string, number>): Layout {
+  return (
+    sankey<FlowNode, FlowLink>()
+      .nodeId((n) => n.id)
+      .nodeWidth(14)
+      .nodePadding(22)
+      // Stages by how far along they are, and what's waiting (or a role you decided against) just
+      // after the stage it came from. How things ended (Rejected, Withdrawn, Accepted…) can follow
+      // any stage, so it lines up on the right, where every stage can reach it.
+      .nodeAlign((n, columns) => (endsOnTheRight(n) ? columns - 1 : (n.depth ?? 0)))
+      // Without an order, d3 moves nodes up and down to untangle the flows itself.
+      .nodeSort(order ? (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0) : undefined)
+      .iterations(32)
+      .extent([
+        [1, 8],
+        [width - LABEL_SPACE, height - 8],
+      ])({
+      // d3 mutates what it's given. A node is as tall as the applications that reached it,
+      // including those still there, not just the ones that flowed through.
+      nodes: flow.nodes.map((n) => ({ ...n, fixedValue: n.reached })),
+      links: flow.links.map((l) => ({ ...l })),
+    })
+  );
 }
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
@@ -157,30 +198,13 @@ export function SankeyChart({
   const height = Math.max(HEIGHT, busiest * ROW_SPACE);
   const [hover, setHover] = useState<string | null>(null);
 
-  const layout = useMemo(() => {
-    const build = (order?: Map<string, number>) =>
-      sankey<FlowNode, FlowLink>()
-        .nodeId((n) => n.id)
-        .nodeWidth(14)
-        .nodePadding(22)
-        // Every node one column after the furthest thing that leads to it: stages by how far
-        // along they are, and what's waiting or how it ended just after the stage it came from
-        // (Rejected from Applied beside Interviewing, not across it on the right edge).
-        .nodeAlign((n) => n.depth ?? 0)
-        // Without an order, d3 moves nodes up and down to untangle the flows itself.
-        .nodeSort(order ? (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0) : undefined)
-        .iterations(32)
-        .extent([
-          [1, 8],
-          [width - LABEL_SPACE, height - 8],
-        ])({
-        // d3 mutates what it's given. A node is as tall as the applications that reached it,
-        // including those still there, not just the ones that flowed through.
-        nodes: flow.nodes.map((n) => ({ ...n, fixedValue: n.reached })),
-        links: flow.links.map((l) => ({ ...l })),
-      });
-    return untangle(build);
-  }, [flow, width, height]);
+  // The search for the least tangled order runs once per diagram, at a typical size (the order
+  // hardly depends on width), so resizing the window only lays it out again.
+  const order = useMemo(() => {
+    const nominal = Math.max(900, columns * 160 + LABEL_SPACE);
+    return untangle((o) => layoutAt(flow, nominal, height, o));
+  }, [flow, columns, height]);
+  const layout = useMemo(() => layoutAt(flow, width, height, order), [flow, width, height, order]);
 
   const path = sankeyLinkHorizontal();
   const hoveredLink = layout.links.find((l) => linkKey(l) === hover);

@@ -497,10 +497,9 @@ role, from where it came from to where it is now.
   it** (anything else).
 - Then roles you passed on go to **Decided not to apply**, roles with no application yet to
   **Deciding whether to apply**, and applications through their stages from *Interested*.
-- From each stage, what's still waiting there and how the rest ended (Rejected, Ghosted,
-  Accepted…), each just after the stage it came from: *Deciding whether to apply* usually
-  sits beside *Applied*, and *Rejected* after *Applied* sits beside *Screen* rather than across
-  the whole diagram.
+- From each stage, a spur to what's still waiting there, just after the stage (*Deciding
+  whether to apply* and *Decided not to apply* usually sit beside *Applied*). How things ended
+  (Rejected, Withdrawn, Ghosted, Accepted…) can follow any stage, so it lines up on the right.
 
 It counts roles and applications added in the date range; a role you applied to twice counts
 twice. As in *Where applications go*, an application moved back counts at the furthest stage it
@@ -513,9 +512,9 @@ reached.
   the applications still there are waiting: *Deciding whether to apply* (Interested, if your
   first stage comes before Applied), *Waiting to hear back* (Applied), *Still screening*, *Still
   interviewing*, *In final rounds*, *Deciding on the offer*, or *Still at …* for stages of your
-  own. These, and how things ended, sit just after the stage they came from, and the diagram
-  arranges each column to cross as few flows as it can. A label too long for the gap wraps; on
-  a narrow screen the diagram scrolls sideways.
+  own. These sit just after their stage; how things ended lines up on the right. The diagram
+  arranges each column so flows cross each other, or run through a stage, as little as it can.
+  A label too long for the gap wraps; on a narrow screen the diagram scrolls sideways.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
@@ -537,8 +536,8 @@ the role); roles you found yourself aren't counted here.
 - **Where pitched roles go**: a Sankey diagram from *Pitched to you* to *Applied*, *Decided
   not to apply* or *Deciding whether to apply*, and from *Applied* to *In progress*, *Offer*,
   *Closed* or *Ghosted* (a role's best application counts once). As in the other diagrams,
-  what's still waiting sits just after its stage: *Deciding whether to apply* above *Applied*,
-  *In progress* above the outcomes.
+  *Deciding whether to apply* and *Decided not to apply* sit beside *Applied*, and where
+  applications ended up on the right.
 - **Who you talk to**: per person or per agency, calls held, the last call, roles pitched,
   applied, passed, deciding, the apply rate, interviews, and where the applications went. A
   person you've marked *Ghosted* or *Not interested* says so.
