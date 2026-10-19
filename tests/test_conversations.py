@@ -61,6 +61,11 @@ def test_conversations(client, seeded):
 
     flow = out["flow"]
     assert flow["applications"] == 5
+    # Where roles wait sits beside Applied (holding); passing on one isn't "Passed" (an interview?).
+    names = {n["id"]: (n["name"], n["kind"]) for n in flow["nodes"]}
+    assert names["deciding"] == ("Deciding whether to apply", "holding")
+    assert names["passed"] == ("Decided not to apply", "outcome")
+    assert [n["id"] for n in flow["nodes"]] == ["pitched", "deciding", "applied", "offer", "ghosted", "passed"]
     assert {n["id"]: n["reached"] for n in flow["nodes"]} == {
         "pitched": 5,
         "applied": 2,

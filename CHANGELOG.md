@@ -127,7 +127,9 @@ brackets are pull requests.
   (through a recruiter, referred, or you found it) to passed, deciding whether to apply, or its
   stages; both Sankeys end each stage with a spur to what's still waiting there (*Waiting to hear
   back*, *Still interviewing*, *Deciding on the offer*…) (#84), each just after its stage rather
-  than on the right edge (#85).
+  than on the right edge (#85). Outcomes follow their stage too, each column is arranged to
+  cross as few flows as it can, long labels wrap, and Recruiter conversations works the same way;
+  roles you passed on read *Decided not to apply* in the diagrams (#86).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).

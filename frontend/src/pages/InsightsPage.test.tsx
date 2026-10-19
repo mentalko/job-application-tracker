@@ -43,7 +43,7 @@ const WHOLE = {
     node("applied", "Applied", "active", "blue", 2, 2),
     node("deciding", "Deciding whether to apply", "holding", "yellow", 1, 0),
     node("holding:applied", "Waiting to hear back", "holding", "blue", 2, 0),
-    node("passed", "Passed", "outcome", "gray", 1, 1),
+    node("passed", "Decided not to apply", "outcome", "gray", 1, 1),
   ],
   links: [
     { source: "source:recruiter", target: "interested", value: 2 },
@@ -185,8 +185,15 @@ const CONVERSATIONS = {
     nodes: [
       { id: "pitched", name: "Pitched to you", kind: "active", color: "indigo", reached: 5, current: 0 },
       { id: "applied", name: "Applied", kind: "active", color: "blue", reached: 2, current: 0 },
-      { id: "passed", name: "Passed", kind: "outcome", color: "gray", reached: 2, current: 0 },
-      { id: "deciding", name: "Still deciding", kind: "outcome", color: "yellow", reached: 1, current: 0 },
+      {
+        id: "deciding",
+        name: "Deciding whether to apply",
+        kind: "holding",
+        color: "yellow",
+        reached: 1,
+        current: 0,
+      },
+      { id: "passed", name: "Decided not to apply", kind: "outcome", color: "gray", reached: 2, current: 0 },
       { id: "offer", name: "Offer", kind: "outcome", color: "green", reached: 1, current: 0 },
       { id: "ghosted", name: "Ghosted", kind: "outcome", color: "dark", reached: 1, current: 0 },
     ],
