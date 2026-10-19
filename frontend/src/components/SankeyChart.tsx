@@ -47,16 +47,19 @@ export function SankeyChart({
 
   const layout = useMemo(() => {
     const order = new Map(flow.nodes.map((n, i) => [n.id, i]));
+    const rank = (n: FlowNode) => (n.kind === "holding" ? -1000 : 0) + (order.get(n.id) ?? 0);
     return (
       sankey<FlowNode, FlowLink>()
         .nodeId((n) => n.id)
         .nodeWidth(14)
         .nodePadding(22)
-        // Active stages by how far along they are; outcomes line up on the right.
+        // Active stages by how far along they are, and where things wait just after their stage
+        // (Deciding whether to apply in the same column as Applied); outcomes line up on the right.
         .nodeAlign((n, columns) =>
-          n.kind === "active" || n.sourceLinks?.length ? (n.depth ?? 0) : columns - 1,
+          n.kind === "active" || n.kind === "holding" || n.sourceLinks?.length ? (n.depth ?? 0) : columns - 1,
         )
-        .nodeSort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+        // Within a column, what's waiting sits above the stage that comes next.
+        .nodeSort((a, b) => rank(a) - rank(b))
         .extent([
           [1, 8],
           [width - LABEL_SPACE, HEIGHT - 8],

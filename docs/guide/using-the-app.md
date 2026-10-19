@@ -497,8 +497,9 @@ role, from where it came from to where it is now.
   it** (anything else).
 - Then roles you passed on go to **Passed**, roles with no application yet to **Deciding whether
   to apply**, and applications through their stages from *Interested*.
-- On the right, where things are now: outcomes (Rejected, Ghosted, Accepted…) and, from each
-  stage, a spur to what's still waiting there.
+- From each stage, a spur to what's still waiting there, just after the stage (*Deciding
+  whether to apply* sits above *Applied*); on the right, how things ended (Rejected, Ghosted,
+  Accepted…) and what you passed on.
 
 It counts roles and applications added in the date range; a role you applied to twice counts
 twice. As in *Where applications go*, an application moved back counts at the furthest stage it
@@ -510,7 +511,8 @@ reached.
   starting at *Interested*; filter by route, hover for counts. Each stage has a spur to where
   the applications still there are waiting: *Deciding whether to apply* (Interested, if your first stage comes before Applied), *Waiting
   to hear back* (Applied), *Still screening*, *Still interviewing*, *In final rounds*, *Deciding
-  on the offer*, or *Still at …* for stages of your own. They're listed above the outcomes.
+  on the offer*, or *Still at …* for stages of your own. Each sits just after its stage, above
+  the stage that comes next.
 - **Stage by stage**: how many reached each stage, how many moved on, and the median time
   spent there.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.

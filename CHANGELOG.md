@@ -126,7 +126,8 @@ brackets are pull requests.
 - **The whole picture** in Insights: one Sankey diagram of every role, from where it came from
   (through a recruiter, referred, or you found it) to passed, deciding whether to apply, or its
   stages; both Sankeys end each stage with a spur to what's still waiting there (*Waiting to hear
-  back*, *Still interviewing*, *Deciding on the offer*…) (#84).
+  back*, *Still interviewing*, *Deciding on the offer*…) (#84), each just after its stage rather
+  than on the right edge (#85).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).
