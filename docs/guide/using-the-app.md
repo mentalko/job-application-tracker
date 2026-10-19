@@ -555,6 +555,10 @@ debriefs, calls and meetings (their agenda and notes), to-dos, offers, timeline 
 documents, files, emails and links. Every word
 must match; case and accents don't matter.
 
+## Picking dates
+
+Every calendar rings today in indigo, so you can see where you are.
+
 ## Dark mode
 
 The moon/sun button at the top right.
