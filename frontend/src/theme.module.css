@@ -1,0 +1,5 @@
+/* Today in every calendar: a ring in the primary colour, so you can see where you are. */
+.day[data-today]:not([data-selected], [data-in-range]) {
+  border: 2px solid var(--mantine-primary-color-filled);
+  font-weight: 700;
+}
