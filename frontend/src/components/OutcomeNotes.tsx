@@ -52,7 +52,7 @@ function OutcomeNotesModal({
             data-autofocus={i === 0 || undefined}
             value={values[f.key]}
             onChange={(e) => {
-              // Read it now: React clears currentTarget before a later state update could.
+              // Read it now: React clears currentTarget before the updater runs.
               const value = e.currentTarget.value;
               setValues((v) => ({ ...v, [f.key]: value }));
             }}
