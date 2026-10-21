@@ -51,7 +51,11 @@ function OutcomeNotesModal({
             minRows={3}
             data-autofocus={i === 0 || undefined}
             value={values[f.key]}
-            onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.currentTarget.value }))}
+            onChange={(e) => {
+              // Read it now: React clears currentTarget before the updater runs.
+              const value = e.currentTarget.value;
+              setValues((v) => ({ ...v, [f.key]: value }));
+            }}
           />
         ))}
         <Group justify="flex-end">
