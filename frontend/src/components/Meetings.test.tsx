@@ -97,8 +97,13 @@ describe("calls and meetings", () => {
     expect(screen.getAllByText("Happened")).toHaveLength(2);
     expect(screen.getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /^Didn't happen/ }));
+    fireEvent.change(await screen.findByLabelText("What happened?"), { target: { value: "They cancelled" } });
+    fireEvent.click(screen.getByRole("button", { name: "Mark as didn't happen" }));
     await waitFor(() =>
-      expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ status: "cancelled" }),
+      expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({
+        status: "cancelled",
+        notes: "They cancelled",
+      }),
     );
   });
 

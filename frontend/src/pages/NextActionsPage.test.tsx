@@ -103,10 +103,21 @@ describe("next actions", () => {
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
       .closest(".mantine-Card-root") as HTMLElement;
-    fireEvent.click(within(outcome).getByRole("button", { name: "Done" }));
+    // Didn't happen asks what happened first; cancelling it changes nothing.
+    fireEvent.click(within(outcome).getByRole("button", { name: /^Didn't happen:/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
+    // Done asks how it went, then saves the debrief with it.
+    fireEvent.click(within(outcome).getByRole("button", { name: /^Done:/ }));
+    fireEvent.change(await screen.findByLabelText("Debrief"), {
+      target: { value: "  Went well, met the team " },
+    });
+    expect(calls.some((c) => c.method === "PATCH" && c.path.endsWith("/i0"))).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Mark as done" }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PATCH" && c.path.endsWith("/i0"))?.body).toEqual({
         status: "done",
+        debrief: "Went well, met the team",
+        questions: null,
       }),
     );
   });

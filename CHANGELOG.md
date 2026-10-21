@@ -130,6 +130,9 @@ brackets are pull requests.
   than on the right edge (#85). Each column is arranged so flows cross, or run through a stage,
   as little as possible, long labels wrap, and Recruiter conversations works the same way;
   roles you passed on read *Decided not to apply* in the diagrams, beside *Applied* (#86).
+- **How did it go? asks for notes**: *Done* and *Didn't happen* on Next actions open a dialog
+  for the debrief and questions asked (a round) or what happened (a round or a call) before
+  saving (#87).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).

@@ -16,11 +16,12 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
 
+import { InterviewOutcome } from "../components/OutcomeNotes";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import { stageLookup, useContacts, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
-import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import { type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { useTodos, type Todo } from "../api/todoHooks";
 import {
@@ -233,37 +234,6 @@ function PersonWaitingLine({ person }: { person: Contact }) {
   );
 }
 
-function OutcomeButtons({ interview }: { interview: Interview }) {
-  const save = useSaveInterview();
-  const [clicked, setClicked] = useState<"done" | "cancelled" | null>(null);
-  const mark = (status: "done" | "cancelled") => {
-    setClicked(status);
-    save.mutate({ id: interview.id, body: { status } });
-  };
-  return (
-    <Group gap={4} wrap="nowrap">
-      <Button
-        size="compact-xs"
-        variant="light"
-        color="teal"
-        loading={save.isPending && clicked === "done"}
-        onClick={() => mark("done")}
-      >
-        Done
-      </Button>
-      <Button
-        size="compact-xs"
-        variant="subtle"
-        color="gray"
-        loading={save.isPending && clicked === "cancelled"}
-        onClick={() => mark("cancelled")}
-      >
-        Didn't happen
-      </Button>
-    </Group>
-  );
-}
-
 /** Your own to-dos, always shown (it's where you add one), with what each is about. Ticked-off
  * ones are under "Done recently", so one ticked by mistake (or about nothing) can come back. */
 function TodosSection({ todos }: { todos: Todo[] }) {
@@ -449,7 +419,7 @@ export function NextActionsPage() {
             hint="Their time has passed"
           >
             {data.awaiting_outcome.map((i) => (
-              <InterviewLine key={i.id} interview={i} action={<OutcomeButtons interview={i} />} />
+              <InterviewLine key={i.id} interview={i} action={<InterviewOutcome interview={i} />} />
             ))}
             {meetingsToClose.map((m) => (
               <MeetingLine key={m.id} meeting={m} action={<MeetingOutcome meeting={m} />} />

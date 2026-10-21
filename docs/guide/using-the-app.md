@@ -121,7 +121,9 @@ What needs doing, in this order:
   waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
   it to *Replies to read*.
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
-  call: *Happened*, which asks how it went) or *Didn't happen*.
+  call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
+  the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
+  notes). Nothing changes until you save; the notes can stay empty.
 - **Follow up**: applications whose follow-up date is today or earlier.
 - **Roles to decide**: roles you've added with no application that you haven't passed on
   (see [Roles to decide](#roles-to-decide)), oldest first, with **Apply**, **Interested** and
@@ -398,7 +400,7 @@ meetings** on their page:
   meeting link or where, and an agenda (what to ask, what to tell them).
 - To log a call that already happened, pick **Happened** as its status and say how it went.
 - Once its time has passed, it waits under *How did it go?* on Next actions. **Happened**
-  asks for notes; **Didn't happen** closes it.
+  asks for notes; **Didn't happen** asks what happened, then closes it.
 - If it's about one application, pick it under **About an application**; the call then shows
   with that application on the Timeline.
 - Under a call that happened, **Add roles from this call** adds the roles they mentioned, to
