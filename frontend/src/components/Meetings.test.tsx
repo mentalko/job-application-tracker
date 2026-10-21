@@ -96,6 +96,11 @@ describe("calls and meetings", () => {
     // The done one's badge, and the button on the one still booked.
     expect(screen.getAllByText("Happened")).toHaveLength(2);
     expect(screen.getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
+    // Cancel changes nothing; then say what happened and save.
+    fireEvent.click(screen.getByRole("button", { name: /^Didn't happen/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByLabelText("What happened?")).not.toBeInTheDocument());
+    expect(calls.some((c) => c.method === "PATCH")).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: /^Didn't happen/ }));
     fireEvent.change(await screen.findByLabelText("What happened?"), { target: { value: "They cancelled" } });
     fireEvent.click(screen.getByRole("button", { name: "Mark as didn't happen" }));

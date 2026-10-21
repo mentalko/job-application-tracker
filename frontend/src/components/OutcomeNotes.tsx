@@ -29,7 +29,15 @@ function OutcomeNotesModal({
 }) {
   const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.initial ?? ""])));
   return (
-    <Modal opened onClose={onClose} title={title} size="lg">
+    // While saving, Esc or a click outside can't close it: if the save fails, what you typed is still here.
+    <Modal
+      opened
+      onClose={onClose}
+      title={title}
+      size="lg"
+      closeOnEscape={!loading}
+      closeOnClickOutside={!loading}
+    >
       <Stack>
         <Text size="sm" c="dimmed">
           {subtitle}
@@ -66,7 +74,8 @@ function OutcomeNotesModal({
   );
 }
 
-/** An interview round's Done and Didn't happen, each asking how it went (the debrief) first. */
+/** An interview round's Done (asking for the debrief and questions asked) and Didn't happen
+ * (asking what happened, kept in its debrief). */
 export function InterviewOutcome({ interview }: { interview: Interview }) {
   const save = useSaveInterview();
   const [marking, setMarking] = useState<"done" | "cancelled" | null>(null);
@@ -153,7 +162,7 @@ export function MeetingDidntHappen({ meeting }: { meeting: Meeting }) {
       {open && (
         <OutcomeNotesModal
           title={`${meeting.label} didn't happen`}
-          subtitle="The call stays on its person's page, marked as not having happened."
+          subtitle="It stays on the record, marked as not having happened."
           fields={[
             {
               key: "notes",
