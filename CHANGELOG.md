@@ -133,6 +133,7 @@ brackets are pull requests.
 - **How did it go? asks for notes**: on Next actions, a round's *Done* asks for the debrief and
   questions asked, and *Didn't happen* (a round or a call) asks what happened, before saving
   (#87).
+- **Fix**: pressing Enter (for a new line) in that dialog no longer crashes the page (#88).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).
