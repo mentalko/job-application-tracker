@@ -33,6 +33,7 @@ import {
   type MeetingKind,
 } from "../api/meetingHooks";
 import { Markdown } from "./Markdown";
+import { MeetingDidntHappen } from "./OutcomeNotes";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { useRoleSummaries } from "../api/roleHooks";
 import { formatDateTime } from "../utils/time";
@@ -281,7 +282,6 @@ export function MeetingLine({
 
 /** "Happened" (opens the form to say how it went) and "Didn't happen", for a call whose time has passed. */
 export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
-  const save = useSaveMeeting();
   const [closing, setClosing] = useState(false);
   return (
     <Group gap={4} wrap="nowrap">
@@ -294,16 +294,7 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
       >
         Happened
       </Button>
-      <Button
-        size="compact-xs"
-        variant="subtle"
-        color="gray"
-        loading={save.isPending}
-        aria-label={`Didn't happen: ${meeting.label}`}
-        onClick={() => save.mutate({ id: meeting.id, body: { status: "cancelled" } })}
-      >
-        Didn't happen
-      </Button>
+      <MeetingDidntHappen meeting={meeting} />
       {closing && (
         <MeetingFormModal
           key={meeting.id}
