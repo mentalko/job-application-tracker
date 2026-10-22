@@ -610,6 +610,9 @@ class InterviewPatch(Patch):
     prep: str | None = None
     debrief: str | None = None
     questions: str | None = None
+    # Why it moved, when this PATCH reschedules it (a new time for a booked round): goes on the
+    # timeline entry, not stored on the round.
+    reschedule_reason: str | None = Field(default=None, max_length=500)
     task_instructions: str | None = None
     task_repo_url: HttpUrl | None = None
     interviewer_ids: list[str] | None = None
@@ -640,6 +643,8 @@ class InterviewOut(RoundSummary):
     task_instructions: str | None
     task_repo_url: str | None
     interviewer_ids: list[str]
+    rescheduled_count: int  # times a booked round moved to another time
+    rescheduled_from: datetime | None  # the time it moved from last (unknown for moves before 0014)
     # For lists across applications (the Interviews page).
     company_name: str
     role_title: str

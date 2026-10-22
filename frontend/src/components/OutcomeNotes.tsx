@@ -37,6 +37,7 @@ function OutcomeNotesModal({
       size="lg"
       closeOnEscape={!loading}
       closeOnClickOutside={!loading}
+      withCloseButton={!loading}
     >
       <Stack>
         <Text size="sm" c="dimmed">
@@ -59,7 +60,7 @@ function OutcomeNotesModal({
           />
         ))}
         <Group justify="flex-end">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
           <Button

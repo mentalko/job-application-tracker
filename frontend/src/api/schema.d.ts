@@ -2463,6 +2463,10 @@ export interface components {
             prep: string | null;
             /** Questions */
             questions: string | null;
+            /** Rescheduled Count */
+            rescheduled_count: number;
+            /** Rescheduled From */
+            rescheduled_from: string | null;
             /** Role Title */
             role_title: string;
             /** Round */
@@ -2505,6 +2509,8 @@ export interface components {
             prep?: string | null;
             /** Questions */
             questions?: string | null;
+            /** Reschedule Reason */
+            reschedule_reason?: string | null;
             /** Round */
             round?: number | null;
             /** Starts At */

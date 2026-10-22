@@ -243,7 +243,7 @@ Everything about one application:
 - **Details**: applied date, follow-up date, snooze, tags, and **Archived**.
 - **Interviews**: numbered rounds in your own words ("Round 2 · Engineering manager chat"),
   with type, time or deadline, format and link, interviewers, prep, debrief, questions asked,
-  and take-home briefs and repos.
+  and take-home briefs and repos; *Rescheduled* on one that moved (see [Interviews](#interviews)).
 - **Documents sent**: which version of your CV and cover letter went with it.
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported
@@ -427,7 +427,18 @@ the people there and notes); agencies have the same.
 ## Interviews
 
 Every interview round across all applications: what's coming up, then everything earlier
-or cancelled.
+or cancelled. On each row:
+
+- **Reschedule** (a booked round, including one whose time has passed): pick the new time
+  and, if you like, say why. Its end moves with it; the application's timeline says "Round 2 ·
+  … rescheduled: why".
+- the pencil edits the round (everything on its form).
+
+A round that's moved shows **Rescheduled** (or *Rescheduled ×2*), here and on the
+application's page; hover it for the time it moved from. Changing a booked round's time from
+its form counts too (the end moves with it there as well); changing its status in the same
+save doesn't. Rounds moved before this came in are counted, but their old time wasn't
+recorded.
 
 ## Offers
 

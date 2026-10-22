@@ -1,10 +1,60 @@
-import { Anchor, Badge, Card, Group, Loader, Stack, Table, Text, Title } from "@mantine/core";
-import { IconCalendarEvent } from "@tabler/icons-react";
+import {
+  ActionIcon,
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Loader,
+  Stack,
+  Table,
+  Text,
+  Title,
+  Tooltip,
+} from "@mantine/core";
+import { IconCalendarEvent, IconPencil } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
+import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
+import { RescheduledBadge, RescheduleModal } from "../components/Reschedule";
 import { formatDateTime } from "../utils/time";
+
+/** Edit a round, or move a booked one to another time. */
+function RoundActions({ interview }: { interview: Interview }) {
+  const [open, setOpen] = useState<"edit" | "reschedule" | null>(null);
+  return (
+    <Group gap={4} wrap="nowrap" justify="flex-end">
+      {interview.status === "scheduled" && interview.starts_at && (
+        <Button
+          size="compact-xs"
+          variant="light"
+          aria-label={`Reschedule ${interview.label}`}
+          onClick={() => setOpen("reschedule")}
+        >
+          Reschedule
+        </Button>
+      )}
+      <Tooltip label="Edit">
+        <ActionIcon variant="subtle" aria-label={`Edit ${interview.label}`} onClick={() => setOpen("edit")}>
+          <IconPencil size={16} />
+        </ActionIcon>
+      </Tooltip>
+      {open === "reschedule" && <RescheduleModal interview={interview} onClose={() => setOpen(null)} />}
+      {open === "edit" && (
+        <InterviewFormModal
+          opened
+          onClose={() => setOpen(null)}
+          applicationId={interview.application_id}
+          interview={interview}
+          nextRound={interview.round ?? 1}
+        />
+      )}
+    </Group>
+  );
+}
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
   if (!interviews.length) {
@@ -22,6 +72,7 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
           <Table.Th>Round</Table.Th>
           <Table.Th>Application</Table.Th>
           <Table.Th>Status</Table.Th>
+          <Table.Th />
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -48,9 +99,15 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Badge size="sm" variant="light" color={roundStatus(i).color}>
-                  {roundStatus(i).label}
-                </Badge>
+                <Group gap={4}>
+                  <Badge size="sm" variant="light" color={roundStatus(i).color}>
+                    {roundStatus(i).label}
+                  </Badge>
+                  <RescheduledBadge interview={i} />
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <RoundActions interview={i} />
               </Table.Td>
             </Table.Tr>
           );

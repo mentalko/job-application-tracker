@@ -86,6 +86,8 @@ def populate(session) -> dict[str, str]:
         deadline_at=datetime(2026, 10, 3, 17, 0, tzinfo=UTC),
         task_instructions="Build a rate limiter. Ünïcödé ✓",
         task_repo_url="https://git.example.com/task",
+        rescheduled_count=1,
+        rescheduled_from=datetime(2026, 10, 1, 17, 0, tzinfo=UTC),
     )
     attachment = Attachment(
         entity_type="application",

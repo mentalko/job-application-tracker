@@ -7,6 +7,7 @@ import { useContacts } from "../api/hooks";
 import { useDeleteInterview, useInterviews, type Interview } from "../api/interviewHooks";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
+import { RescheduledBadge } from "./Reschedule";
 
 type RoundLike = { status: string; starts_at: string | null; deadline_at: string | null };
 
@@ -86,6 +87,7 @@ function InterviewItem({
             <Badge size="xs" variant="light" color={roundStatus(interview).color}>
               {roundStatus(interview).label}
             </Badge>
+            <RescheduledBadge interview={interview} size="xs" />
           </Group>
           <Text size="sm" c="dimmed">
             {[
