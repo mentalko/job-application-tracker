@@ -3952,6 +3952,22 @@
             ],
             "title": "Questions"
           },
+          "rescheduled_count": {
+            "title": "Rescheduled Count",
+            "type": "integer"
+          },
+          "rescheduled_from": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rescheduled From"
+          },
           "role_title": {
             "title": "Role Title",
             "type": "string"
@@ -4042,6 +4058,8 @@
           "task_instructions",
           "task_repo_url",
           "interviewer_ids",
+          "rescheduled_count",
+          "rescheduled_from",
           "company_name",
           "role_title",
           "created_at",
@@ -4189,6 +4207,17 @@
               }
             ],
             "title": "Questions"
+          },
+          "reschedule_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reschedule Reason"
           },
           "round": {
             "anyOf": [

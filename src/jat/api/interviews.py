@@ -138,6 +138,7 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
     interview = get_or_404(session, Interview, interview_id)
     data = values(body, partial=True)
     interviewer_ids = data.pop("interviewer_ids", None)
+    reason = (data.pop("reschedule_reason", None) or "").strip()
     before = (interview.status, interview.starts_at)
     for key, value in data.items():
         setattr(interview, key, value)
@@ -158,7 +159,10 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
         and None not in (before[1], interview.starts_at)  # adding or clearing a time isn't a reschedule
         and interview.starts_at != before[1]
     ):
-        svc.record(session, app, interview, "rescheduled")
+        interview.rescheduled_count = (interview.rescheduled_count or 0) + 1
+        interview.rescheduled_from = before[1]
+        session.flush()
+        svc.record(session, app, interview, f"rescheduled: {reason}" if reason else "rescheduled")
     return _out(session, interview.id)
 
 

@@ -124,15 +124,27 @@ def test_patch_clears_replaces_and_logs_only_real_reschedules(client, seeded):
     r = client.patch(url, json={"starts_at": same.replace(microsecond=250000).isoformat()})
     assert r.json()["starts_at"] == made["starts_at"]
     assert "Round 1 · Pairing rescheduled" not in _interview_events(client, app["id"])
+    assert (r.json()["rescheduled_count"], r.json()["rescheduled_from"]) == (0, None)
 
     r = client.patch(url, json={"starts_at": _iso(4), "interviewer_ids": [other["id"]], "title": None})
     assert r.json()["interviewer_ids"] == [other["id"]]
     assert r.json()["title"] is None and r.json()["label"] == "Round 1 · Technical"
     assert "Round 1 · Technical rescheduled" in _interview_events(client, app["id"])
+    # It remembers how often, and where it moved from.
+    assert (r.json()["rescheduled_count"], r.json()["rescheduled_from"]) == (1, made["starts_at"])
 
-    # Clearing the time isn't a reschedule.
-    client.patch(url, json={"starts_at": None})
-    assert _interview_events(client, app["id"]).count("Round 1 · Technical rescheduled") == 1
+    # Again, with why: the reason goes on the timeline; it isn't kept on the round.
+    moved = r.json()["starts_at"]
+    r = client.patch(url, json={"starts_at": _iso(6), "reschedule_reason": " They had a clash "})
+    assert (r.json()["rescheduled_count"], r.json()["rescheduled_from"]) == (2, moved)
+    assert "Round 1 · Technical rescheduled: They had a clash" in _interview_events(client, app["id"])
+    assert "reschedule_reason" not in r.json()
+
+    # Clearing the time isn't a reschedule; nor is a reason on its own.
+    client.patch(url, json={"starts_at": None, "reschedule_reason": "ignored"})
+    events = _interview_events(client, app["id"])
+    assert sum("Technical rescheduled" in e for e in events) == 2
+    assert client.get(url).json()["rescheduled_count"] == 2
 
 
 def test_upcoming_skips_cancelled_done_and_past(client, seeded):

@@ -191,6 +191,9 @@ class Interview(IdMixin, TimestampMixin, Base):
     questions: Mapped[str | None] = mapped_column(Text)
     task_instructions: Mapped[str | None] = mapped_column(Text)
     task_repo_url: Mapped[str | None] = mapped_column(String(1000))
+    # How often a booked round moved to another time, and the time it moved from last.
+    rescheduled_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    rescheduled_from: Mapped[datetime | None]
 
 
 class InterviewContact(IdMixin, Base):

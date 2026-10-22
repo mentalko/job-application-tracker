@@ -313,3 +313,54 @@ def test_0013_leaves_unreadable_history_alone(tmp_path):
     migrate(path)
     events = _stage_events(path)
     assert (len(events["a"]), len(events["b"])) == (1, 1)
+
+
+def test_0014_counts_reschedules_already_on_the_timeline(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    migrate(path, "0013")
+    eng = make_engine(path)
+    ts = "'2026-01-01T09:00:00Z'"
+    with eng.begin() as conn:
+        conn.execute(text(f"INSERT INTO companies (id, name, created_at, updated_at) VALUES ('c', 'C', {ts}, {ts})"))
+        conn.execute(
+            text(
+                f"INSERT INTO roles (id, company_id, title, created_at, updated_at) VALUES ('r', 'c', 'T', {ts}, {ts})"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO applications (id, role_id, route, stage, last_activity_at, tags, archived, created_at, "
+                f"updated_at) VALUES ('a', 'r', 'direct', 'applied', {ts}, '[]', 0, {ts}, {ts})"
+            )
+        )
+        for iid in ("i1", "i2"):
+            conn.execute(
+                text(
+                    "INSERT INTO interviews (id, application_id, round, kind, status, created_at, updated_at) "
+                    f"VALUES ('{iid}', 'a', 1, 'technical', 'scheduled', {ts}, {ts})"
+                )
+            )
+        for seq, (summary, data) in enumerate(
+            [
+                ("Round 1 rescheduled", '{"interview_id": "i1"}'),
+                ("Round 1 rescheduled", '{"interview_id": "i1"}'),
+                ("Round 1 scheduled", '{"interview_id": "i2"}'),
+                ("Round 1 rescheduled", "not json"),
+            ],
+            start=1,
+        ):
+            conn.execute(
+                text(
+                    "INSERT INTO events (id, seq, application_id, kind, occurred_at, summary, data, created_at) "
+                    f"VALUES ('e{seq}', {seq}, 'a', 'interview', {ts}, :summary, :data, {ts})"
+                ),
+                {"summary": summary, "data": data},
+            )
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        rows = dict(conn.execute(text("SELECT id, rescheduled_count FROM interviews")).all())
+        assert conn.execute(text("SELECT rescheduled_from FROM interviews WHERE id = 'i1'")).scalar_one() is None
+    eng.dispose()
+    assert rows == {"i1": 2, "i2": 0}
