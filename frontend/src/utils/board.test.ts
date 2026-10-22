@@ -96,6 +96,16 @@ describe("board helpers", () => {
     ]);
     expect(keys.map(stageOfColumn)).toEqual(["interviewing", "interviewing", "interviewing", "interviewing"]);
     expect(keys.map(isRoundColumn)).toEqual([false, true, true, true]);
+    // A far-off round (a typo, say) doesn't fill in a dozen empty columns.
+    const far = splitByRound(
+      buildColumns(withInterviewing, [
+        row({ id: "f1", stage: "interviewing", current_round: round(12) }),
+      ] as unknown as ApplicationRow[]),
+    ).filter((c) => c.stage.id === "interviewing");
+    expect(far.map((c) => c.round)).toEqual([null, 1, 2, 3, 4, 5, 6, 12]);
+    // A stage id with a "#" in it still reads as itself.
+    expect(stageOfColumn("odd#stage")).toBe("odd#stage");
+    expect(stageOfColumn("odd#stage#round-3")).toBe("odd#stage");
     expect(isRoundColumn("applied")).toBe(false);
   });
 });

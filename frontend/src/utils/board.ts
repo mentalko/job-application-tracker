@@ -11,9 +11,11 @@ export interface Column {
 }
 
 /** The stage a column (or a drop on it) stands for: round columns are "<stage>#round-<n>". */
-export const stageOfColumn = (key: string) => key.split("#")[0]!;
+export const stageOfColumn = (key: string) => key.replace(/#round-(none|\d+)$/, "");
 
 export const columnKey = (column: Column) => column.key ?? column.stage.id;
+
+const MAX_GAP_FILLED = 6;
 
 /** The column's heading: the stage, and its round when split ("Interviewing · Round 2"). */
 export function columnTitle(column: Column): string {
@@ -36,8 +38,14 @@ export function splitByRound(columns: Column[]): Column[] {
     const roundOf = (row: ApplicationRow) => row.current_round?.round ?? null;
     const interviewing = /interview/i.test(`${column.stage.id} ${column.stage.name}`);
     if (column.stage.kind !== "active" || !interviewing) return [column];
-    const furthest = Math.max(0, ...column.rows.map((r) => roundOf(r) ?? 0));
-    const rounds = [null, ...Array.from({ length: furthest }, (_, i) => i + 1)];
+    // Every round up to the furthest, so progress reads left to right; past MAX_GAP_FILLED,
+    // only rounds someone's at (a mistyped "Round 12" doesn't add a dozen empty columns).
+    const at = new Set(column.rows.map(roundOf).filter((n): n is number => n !== null));
+    const furthest = Math.max(0, ...at);
+    const rounds = [
+      null,
+      ...Array.from({ length: furthest }, (_, i) => i + 1).filter((n) => n <= MAX_GAP_FILLED || at.has(n)),
+    ];
     return rounds.map((round) => ({
       stage: column.stage,
       rows: column.rows.filter((r) => roundOf(r) === round),

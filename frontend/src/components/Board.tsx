@@ -39,13 +39,10 @@ import { RoundBadge } from "./Interviews";
 const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
 
 /** Screen-reader messages in words (company, stage names) rather than ids. */
-function announcements(rows: ApplicationRow[], names: Map<string, string>): Announcements {
+function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
   const label = (id: UniqueIdentifier) => rows.find((r) => r.id === id)?.company_name ?? "Application";
-  // A round column ("interviewing#round-2") reads as its stage.
-  const stage = (id: UniqueIdentifier | undefined) => {
-    const key = id ? stageOfColumn(String(id)) : "";
-    return key ? (names.get(key) ?? key) : "";
-  };
+  // The column's own title, so round columns can be told apart ("Interviewing · Round 2").
+  const stage = (id: UniqueIdentifier | undefined) => (id ? (titles.get(String(id)) ?? String(id)) : "");
   return {
     onDragStart: ({ active }) => `Picked up ${label(active.id)}. Use arrow keys to move, Space to drop.`,
     onDragOver: ({ active, over }) =>
@@ -203,6 +200,11 @@ export function Board({
     dragging: !!active,
   });
   const names = new Map(workflow.stages.map((s) => [s.id, s.name]));
+  const titles = new Map(columns.map((c) => [columnKey(c), columnTitle(c)]));
+  const ownColumn = (id: string) => {
+    const column = columns.find((c) => c.rows.some((r) => r.id === id));
+    return column ? columnKey(column) : undefined;
+  };
 
   const onDragStart = (event: DragStartEvent) =>
     setActive((event.active.data.current?.row as ApplicationRow) ?? null);
@@ -211,15 +213,24 @@ export function Board({
     setActive(null);
     const over = event.over ? String(event.over.id) : undefined;
     const to = over ? stageOfColumn(over) : undefined;
-    if (!row || !to || !over) return;
+    if (!row || !to || !over || over === ownColumn(row.id)) return;
+    // Within a split stage a card's column is its round, which comes from its interviews; and
+    // a card coming in can't skip ahead to a round.
+    if (to === row.stage && over !== to) {
+      notifications.show({
+        color: "orange",
+        title: "Rounds go in order",
+        message:
+          "A card's round comes from its interviews: add or finish a round on the application to move it along.",
+      });
+      return;
+    }
     if (isRoundColumn(over)) {
-      if (to !== row.stage || over !== `${to}#round-${row.current_round?.round ?? "none"}`) {
-        notifications.show({
-          color: "orange",
-          title: "Rounds go in order",
-          message: `Rounds follow the interviews you add on the application. To move it here, drop it on ${names.get(to) ?? to} · No round yet.`,
-        });
-      }
+      notifications.show({
+        color: "orange",
+        title: "Rounds go in order",
+        message: `Drop it on ${names.get(to) ?? to} · No round yet; it moves along as you add its interview rounds.`,
+      });
       return;
     }
     if (to === row.stage) return;
@@ -258,7 +269,7 @@ export function Board({
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragCancel={() => setActive(null)}
-        accessibility={{ announcements: announcements(rows, names) }}
+        accessibility={{ announcements: announcements(rows, titles) }}
       >
         <ScrollArea type="auto" offsetScrollbars>
           <Group align="flex-start" wrap="nowrap" gap="sm" pb="sm">
@@ -268,9 +279,9 @@ export function Board({
                 column={column}
                 onOpen={onOpen}
                 dropState={
-                  !active || column.stage.id === active.stage
+                  !active || columnKey(column) === ownColumn(active.id)
                     ? "idle"
-                    : isRoundColumn(columnKey(column))
+                    : isRoundColumn(columnKey(column)) || column.stage.id === active.stage
                       ? "blocked"
                       : !canDrop(workflow, active.stage, column.stage.id)
                         ? "blocked"

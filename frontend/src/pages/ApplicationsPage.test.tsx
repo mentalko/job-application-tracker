@@ -234,6 +234,37 @@ describe("applications page", () => {
     expect(screen.queryByLabelText("Rejected column")).not.toBeInTheDocument();
   });
 
+  it("splits Interviewing into a column per round, and remembers it", async () => {
+    const stages = WORKFLOW.stages as unknown as Record<string, unknown>[];
+    const workflow = {
+      ...WORKFLOW,
+      stages: [...stages, { ...stages[2], id: "interviewing", name: "Interviewing" }],
+    };
+    mockApi({
+      "/api/v1/workflow": workflow,
+      "/api/v1/agencies": [],
+      "/api/v1/applications": [
+        row({
+          id: "a2",
+          company_name: "Fabrikam",
+          stage: "interviewing",
+          current_round: { round: 2, label: "Round 2" },
+        }),
+        row({ id: "a3", company_name: "Litware", stage: "interviewing" }),
+      ],
+      "/api/v1/health": {},
+    });
+    renderApplications();
+    await screen.findByText("Fabrikam");
+    fireEvent.click(screen.getByText("Board"));
+    expect(await screen.findByLabelText("Interviewing column")).toHaveTextContent("Litware");
+    fireEvent.click(screen.getByLabelText("A column per interview round"));
+    expect(await screen.findByLabelText("Interviewing · No round yet column")).toHaveTextContent("Litware");
+    expect(screen.getByLabelText("Interviewing · Round 1 column")).not.toHaveTextContent("Fabrikam");
+    expect(screen.getByLabelText("Interviewing · Round 2 column")).toHaveTextContent("Fabrikam");
+    expect(localStorage.getItem("jat.board.byRound")).toBe("true");
+  });
+
   it("opens a board card with Enter", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
