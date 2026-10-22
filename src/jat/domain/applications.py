@@ -239,6 +239,18 @@ def _activity_time(events: list[Event], fallback: datetime) -> datetime:
     return max(times) if times else fallback
 
 
+def note_change(session: Session, app: Application, summary: str, data: dict[str, Any] | None = None) -> Event:
+    """Record a change to the application's details on its timeline ("Recruiter changed from …").
+
+    Bookkeeping, not contact with anyone: it doesn't count as activity, so it doesn't reset how
+    long the application has been quiet.
+    """
+    event = Event(application_id=app.id, kind="manual", occurred_at=utcnow(), summary=summary, data=data or {})
+    session.add(event)
+    session.flush()
+    return event
+
+
 def log_activity(
     session: Session,
     app: Application,

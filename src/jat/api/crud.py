@@ -29,6 +29,7 @@ def crud_router(
     search_column=None,
     validate: Callable[[Session, dict], None] | None = None,
     before_delete: Callable[[Session, object], None] | None = None,
+    after_update: Callable[[Session, object, dict], None] | None = None,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=[tag])
 
@@ -59,9 +60,12 @@ def crud_router(
         data = values(body, partial=True)
         if validate:
             validate(session, data)
+        before = {key: getattr(obj, key) for key in data}
         for key, value in data.items():
             setattr(obj, key, value)
         session.flush()
+        if after_update:
+            after_update(session, obj, before)  # gets the changed fields' old values
         return obj
 
     @router.delete("/{item_id}", status_code=204)

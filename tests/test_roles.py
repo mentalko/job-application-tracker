@@ -236,3 +236,60 @@ def test_how_far_a_roles_applications_got(client, seeded):
     assert _status(client, mixed) == ("interested", None)
     move(second, "rejected")
     assert _status(client, mixed) == ("closed", "Rejected")
+
+
+def _events(client, app_id) -> list[str]:
+    detail = client.get(f"/api/v1/applications/{app_id}").json()
+    return [e["summary"] for e in detail["events"] if e["kind"] == "manual"]
+
+
+def test_changing_a_roles_person_moves_its_applications_over(client, seeded):
+    company, agency, alex = seeded["company"]["id"], seeded["agency"]["id"], seeded["recruiter"]["id"]
+    other_agency = post(client, "/api/v1/agencies", {"name": "Blue Yonder Recruitment"})["id"]
+    sam = post(client, "/api/v1/contacts", {"name": "Sam Patel", "agency_id": other_agency})["id"]
+    riley = post(client, "/api/v1/contacts", {"name": "Riley Chen", "company_id": company})["id"]
+    jordan = post(client, "/api/v1/contacts", {"name": "Jordan Lee", "agency_id": agency})["id"]
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "Platform Engineer", "contact_id": alex})[
+        "id"
+    ]
+    through_alex = post(client, "/api/v1/applications", {"role_id": role, "route": "agency", "recruiter_id": alex})
+    through_jordan = post(client, "/api/v1/applications", {"role_id": role, "route": "agency", "recruiter_id": jordan})
+    quiet = through_alex["last_activity_at"]
+
+    # Alex hands it to Sam, at another agency: the application follows, agency and all.
+    assert client.patch(f"/api/v1/roles/{role}", json={"contact_id": sam}).status_code == 200
+    moved = client.get(f"/api/v1/applications/{through_alex['id']}").json()
+    assert (moved["recruiter_id"], moved["agency_id"], moved["route"]) == (sam, other_agency, "agency")
+    assert _events(client, through_alex["id"]) == [
+        "Recruiter changed from Alex Recruiter to Sam Patel, on the role (now through Blue Yonder Recruitment)"
+    ]
+    assert moved["last_activity_at"] == quiet  # bookkeeping, not activity
+    # One you'd given someone else keeps them.
+    kept = client.get(f"/api/v1/applications/{through_jordan['id']}").json()
+    assert kept["recruiter_id"] == jordan and _events(client, through_jordan["id"]) == []
+
+    # Then to someone in-house: it becomes direct.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": riley})
+    moved = client.get(f"/api/v1/applications/{through_alex['id']}").json()
+    assert (moved["recruiter_id"], moved["agency_id"], moved["route"]) == (riley, None, "direct")
+    assert (
+        _events(client, through_alex["id"])[-1]
+        == "Recruiter changed from Sam Patel to Riley Chen, on the role (now direct)"
+    )
+
+    # Editing something else on the role changes nothing.
+    client.patch(f"/api/v1/roles/{role}", json={"title": "Senior Platform Engineer"})
+    assert len(_events(client, through_alex["id"])) == 2
+
+
+def test_changing_an_applications_recruiter_is_recorded(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    jordan = post(client, "/api/v1/contacts", {"name": "Jordan Lee", "agency_id": seeded["agency"]["id"]})["id"]
+    app = post(
+        client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "route": "agency", "recruiter_id": alex}
+    )
+    url = f"/api/v1/applications/{app['id']}"
+    client.patch(url, json={"recruiter_id": jordan})
+    client.patch(url, json={"recruiter_id": jordan})  # the same again: nothing new
+    client.patch(url, json={"tags": ["remote"]})
+    assert _events(client, app["id"]) == ["Recruiter changed from Alex Recruiter to Jordan Lee"]
