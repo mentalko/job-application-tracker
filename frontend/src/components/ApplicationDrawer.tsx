@@ -193,14 +193,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </Group>
       <Stack gap={4}>
         <Text size="sm">
-          <b>Route:</b> {app.recruiter_name && <PersonMarks id={app.recruiter_id} />}
-          {app.route === "agency"
-            ? `Through ${[app.recruiter_name, app.agency_name].filter(Boolean).join(" at ") || "an agency"}`
-            : app.route === "referral"
-              ? "Referral"
-              : app.recruiter_name
-                ? `Directly, via ${app.recruiter_name} at ${app.company_name}`
-                : "Applied directly"}
+          <b>Route:</b> <RouteLine app={app} />
         </Text>
         <Text size="sm">
           <b>Applied on:</b> {formatDate(app.applied_on)}
@@ -282,5 +275,51 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
         </Stack>
       )}
     </Drawer>
+  );
+}
+
+/** How the application came about, with the recruiter, agency and company linked to their pages. */
+function RouteLine({ app }: { app: ApplicationDetail }) {
+  // A name with no id (shouldn't happen) still shows, just not as a link.
+  const person = app.recruiter_name && (
+    <>
+      <PersonMarks id={app.recruiter_id} />
+      {app.recruiter_id ? (
+        <Anchor component={Link} to={`/people/${app.recruiter_id}`} inherit>
+          {app.recruiter_name}
+        </Anchor>
+      ) : (
+        app.recruiter_name
+      )}
+    </>
+  );
+  const agency =
+    app.agency_name &&
+    (app.agency_id ? (
+      <Anchor component={Link} to={`/agencies/${app.agency_id}`} inherit>
+        {app.agency_name}
+      </Anchor>
+    ) : (
+      app.agency_name
+    ));
+  if (app.route === "agency") {
+    if (!person && !agency) return <>Through an agency</>;
+    return (
+      <>
+        Through {person}
+        {person && agency && " at "}
+        {agency}
+      </>
+    );
+  }
+  if (app.route === "referral") return <>Referral</>;
+  if (!person) return <>Applied directly</>;
+  return (
+    <>
+      Directly, via {person} at{" "}
+      <Anchor component={Link} to={`/companies/${app.company_id}`} inherit>
+        {app.company_name}
+      </Anchor>
+    </>
   );
 }

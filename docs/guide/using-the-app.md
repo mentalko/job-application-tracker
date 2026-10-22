@@ -227,6 +227,8 @@ before this came in got the same step when you upgraded (with the `initial` stag
 Everything about one application:
 
 - **Move to…**, **Undo last move**, and its stage, current round and tags.
+- **Route**: how it came about (through a recruiter at an agency, directly, a referral), with
+  the recruiter, agency or company linked to their page.
 - **At a glance**: what this application needs, by the same rules as
   [Next actions](#next-actions) (a reply to read, to-dos due by today or undated, an offer to
   answer in the next two weeks, a round waiting for an outcome, a follow-up due, gone quiet,

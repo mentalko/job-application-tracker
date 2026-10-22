@@ -135,6 +135,15 @@ describe("applications page", () => {
     fireEvent.click(await screen.findByText("Contoso"));
     const drawer = await screen.findByRole("dialog");
     expect(await within(drawer).findByRole("button", { name: /Undo last move/ })).toBeDisabled();
+    // The route links to the recruiter and their agency.
+    expect(within(drawer).getByRole("link", { name: "Alex Recruiter" })).toHaveAttribute(
+      "href",
+      "/people/c1",
+    );
+    expect(within(drawer).getByRole("link", { name: "Northwind Talent" })).toHaveAttribute(
+      "href",
+      "/agencies/ag1",
+    );
   });
 
   it("warns about a possible duplicate while adding, but still saves", async () => {
