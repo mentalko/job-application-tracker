@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import AnyUrl, BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -29,6 +29,7 @@ def crud_router(
     search_column=None,
     validate: Callable[[Session, dict], None] | None = None,
     before_delete: Callable[[Session, object], None] | None = None,
+    after_update: Callable[[Session, object, dict, Request], None] | None = None,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=[tag])
 
@@ -54,14 +55,17 @@ def crud_router(
         return obj
 
     @router.patch("/{item_id}", response_model=schema_out)
-    def update_item(item_id: str, body: schema_patch, session: SessionDep):  # type: ignore[valid-type]
+    def update_item(item_id: str, body: schema_patch, session: SessionDep, request: Request):  # type: ignore[valid-type]
         obj = get_or_404(session, model, item_id)
         data = values(body, partial=True)
         if validate:
             validate(session, data)
+        before = {key: getattr(obj, key) for key in data}
         for key, value in data.items():
             setattr(obj, key, value)
         session.flush()
+        if after_update:
+            after_update(session, obj, before, request)  # with the old values of the fields sent
         return obj
 
     @router.delete("/{item_id}", status_code=204)

@@ -29,7 +29,7 @@ from ..domain import replies as reply_svc
 from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
-from .deps import SessionDep, WorkflowDep, get_or_404, require
+from .deps import SessionDep, WorkflowDep, get_or_404, get_workflow, require
 from .documents import sent_documents
 
 router = APIRouter(prefix="/api/v1")
@@ -114,6 +114,9 @@ router.include_router(
         search_column=Role.title,
         validate=_validate_role,
         before_delete=_before_role_delete,
+        after_update=lambda session, role, before, request: _role_recruiter_changed(
+            session, role, before, get_workflow(request)
+        ),
     )
 )
 
@@ -511,6 +514,79 @@ def _check_refs(session: Session, data: dict) -> None:
     require(session, Contact, data.get("recruiter_id"), "recruiter_id")
 
 
+def _name(session: Session, model, id_: str | None) -> str | None:
+    obj = session.get(model, id_) if id_ else None
+    return obj.name if obj is not None else None
+
+
+def _recruiter_change(session: Session, old_id: str | None, new_id: str | None) -> str:
+    """ "Recruiter changed from Dan Clouting to Liam Royden" (or set, or removed)."""
+    old, new = _name(session, Contact, old_id), _name(session, Contact, new_id)
+    if old and new:
+        return f"Recruiter changed from {old} to {new}"
+    if new:
+        return f"Recruiter set to {new}"
+    return f"Recruiter removed ({old})"
+
+
+def _role_recruiter_changed(session: Session, role: Role, before: dict, workflow: Workflow) -> None:
+    """A role's person changed to someone new: its open applications follow, where the new person
+    fits how you applied. Never changes a route or agency you applied by.
+
+    - Only open applications (not closed, not archived), and not referrals.
+    - Only those that had the old person, or nobody.
+    - An agency application takes the new person if they're at its agency (or it has none yet);
+      a direct one, if they work at the role's company.
+    - One that had the old person but where the new one doesn't fit keeps them, with a note.
+    - Removing the role's person changes no application.
+    """
+    if "contact_id" not in before or before["contact_id"] == role.contact_id or role.contact_id is None:
+        return
+    old_id, new_id = before["contact_id"], role.contact_id
+    new = session.get(Contact, new_id)
+    if new is None:
+        return
+    open_stages = {s.id for s in workflow.stages if s.kind == "active"}
+    apps = session.scalars(
+        select(Application).where(
+            Application.role_id == role.id, Application.archived.is_(False), Application.route != "referral"
+        )
+    ).all()
+    for app in apps:
+        if app.stage not in open_stages or app.recruiter_id not in (old_id, None) or app.recruiter_id == new_id:
+            continue
+        fits = (app.route == "agency" and new.agency_id is not None and app.agency_id in (None, new.agency_id)) or (
+            app.route == "direct" and new.agency_id is None and new.company_id == role.company_id
+        )
+        was = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
+        if not fits:
+            if app.recruiter_id is not None and app.recruiter_id == old_id:  # still the old person: say why
+                svc.note_change(
+                    session,
+                    app,
+                    f"The role's person changed from {_name(session, Contact, old_id)} to {new.name}; "
+                    f"this application still has {_name(session, Contact, old_id)} ({_route_words(session, app)})",
+                    data={"from_role": role.id},
+                )
+            continue
+        app.recruiter_id = new_id
+        if app.route == "agency" and app.agency_id is None:
+            app.agency_id = new.agency_id
+        svc.note_change(
+            session,
+            app,
+            f"{_recruiter_change(session, was['recruiter_id'], new_id)}, on the role",
+            data={"recruiter_change": was, "from_role": role.id},
+        )
+
+
+def _route_words(session: Session, app: Application) -> str:
+    if app.route == "agency":
+        agency = _name(session, Agency, app.agency_id)
+        return f"through {agency}" if agency else "through an agency"
+    return "a referral" if app.route == "referral" else "direct"
+
+
 def _check_route(session: Session, merged: dict) -> dict:
     """Validate route/agency/recruiter together (after merging a PATCH into the current values).
 
@@ -686,6 +762,11 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     _check_refs(session, data)
     current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
     data.update(_check_route(session, {**current, **data}))
+    if "recruiter_id" in data and data["recruiter_id"] != current["recruiter_id"]:
+        summary = _recruiter_change(session, current["recruiter_id"], data["recruiter_id"])
+        if data.get("agency_id") and data["agency_id"] != current["agency_id"]:
+            summary += f" (through {_name(session, Agency, data['agency_id'])})"
+        svc.note_change(session, app, summary, data={"recruiter_change": current})
     was_waiting = app.awaiting_reply_since
     was_to_read = app.reply_to_read_since
     _one_reply_state(data)

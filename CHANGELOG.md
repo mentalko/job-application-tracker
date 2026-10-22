@@ -141,6 +141,9 @@ brackets are pull requests.
   counts reschedules already on your timelines (their earlier time wasn't recorded) (#90).
 - **A column per interview round** on the board: a switch splits *Interviewing* into *No round
   yet*, *Round 1*, *Round 2*…, to see progression; cards only drop into *No round yet* (#91).
+- **A role's recruiter carries over**: changing the person on a role gives its open applications
+  the new person where they fit how you applied (never changing the route or agency), and a
+  recruiter change is noted on the application's timeline (#92).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).

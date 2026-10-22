@@ -236,3 +236,99 @@ def test_how_far_a_roles_applications_got(client, seeded):
     assert _status(client, mixed) == ("interested", None)
     move(second, "rejected")
     assert _status(client, mixed) == ("closed", "Rejected")
+
+
+def _events(client, app_id) -> list[str]:
+    detail = client.get(f"/api/v1/applications/{app_id}").json()
+    return [e["summary"] for e in detail["events"] if e["kind"] == "manual"]
+
+
+def _app(client, role, **body):
+    return post(client, "/api/v1/applications", {"role_id": role, **body})["id"]
+
+
+def _get(client, app_id) -> dict:
+    return client.get(f"/api/v1/applications/{app_id}").json()
+
+
+def test_a_roles_new_person_takes_over_applications_they_fit(client, seeded):
+    company, agency, alex = seeded["company"]["id"], seeded["agency"]["id"], seeded["recruiter"]["id"]
+    other_agency = post(client, "/api/v1/agencies", {"name": "Blue Yonder Recruitment"})["id"]
+    jordan = post(client, "/api/v1/contacts", {"name": "Jordan Lee", "agency_id": agency})["id"]
+    sam = post(client, "/api/v1/contacts", {"name": "Sam Patel", "agency_id": other_agency})["id"]
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "Platform Engineer", "contact_id": alex})[
+        "id"
+    ]
+    with_alex = _app(client, role, route="agency", recruiter_id=alex)
+    with_sam = _app(client, role, route="agency", recruiter_id=sam)  # you gave it someone else
+    quiet = _get(client, with_alex)["last_activity_at"]
+
+    # Alex hands it to Jordan, at the same agency: the application follows.
+    r = client.patch(f"/api/v1/roles/{role}", json={"contact_id": jordan, "title": "Platform Engineer"})
+    assert r.status_code == 200
+    moved = _get(client, with_alex)
+    assert (moved["recruiter_id"], moved["agency_id"], moved["route"]) == (jordan, agency, "agency")
+    assert _events(client, with_alex) == ["Recruiter changed from Alex Recruiter to Jordan Lee, on the role"]
+    assert moved["last_activity_at"] == quiet  # bookkeeping, not activity
+    assert _get(client, with_sam)["recruiter_id"] == sam and _events(client, with_sam) == []
+
+    # The same person sent again (the role form always sends it): nothing new.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": jordan})
+    assert len(_events(client, with_alex)) == 1
+
+    # Then to Sam, at another agency: you applied through Jordan's agency, so it keeps Jordan, and says why.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": sam})
+    kept = _get(client, with_alex)
+    assert (kept["recruiter_id"], kept["agency_id"]) == (jordan, agency)
+    assert _events(client, with_alex)[-1] == (
+        "The role's person changed from Jordan Lee to Sam Patel; this application still has Jordan Lee "
+        "(through Northwind Talent)"
+    )
+
+    # Taking the role's person away changes no application.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": None})
+    assert _get(client, with_alex)["recruiter_id"] == jordan and len(_events(client, with_alex)) == 2
+
+
+def test_direct_referral_closed_and_archived_applications(client, seeded):
+    company = seeded["company"]["id"]
+    other_company = post(client, "/api/v1/companies", {"name": "Fabrikam"})["id"]
+    riley = post(client, "/api/v1/contacts", {"name": "Riley Chen", "company_id": company})["id"]
+    outsider = post(client, "/api/v1/contacts", {"name": "Jo Freelance", "company_id": other_company})["id"]
+    agency_person = seeded["recruiter"]["id"]
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "SRE"})["id"]
+    direct = _app(client, role, route="direct")
+    referral = _app(client, role, route="referral")
+    closed = _app(client, role, route="direct", stage="rejected")
+    archived = _app(client, role, route="direct")
+    client.patch(f"/api/v1/applications/{archived}", json={"archived": True})
+
+    # Someone pitched it from an agency: a direct application stays direct and gets nobody.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": agency_person})
+    assert (_get(client, direct)["route"], _get(client, direct)["recruiter_id"]) == ("direct", None)
+    # Someone at another company isn't in-house either.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": outsider})
+    assert _get(client, direct)["recruiter_id"] is None
+    # Someone at the role's company: the direct application takes them.
+    client.patch(f"/api/v1/roles/{role}", json={"contact_id": riley})
+    assert _get(client, direct)["recruiter_id"] == riley
+    assert _events(client, direct) == ["Recruiter set to Riley Chen, on the role"]
+    # Referrals, closed and archived applications are left alone.
+    for untouched in (referral, closed, archived):
+        assert _get(client, untouched)["recruiter_id"] is None and _events(client, untouched) == []
+
+
+def test_changing_an_applications_recruiter_is_recorded_and_isnt_activity(client, seeded):
+    alex = seeded["recruiter"]["id"]
+    jordan = post(client, "/api/v1/contacts", {"name": "Jordan Lee", "agency_id": seeded["agency"]["id"]})["id"]
+    app = _app(client, seeded["role"]["id"], route="agency", recruiter_id=alex, stage="interested")
+    url = f"/api/v1/applications/{app}"
+    client.post(f"{url}/move", json={"to_stage": "applied"})
+    client.patch(url, json={"recruiter_id": jordan})
+    client.patch(url, json={"recruiter_id": jordan})  # the same again: nothing new
+    client.patch(url, json={"tags": ["remote"]})
+    assert _events(client, app) == ["Recruiter changed from Alex Recruiter to Jordan Lee"]
+    # Undoing the move recomputes the last activity: the note doesn't count.
+    created = _get(client, app)["events"][0]["occurred_at"]
+    client.post(f"{url}/undo")
+    assert _get(client, app)["last_activity_at"] == created
