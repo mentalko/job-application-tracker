@@ -178,4 +178,43 @@ describe("interviews", () => {
       .closest(".mantine-Card-root")!;
     expect(await within(earlier as HTMLElement).findByText("Round 1 · Recruiter screen")).toBeInTheDocument();
   });
+
+  it("edits a round, or reschedules a booked one, from the list", async () => {
+    const moved = interview({ rescheduled_count: 2, rescheduled_from: "2026-10-20T14:00:00Z" });
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/interviews": (url: URL) => (url.searchParams.get("upcoming") ? [moved] : [screenRound, moved]),
+      "/api/v1/interviews/titles": [],
+      "/api/v1/contacts": contacts,
+      "/api/v1/health": {},
+    });
+    renderAt("/interviews");
+    const upcoming = (await screen.findByRole("heading", { name: "Coming up" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    // Marked as moved, twice.
+    expect(await within(upcoming).findByText("Rescheduled ×2")).toBeInTheDocument();
+    // A done round can be edited but not rescheduled.
+    expect(screen.queryByRole("button", { name: "Reschedule Round 1 · Recruiter screen" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Edit Round 1 · Recruiter screen" })).toBeInTheDocument();
+
+    // Reschedule asks for the new time; it can't be saved until the time changes.
+    fireEvent.click(
+      within(upcoming).getByRole("button", { name: "Reschedule Round 2 · Engineering manager chat" }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Reschedule Round 2 · Engineering manager chat",
+    });
+    expect(within(dialog).getByLabelText("Why? (optional)")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Reschedule" })).toBeDisabled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    // Edit opens the round's full form.
+    fireEvent.click(
+      within(upcoming).getByRole("button", { name: "Edit Round 2 · Engineering manager chat" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Edit Round 2 · Engineering manager chat" }),
+    ).toBeInTheDocument();
+  });
 });
