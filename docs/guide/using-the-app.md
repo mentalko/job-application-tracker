@@ -209,6 +209,15 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
+**A column per interview round** (a switch above the board, remembered) splits *Interviewing*
+into *No round yet*, then *Round 1*, *Round 2*… up to the furthest any application has got
+(empty ones in between up to Round 6), so you can see how far each one is. A card's round is its
+next booked round, or else the last one done (cancelled rounds don't count). Rounds go in order
+and come from the interviews you add on the application, so the round columns don't take drops:
+drop a card on *No round yet* to move it into Interviewing (one that already has rounds goes
+straight to its round), and it moves along as you add rounds. Any active stage whose name says
+"interview" splits the same way.
+
 Every stage change is timestamped on the application's timeline, and **Undo last move**
 reverts a mistake. By default you can move between any stages; you can make them strict
 instead ([Customising](customising.md#strict-jira-style-transitions)).

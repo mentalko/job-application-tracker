@@ -13,13 +13,25 @@ import {
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
 
 import { PersonMarks } from "./GhostMark";
 import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, type Workflow } from "../api/hooks";
-import { buildColumns, canDrop, isSuggested, visibleColumns, type Column } from "../utils/board";
+import {
+  buildColumns,
+  canDrop,
+  columnKey,
+  columnTitle,
+  isRoundColumn,
+  isSuggested,
+  splitByRound,
+  stageOfColumn,
+  visibleColumns,
+  type Column,
+} from "../utils/board";
 import { ago } from "../utils/time";
 import { RoundBadge } from "./Interviews";
 
@@ -27,9 +39,10 @@ import { RoundBadge } from "./Interviews";
 const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
 
 /** Screen-reader messages in words (company, stage names) rather than ids. */
-function announcements(rows: ApplicationRow[], names: Map<string, string>): Announcements {
+function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
   const label = (id: UniqueIdentifier) => rows.find((r) => r.id === id)?.company_name ?? "Application";
-  const stage = (id: UniqueIdentifier | undefined) => (id ? (names.get(String(id)) ?? String(id)) : "");
+  // The column's own title, so round columns can be told apart ("Interviewing · Round 2").
+  const stage = (id: UniqueIdentifier | undefined) => (id ? (titles.get(String(id)) ?? String(id)) : "");
   return {
     onDragStart: ({ active }) => `Picked up ${label(active.id)}. Use arrow keys to move, Space to drop.`,
     onDragOver: ({ active, over }) =>
@@ -121,7 +134,7 @@ function StageColumn({
   dropState: "idle" | "suggested" | "allowed" | "blocked";
   onOpen: (id: string) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.stage.id });
+  const { setNodeRef, isOver } = useDroppable({ id: columnKey(column) });
   const closed = column.stage.kind !== "active";
   // Usual next stages stand out; any other stage still takes the drop (unless the workflow
   // is set to configured transitions, when it's faded out).
@@ -140,11 +153,11 @@ function StageColumn({
       radius="md"
       bg="var(--mantine-color-default-hover)"
       style={{ border, opacity: dropState === "blocked" ? 0.45 : 1, transition: "opacity 120ms" }}
-      aria-label={`${column.stage.name} column`}
+      aria-label={`${columnTitle(column)} column`}
     >
       <Group justify="space-between" mb="xs" wrap="nowrap">
         <Badge color={column.stage.color} variant={closed ? "outline" : "light"} radius="sm">
-          {column.stage.name}
+          {columnTitle(column)}
         </Badge>
         <Text size="xs" c="dimmed">
           {column.rows.length}
@@ -170,21 +183,57 @@ export function Board({
 }) {
   const [active, setActive] = useState<ApplicationRow | null>(null);
   const [showClosed, setShowClosed] = useState(false);
+  // Remembered: a column per interview round, or one per stage.
+  const [byRound, setByRound] = useLocalStorage<boolean>({
+    key: "jat.board.byRound",
+    defaultValue: false,
+    getInitialValueInEffect: false,
+  });
   const move = useMoveApplication();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), // clicks still open the card
     useSensor(KeyboardSensor, { keyboardCodes: KEYBOARD_CODES }),
   );
-  const columns = visibleColumns(buildColumns(workflow, rows), { showClosed, dragging: !!active });
+  const stageColumns = buildColumns(workflow, rows);
+  const columns = visibleColumns(byRound ? splitByRound(stageColumns) : stageColumns, {
+    showClosed,
+    dragging: !!active,
+  });
   const names = new Map(workflow.stages.map((s) => [s.id, s.name]));
+  const titles = new Map(columns.map((c) => [columnKey(c), columnTitle(c)]));
+  const ownColumn = (id: string) => {
+    const column = columns.find((c) => c.rows.some((r) => r.id === id));
+    return column ? columnKey(column) : undefined;
+  };
 
   const onDragStart = (event: DragStartEvent) =>
     setActive((event.active.data.current?.row as ApplicationRow) ?? null);
   const onDragEnd = (event: DragEndEvent) => {
     const row = event.active.data.current?.row as ApplicationRow | undefined;
     setActive(null);
-    const to = event.over?.id as string | undefined;
-    if (!row || !to || to === row.stage) return;
+    const over = event.over ? String(event.over.id) : undefined;
+    const to = over ? stageOfColumn(over) : undefined;
+    if (!row || !to || !over || over === ownColumn(row.id)) return;
+    // Within a split stage a card's column is its round, which comes from its interviews; and
+    // a card coming in can't skip ahead to a round.
+    if (to === row.stage && over !== to) {
+      notifications.show({
+        color: "orange",
+        title: "Rounds go in order",
+        message:
+          "A card's round comes from its interviews: add or finish a round on the application to move it along.",
+      });
+      return;
+    }
+    if (isRoundColumn(over)) {
+      notifications.show({
+        color: "orange",
+        title: "Rounds go in order",
+        message: `Drop it on ${names.get(to) ?? to} · No round yet; it moves along as you add its interview rounds.`,
+      });
+      return;
+    }
+    if (to === row.stage) return;
     if (!canDrop(workflow, row.stage, to)) {
       notifications.show({
         color: "orange",
@@ -201,34 +250,44 @@ export function Board({
 
   return (
     <Stack gap="xs">
-      <Switch
-        label="Show closed stages"
-        checked={showClosed}
-        onChange={(e) => setShowClosed(e.currentTarget.checked)}
-        size="xs"
-      />
+      <Group gap="lg">
+        <Switch
+          label="Show closed stages"
+          checked={showClosed}
+          onChange={(e) => setShowClosed(e.currentTarget.checked)}
+          size="xs"
+        />
+        <Switch
+          label="A column per interview round"
+          checked={byRound}
+          onChange={(e) => setByRound(e.currentTarget.checked)}
+          size="xs"
+        />
+      </Group>
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragCancel={() => setActive(null)}
-        accessibility={{ announcements: announcements(rows, names) }}
+        accessibility={{ announcements: announcements(rows, titles) }}
       >
         <ScrollArea type="auto" offsetScrollbars>
           <Group align="flex-start" wrap="nowrap" gap="sm" pb="sm">
             {columns.map((column) => (
               <StageColumn
-                key={column.stage.id}
+                key={columnKey(column)}
                 column={column}
                 onOpen={onOpen}
                 dropState={
-                  !active || column.stage.id === active.stage
+                  !active || columnKey(column) === ownColumn(active.id)
                     ? "idle"
-                    : !canDrop(workflow, active.stage, column.stage.id)
+                    : isRoundColumn(columnKey(column)) || column.stage.id === active.stage
                       ? "blocked"
-                      : isSuggested(workflow, active.stage, column.stage.id)
-                        ? "suggested"
-                        : "allowed"
+                      : !canDrop(workflow, active.stage, column.stage.id)
+                        ? "blocked"
+                        : isSuggested(workflow, active.stage, column.stage.id)
+                          ? "suggested"
+                          : "allowed"
                 }
               />
             ))}
