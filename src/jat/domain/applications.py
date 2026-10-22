@@ -233,9 +233,14 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
 
 
 def _activity_time(events: list[Event], fallback: datetime) -> datetime:
-    """Latest occurred_at over events that count as activity (not undone moves or undo events)."""
+    """Latest occurred_at over events that count as activity (not undone moves, undo events, or
+    bookkeeping notes like a recruiter change)."""
     undone = {(ev.data or {}).get("undo_of") for ev in events} - {None}
-    times = [ev.occurred_at for ev in events if ev.id not in undone and not (ev.data or {}).get("undo_of")]
+    times = [
+        ev.occurred_at
+        for ev in events
+        if ev.id not in undone and not (ev.data or {}).get("undo_of") and not (ev.data or {}).get("bookkeeping")
+    ]
     return max(times) if times else fallback
 
 
@@ -245,7 +250,8 @@ def note_change(session: Session, app: Application, summary: str, data: dict[str
     Bookkeeping, not contact with anyone: it doesn't count as activity, so it doesn't reset how
     long the application has been quiet.
     """
-    event = Event(application_id=app.id, kind="manual", occurred_at=utcnow(), summary=summary, data=data or {})
+    data = {**(data or {}), "bookkeeping": True}  # see _activity_time
+    event = Event(application_id=app.id, kind="manual", occurred_at=utcnow(), summary=summary, data=data)
     session.add(event)
     session.flush()
     return event

@@ -57,11 +57,15 @@ any. Add them as **roles** first, then decide on each:
   pick (empty before *Applied*, today from *Applied* on) until you change the date yourself.
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
   puts it back. The pencil edits a role; the bin deletes it (not once it has an application).
-  Change the person on a role and its applications that had the old person (or nobody) follow:
-  through the new recruiter's agency, or direct for someone in-house. Each application's
-  timeline says so ("Recruiter changed from … to …, on the role"); one you'd given someone else
-  keeps them. Changing an application's recruiter yourself is noted on its timeline too. Neither
-  counts as activity, so it doesn't reset how long an application has been quiet.
+  Change the person on a role and its open applications that had the old person (or nobody)
+  take the new one where they fit how you applied: an agency application if they're at its
+  agency, a direct one if they work at the role's company. Each says so on its timeline
+  ("Recruiter changed from … to …, on the role"). How you applied never changes: one where the
+  new person doesn't fit keeps the old one, with a note saying the role changed hands. Closed,
+  archived and referral applications, and ones you'd given someone else, are left alone, and
+  taking a role's person away changes no application. Changing an application's recruiter
+  yourself is noted on its timeline too. These notes don't count as activity, so they don't
+  reset how long an application has been quiet.
 - Deleting a call keeps the roles from it; they just aren't linked to a call any more.
 
 **A role's page.** Click a role's name anywhere (the Roles page, a company, a person, a call,

@@ -224,6 +224,18 @@ export function RoleFormModal({
               {...form.getInputProps("meetingId")}
             />
           </Group>
+          <Group>
+            {role &&
+              role.application_ids.length > 0 &&
+              form.values.contactId &&
+              form.values.contactId !== role.contact_id && (
+                <Text size="xs" c="dimmed">
+                  Saving also gives this role's open applications the new person where they fit how you
+                  applied (through their agency, or someone at the company for a direct one), and notes it on
+                  their timelines.
+                </Text>
+              )}
+          </Group>
           <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("url")} />
           <Group grow align="flex-start">
             <TextInput label="Location" placeholder="London" {...form.getInputProps("location")} />
