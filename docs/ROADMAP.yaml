@@ -139,3 +139,4 @@ phases:
       - {id: conversations-sankey-tidy, name: "Sankeys: columns arranged for fewest crossings, labels wrap; Recruiter conversations the same; Passed reads Decided not to apply", owner: lead, status: done, estimate_h: 0.5, depends: [holding-beside-stage], prd: docs/prd/tracker.md}
       - {id: how-did-it-go-notes, name: "How did it go?: Done and Didn't happen open a dialog for notes (debrief and questions, or what happened) before saving", owner: lead, status: done, estimate_h: 0.5, depends: [next-actions], prd: docs/prd/tracker.md}
       - {id: outcome-notes-newline, name: "Fix: Enter in the How did it go? notes dialog crashed the page", owner: lead, status: done, estimate_h: 0.25, depends: [how-did-it-go-notes], prd: docs/prd/tracker.md}
+      - {id: route-links, name: "An application's Route links the recruiter, agency or company to their page", owner: lead, status: done, estimate_h: 0.25, depends: [detail-pages], prd: docs/prd/tracker.md}
