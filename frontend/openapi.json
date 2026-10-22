@@ -4211,6 +4211,7 @@
           "reschedule_reason": {
             "anyOf": [
               {
+                "maxLength": 500,
                 "type": "string"
               },
               {

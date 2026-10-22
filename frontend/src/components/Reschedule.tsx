@@ -11,13 +11,15 @@ const PICKER = "YYYY-MM-DD HH:mm:ss";
 /** "Rescheduled" (or "Rescheduled ×2") on a round that moved, with the time it moved from. */
 export function RescheduledBadge({
   interview,
+  size = "sm",
 }: {
   interview: Pick<Interview, "rescheduled_count" | "rescheduled_from">;
+  size?: "xs" | "sm";
 }) {
   const n = interview.rescheduled_count;
   if (!n) return null;
   const badge = (
-    <Badge size="sm" variant="light" color="yellow">
+    <Badge size={size} variant="light" color="yellow">
       Rescheduled{n > 1 ? ` ×${n}` : ""}
     </Badge>
   );
@@ -39,7 +41,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
     interview.starts_at ? dayjs(interview.starts_at).format(PICKER) : null,
   );
   const [reason, setReason] = useState("");
-  // To the minute: the picker drops seconds and fractions, which is no move.
+  // To the minute: a change of seconds or fractions alone is no move.
   const moved = when !== null && !dayjs(when).isSame(dayjs(interview.starts_at), "minute");
   const submit = () => {
     if (!when) return;
@@ -62,8 +64,10 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
       opened
       onClose={onClose}
       title={`Reschedule ${interview.label}`}
+      // While saving, nothing closes it: if the save fails, what you typed is still here.
       closeOnEscape={!save.isPending}
       closeOnClickOutside={!save.isPending}
+      withCloseButton={!save.isPending}
     >
       <Stack>
         <Text size="sm" c="dimmed">
@@ -74,6 +78,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
         <Textarea
           label="Why? (optional)"
           placeholder="They had a clash, you asked to move it…"
+          maxLength={500}
           autosize
           minRows={2}
           value={reason}
@@ -83,7 +88,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
           }}
         />
         <Group justify="flex-end">
-          <Button variant="default" onClick={onClose}>
+          <Button variant="default" onClick={onClose} disabled={save.isPending}>
             Cancel
           </Button>
           <Button onClick={submit} disabled={!moved} loading={save.isPending}>

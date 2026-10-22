@@ -612,7 +612,7 @@ class InterviewPatch(Patch):
     questions: str | None = None
     # Why it moved, when this PATCH reschedules it (a new time for a booked round): goes on the
     # timeline entry, not stored on the round.
-    reschedule_reason: str | None = None
+    reschedule_reason: str | None = Field(default=None, max_length=500)
     task_instructions: str | None = None
     task_repo_url: HttpUrl | None = None
     interviewer_ids: list[str] | None = None

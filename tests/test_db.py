@@ -342,10 +342,15 @@ def test_0014_counts_reschedules_already_on_the_timeline(tmp_path):
             )
         for seq, (summary, data) in enumerate(
             [
-                ("Round 1 rescheduled", '{"interview_id": "i1"}'),
-                ("Round 1 rescheduled", '{"interview_id": "i1"}'),
+                ("Round 1 rescheduled", '{"interview_id": "i1", "round": 1, "status": "scheduled"}'),
+                ("Round 1 rescheduled: a clash", '{"interview_id": "i1", "round": 1, "status": "scheduled"}'),
+                ("Round 1 rescheduled", '{"interview_id": "i1", "round": 1, "status": "scheduled"}'),
                 ("Round 1 scheduled", '{"interview_id": "i2"}'),
                 ("Round 1 rescheduled", "not json"),
+                # Near misses: a title ending in the word, another change, a hand-logged entry.
+                ("Round 1 · Not rescheduled scheduled", '{"interview_id": "i2", "round": 1, "status": "scheduled"}'),
+                ("Round 1 · Not rescheduled removed", '{"interview_id": "i2", "round": 1, "status": "scheduled"}'),
+                ("Call about Round 1 RESCHEDULED", '{"interview_id": "i2"}'),
             ],
             start=1,
         ):

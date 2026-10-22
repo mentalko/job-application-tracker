@@ -87,7 +87,7 @@ function InterviewItem({
             <Badge size="xs" variant="light" color={roundStatus(interview).color}>
               {roundStatus(interview).label}
             </Badge>
-            <RescheduledBadge interview={interview} />
+            <RescheduledBadge interview={interview} size="xs" />
           </Group>
           <Text size="sm" c="dimmed">
             {[

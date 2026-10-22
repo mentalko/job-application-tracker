@@ -30,14 +30,18 @@ def upgrade() -> None:
     conn = op.get_bind()
     counts: Counter[str] = Counter()
     rows = conn.execute(
-        sa.text("SELECT data FROM events WHERE kind = 'interview' AND summary LIKE '% rescheduled'")
+        sa.text("SELECT summary, data FROM events WHERE kind = 'interview' AND summary LIKE '% rescheduled'")
     ).all()
-    for (raw,) in rows:
+    for summary, raw in rows:
+        if not str(summary).endswith(" rescheduled"):
+            continue
         try:
             data = json.loads(raw) if raw else {}
         except (TypeError, ValueError):
             continue
-        if isinstance(data, dict) and isinstance(data.get("interview_id"), str):
+        # Only entries the app wrote for a round (they always carry its round and status), and
+        # LIKE ignores case, so check the ending exactly.
+        if isinstance(data, dict) and isinstance(data.get("interview_id"), str) and {"round", "status"} <= data.keys():
             counts[data["interview_id"]] += 1
     for interview_id, n in counts.items():
         conn.execute(

@@ -147,6 +147,41 @@ def test_patch_clears_replaces_and_logs_only_real_reschedules(client, seeded):
     assert client.get(url).json()["rescheduled_count"] == 2
 
 
+def test_rescheduling_keeps_the_length_and_one_line_reasons(client, seeded):
+    app = _app(client, seeded)
+    start, end = datetime.fromisoformat(_iso(3)), datetime.fromisoformat(_iso(3)) + timedelta(hours=1)
+    made = post(
+        client,
+        f"/api/v1/applications/{app['id']}/interviews",
+        {"title": "Pairing", "starts_at": start.isoformat(), "ends_at": end.isoformat()},
+    )
+    url = f"/api/v1/interviews/{made['id']}"
+    # Only the start sent (as the round's form does): the end moves with it.
+    later = start + timedelta(days=2)
+    r = client.patch(url, json={"starts_at": later.isoformat(), "reschedule_reason": "They had\n a clash  "})
+    out = r.json()
+    assert datetime.fromisoformat(out["ends_at"]) - datetime.fromisoformat(out["starts_at"]) == timedelta(hours=1)
+    assert "Round 1 · Pairing rescheduled: They had a clash" in _interview_events(client, app["id"])
+    # An end sent with it wins.
+    r = client.patch(url, json={"starts_at": _iso(9), "ends_at": None})
+    assert r.json()["ends_at"] is None and r.json()["rescheduled_count"] == 2
+    # A reason has a sensible length.
+    assert client.patch(url, json={"starts_at": _iso(10), "reschedule_reason": "x" * 501}).status_code == 422
+
+
+def test_changing_status_and_time_together_isnt_a_reschedule(client, seeded):
+    app = _app(client, seeded)
+    made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "Pairing", "starts_at": _iso(3)})
+    url = f"/api/v1/interviews/{made['id']}"
+    client.patch(url, json={"status": "cancelled"})
+    # Back on at a new time: logged as back on, not counted as moved.
+    r = client.patch(url, json={"status": "scheduled", "starts_at": _iso(5), "reschedule_reason": "dropped"})
+    assert (r.json()["rescheduled_count"], r.json()["rescheduled_from"]) == (0, None)
+    events = _interview_events(client, app["id"])
+    assert "Round 1 · Pairing back on" in events
+    assert not any("rescheduled" in e for e in events)
+
+
 def test_upcoming_skips_cancelled_done_and_past(client, seeded):
     app = _app(client, seeded)
     url = f"/api/v1/applications/{app['id']}/interviews"

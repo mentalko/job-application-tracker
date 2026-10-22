@@ -137,7 +137,8 @@ brackets are pull requests.
 - **Route links**: an application's *Route* links the recruiter, agency or company to their
   page, on the full page and the quick view (#89).
 - **Reschedule an interview**: the Interviews page edits a round, or moves a booked one to a
-  new time (and why); a *Rescheduled* badge shows it moved, and from when (#90).
+  new time (and why); a *Rescheduled* badge shows it moved, and from when. Migration 0014
+  counts reschedules already on your timelines (their earlier time wasn't recorded) (#90).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).
