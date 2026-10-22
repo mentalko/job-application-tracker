@@ -566,7 +566,7 @@ def _role_recruiter_changed(session: Session, role: Role, before: dict, workflow
                     app,
                     f"The role's person changed from {_name(session, Contact, old_id)} to {new.name}; "
                     f"this application still has {_name(session, Contact, old_id)} ({_route_words(session, app)})",
-                    data={"bookkeeping": True, "from_role": role.id},
+                    data={"from_role": role.id},
                 )
             continue
         app.recruiter_id = new_id
@@ -576,7 +576,7 @@ def _role_recruiter_changed(session: Session, role: Role, before: dict, workflow
             session,
             app,
             f"{_recruiter_change(session, was['recruiter_id'], new_id)}, on the role",
-            data={"bookkeeping": True, "recruiter_change": was, "from_role": role.id},
+            data={"recruiter_change": was, "from_role": role.id},
         )
 
 
@@ -766,7 +766,7 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
         summary = _recruiter_change(session, current["recruiter_id"], data["recruiter_id"])
         if data.get("agency_id") and data["agency_id"] != current["agency_id"]:
             summary += f" (through {_name(session, Agency, data['agency_id'])})"
-        svc.note_change(session, app, summary, data={"bookkeeping": True, "recruiter_change": current})
+        svc.note_change(session, app, summary, data={"recruiter_change": current})
     was_waiting = app.awaiting_reply_since
     was_to_read = app.reply_to_read_since
     _one_reply_state(data)

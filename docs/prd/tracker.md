@@ -104,6 +104,11 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 - **FR8:** Timeline events can also be manual (a call, an email, a note), attached files
   and imported emails.
 
+- **FR8a:** Changing the person on a role gives its open applications the new person where
+  they fit how you applied (same agency, or someone at the company for a direct one), noted on
+  each application's timeline; the route and agency never change. Changing an application's
+  recruiter is noted on its timeline too. Notes like these are bookkeeping, not activity.
+
 ### Interviews
 - **FR9:** An interview has a type (screen, technical, coding task, system design,
   behavioural, final), date and time or deadline, format and location or link,
