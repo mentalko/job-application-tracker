@@ -280,19 +280,28 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
 
 /** How the application came about, with the recruiter, agency and company linked to their pages. */
 function RouteLine({ app }: { app: ApplicationDetail }) {
-  const person = app.recruiter_name && app.recruiter_id && (
+  // A name with no id (shouldn't happen) still shows, just not as a link.
+  const person = app.recruiter_name && (
     <>
       <PersonMarks id={app.recruiter_id} />
-      <Anchor component={Link} to={`/people/${app.recruiter_id}`} inherit>
-        {app.recruiter_name}
-      </Anchor>
+      {app.recruiter_id ? (
+        <Anchor component={Link} to={`/people/${app.recruiter_id}`} inherit>
+          {app.recruiter_name}
+        </Anchor>
+      ) : (
+        app.recruiter_name
+      )}
     </>
   );
-  const agency = app.agency_name && app.agency_id && (
-    <Anchor component={Link} to={`/agencies/${app.agency_id}`} inherit>
-      {app.agency_name}
-    </Anchor>
-  );
+  const agency =
+    app.agency_name &&
+    (app.agency_id ? (
+      <Anchor component={Link} to={`/agencies/${app.agency_id}`} inherit>
+        {app.agency_name}
+      </Anchor>
+    ) : (
+      app.agency_name
+    ));
   if (app.route === "agency") {
     if (!person && !agency) return <>Through an agency</>;
     return (
