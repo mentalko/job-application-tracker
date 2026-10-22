@@ -139,6 +139,8 @@ brackets are pull requests.
 - **Reschedule an interview**: the Interviews page edits a round, or moves a booked one to a
   new time (and why); a *Rescheduled* badge shows it moved, and from when. Migration 0014
   counts reschedules already on your timelines (their earlier time wasn't recorded) (#90).
+- **A column per interview round** on the board: a switch splits *Interviewing* into *No round
+  yet*, *Round 1*, *Round 2*…, to see progression; cards only drop into *No round yet* (#91).
 - **Every application starts at Interested**: one added at *Applied* (or later) gets an
   *Interested* step a second before, so Insights shows every application flowing from
   *Interested*; existing applications are filled in by migration 0013 (#83).

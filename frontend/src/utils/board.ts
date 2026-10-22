@@ -4,6 +4,47 @@ import type { Workflow, WorkflowStage } from "../api/hooks";
 export interface Column {
   stage: WorkflowStage;
   rows: ApplicationRow[];
+  // Set when a stage is split into a column per interview round: the round (null for "no round
+  // yet"), and a key telling the columns apart (a drop on any of them means the stage).
+  round?: number | null;
+  key?: string;
+}
+
+/** The stage a column (or a drop on it) stands for: round columns are "<stage>#round-<n>". */
+export const stageOfColumn = (key: string) => key.split("#")[0]!;
+
+export const columnKey = (column: Column) => column.key ?? column.stage.id;
+
+/** The column's heading: the stage, and its round when split ("Interviewing · Round 2"). */
+export function columnTitle(column: Column): string {
+  if (column.round === undefined) return column.stage.name;
+  return `${column.stage.name} · ${column.round === null ? "No round yet" : `Round ${column.round}`}`;
+}
+
+/** A drop on a round's own column: rounds follow the interviews you add, so cards can't be put there. */
+export const isRoundColumn = (key: string) => /#round-\d+$/.test(key);
+
+/**
+ * An interviewing stage (its id or name says "interview") becomes a column per round, Round 1
+ * up to the furthest any application has got (the current or next round), so you can see how
+ * far each has got. "No round yet" always comes first:
+ * it's where an application moving into the stage lands (rounds go in order, from the
+ * interviews you add, so you can't drop straight into Round 2).
+ */
+export function splitByRound(columns: Column[]): Column[] {
+  return columns.flatMap((column) => {
+    const roundOf = (row: ApplicationRow) => row.current_round?.round ?? null;
+    const interviewing = /interview/i.test(`${column.stage.id} ${column.stage.name}`);
+    if (column.stage.kind !== "active" || !interviewing) return [column];
+    const furthest = Math.max(0, ...column.rows.map((r) => roundOf(r) ?? 0));
+    const rounds = [null, ...Array.from({ length: furthest }, (_, i) => i + 1)];
+    return rounds.map((round) => ({
+      stage: column.stage,
+      rows: column.rows.filter((r) => roundOf(r) === round),
+      round,
+      key: `${column.stage.id}#round-${round ?? "none"}`,
+    }));
+  });
 }
 
 /** One column per workflow stage, in workflow order. Unknown stages (removed from config) go last. */
