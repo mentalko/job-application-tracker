@@ -48,6 +48,41 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   IntelliJ is open. After merging, fast-forward it:
   `git -C ~/Documents/Projects/job-application-tracker pull --ff-only`.
 
+## Versions and releases
+The app follows [semantic versioning](https://semver.org/), from 1.0.0. **Every PR that changes
+what people get (the app, the website, the README or the guide) bumps the version in that
+PR.** PRs that only touch internal planning files (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`,
+`docs/IDEAS.md`, `var/`) don't.
+
+- **Patch (1.0.0 → 1.0.1): most PRs.** Fixes, wording, docs, screenshots, refactors, tests,
+  tooling, small tweaks to something that already exists.
+- **Minor (1.0.1 → 1.1.0): a new feature.** Something you can do that you couldn't before: a new
+  page, action, command, setting or API endpoint. Existing data, commands and settings keep
+  working unchanged.
+- **Major (1.1.0 → 2.0.0): anything that breaks how someone already uses it.** For example: a
+  data folder an older version can't read, or one that needs manual steps to upgrade; a
+  command, setting, `config.toml` key or API endpoint removed, renamed or changed in meaning;
+  dropping a supported platform or Python version.
+  - **Never merge a major bump without Kai's explicit permission for that bump.** Before merging,
+    stop and ask in plain words, e.g. "PR #N is a MAJOR version bump (1.4.2 → 2.0.0) because
+    <what breaks>. May I merge it?". Then wait for a yes to that question. "Merge once ready",
+    "keep going" and other standing instructions do **not** cover a major bump. Put
+    "⚠️ MAJOR version bump" at the top of the PR body, and list what breaks and how to upgrade.
+  - If it's unclear whether a change is major, treat it as major and ask.
+- **How to bump.** Set the same version in `pyproject.toml`, `src/jat/__init__.py`,
+  `frontend/package.json`, `website/package.json` and `softwareVersion` in
+  `website/src/layouts/Landing.astro`. Run `uv lock`, then `uv run python -m jat.openapi` and
+  `pnpm --dir frontend gen:api`. In `CHANGELOG.md`, add a `## X.Y.Z (YYYY-MM-DD)` section at
+  the top with this PR's entries. Say the bump and why in the PR body ("Patch: a fix to …").
+- **Bump against main at merge time.** If main moved since the branch was cut, merge main in
+  and bump from main's version, so two PRs never ship the same number.
+- **Release every version.** After merging, tag the merge commit `vX.Y.Z`, push the tag, and
+  publish a GitHub release with that version's changelog section as its notes:
+  `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file <section>`. A major release still
+  needs Kai's yes first (above).
+- Don't write version numbers into prose (README, guide, website copy) beyond "version 1.0",
+  so docs don't go stale with every patch.
+
 ## Runtime
 - Runs locally only. **Never install services** (systemd units, timers, cron entries).
   Long-lived things run as terminal processes.
