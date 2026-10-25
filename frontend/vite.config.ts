@@ -9,15 +9,29 @@ import { defineConfig, type Plugin } from "vite";
 // In production FastAPI serves the built files from dist/ on a single port.
 const apiTarget = process.env.JAT_API_URL ?? "http://127.0.0.1:8770";
 
-// The API docs page (/api/docs) loads Swagger UI from here rather than a CDN, so nothing is fetched
-// from the web.
+// The API docs page (/api/docs) loads Swagger UI from /api-docs/ rather than a CDN, so nothing is
+// fetched from the web: copied into dist/ by the build, and served straight from node_modules in dev
+// (ahead of the /api proxy, whose prefix would otherwise send /api-docs to FastAPI).
+const SWAGGER_FILES: Record<string, string> = {
+  "swagger-ui-bundle.js": "text/javascript",
+  "swagger-ui.css": "text/css",
+};
+
 function swaggerUi(): Plugin {
   const root = dirname(createRequire(import.meta.url).resolve("swagger-ui-dist/package.json"));
   return {
     name: "swagger-ui",
-    apply: "build",
+    configureServer(server) {
+      server.middlewares.use("/api-docs", (req, res, next) => {
+        const file = (req.url ?? "").replace(/^\//, "").replace(/\?.*$/, "");
+        const type = SWAGGER_FILES[file];
+        if (!type) return next();
+        res.setHeader("Content-Type", type);
+        res.end(readFileSync(join(root, file)));
+      });
+    },
     generateBundle() {
-      for (const file of ["swagger-ui-bundle.js", "swagger-ui.css"]) {
+      for (const file of Object.keys(SWAGGER_FILES)) {
         this.emitFile({
           type: "asset",
           fileName: `api-docs/${file}`,

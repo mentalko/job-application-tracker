@@ -72,6 +72,7 @@ def _api_docs(app: FastAPI) -> None:
             swagger_js_url="/api-docs/swagger-ui-bundle.js",
             swagger_css_url="/api-docs/swagger-ui.css",
             swagger_favicon_url="/favicon.svg",
+            swagger_ui_parameters={"validatorUrl": None},  # no badge from validator.swagger.io
         )
 
 
