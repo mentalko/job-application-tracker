@@ -55,7 +55,7 @@ way tech hiring actually works:
   server of ours your data goes to.
 - **No AI.** Nothing reads, summarises, scores or uploads your notes, CVs or emails.
 - **No tracking.** No telemetry and no analytics. The app never sends email, never contacts
-  anyone and never fetches anything from the web.
+  anyone and never calls out to the web.
 - **Your files, in open formats.** One folder outside the code: a SQLite database plus a
   plain-text export (JSON Lines and Markdown notes) you can read without the app.
 - **Simple backups.** Make the folder a git repo and every change is snapshotted
@@ -207,9 +207,9 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 | | Spreadsheet or Notion | Hosted trackers (Huntr, Teal, …) | **Job Application Tracker** |
 |---|---|---|---|
 | Your data stays on your machine | Sometimes | ❌ | ✅ |
-| No account or sign-up | ❌ | ❌ | ✅ |
-| No AI reading your data | Depends | ❌ AI features | ✅ None |
-| No tracking or telemetry | ❌ | ❌ | ✅ |
+| No account or sign-up | Depends | ❌ | ✅ |
+| No AI features | Depends | ❌ | ✅ |
+| No tracking or analytics | Depends | ❌ | ✅ |
 | Works offline | Sometimes | ❌ | ✅ |
 | Export you can read and diff | CSV | Partial | ✅ JSON Lines + Markdown, in git |
 | Recruiters with several roles | Manual | Partial | ✅ First-class |
@@ -226,7 +226,7 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 
 It runs on **Linux or macOS** (Windows isn't supported yet). You need Python 3.12+ with
 [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with [pnpm](https://pnpm.io/) to build
-the web UI. Setup takes about ten minutes.
+the web UI. With those installed, setup takes about ten minutes.
 
 ```bash
 git clone https://github.com/waddington/job-application-tracker.git

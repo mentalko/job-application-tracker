@@ -50,7 +50,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Do I need to be technical?",
-    a: "A little, for now. Setting it up takes about ten minutes in the Terminal app: you copy and paste a few commands, and the install guide walks through each one. After that it's a normal web page in your browser. A one-command install and a double-click app are planned.",
+    a: "A little, for now. Setting it up means installing Python and Node.js (the install guide links to both), then about ten minutes copying and pasting a few commands into the Terminal app. After that it's a normal web page in your browser. A one-command install and a double-click app are planned.",
   },
   {
     q: "Is it like Huntr or Teal?",
@@ -66,7 +66,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Does it scrape LinkedIn or job boards?",
-    a: "No. By design it tracks the applications you make. It never searches for jobs, never fetches from the web and never contacts anyone.",
+    a: "No. By design it tracks the applications you make. It never searches for jobs, never calls out to the web and never contacts anyone.",
   },
   {
     q: "Does it run on Windows?",
@@ -82,7 +82,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How do I back it up?",
-    a: "Download a backup from the sidebar: one zip file with everything. If you're comfortable with git, the folder can also keep its own full history and copy it to a private repo you own.",
+    a: "Download a backup from the sidebar: one zip file with everything you need to restore. If you're comfortable with git, the folder can also keep its own full history and copy it to a private repo you own.",
   },
   {
     q: "What do developers need to run it?",
@@ -90,7 +90,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Can I use it for non-software jobs?",
-    a: "Yes. It's built with tech hiring in mind (recruiters, coding interviews, take-home tasks), but the stages are yours to change.",
+    a: "Yes. It's built with tech hiring in mind (recruiters, coding interviews, take-home tasks), but the stages are yours to change in a settings file.",
   },
   {
     q: "Is it ready?",
