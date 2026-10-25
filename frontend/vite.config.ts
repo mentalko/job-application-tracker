@@ -18,7 +18,11 @@ function swaggerUi(): Plugin {
     apply: "build",
     generateBundle() {
       for (const file of ["swagger-ui-bundle.js", "swagger-ui.css"]) {
-        this.emitFile({ type: "asset", fileName: `api-docs/${file}`, source: readFileSync(join(root, file)) });
+        this.emitFile({
+          type: "asset",
+          fileName: `api-docs/${file}`,
+          source: readFileSync(join(root, file)),
+        });
       }
     },
   };
