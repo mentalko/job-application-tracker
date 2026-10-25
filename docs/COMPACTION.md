@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-15, after PR #80); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-25, after PR #92); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -113,7 +113,7 @@ next action.
 - **Demo GIF.** `python3 scripts/demo_gif/make_demo_gif.py [--out x.gif] [--hold 150]` renders
   `scripts/demo_gif/scene.html` frames with headless Chrome and builds the GIF with
   ImageMagick (1.5 s per scene, 45 frames, ~2.7 MB). Show Kai a preview before replacing it.
-- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0012) and
+- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0014) and
   SQLite in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9,
   TanStack Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
 - **Data folder.** `--data-dir` or `JAT_DATA_DIR` (env var or `.env` in the current
@@ -124,7 +124,7 @@ next action.
 - **Running apps.**
   - **The tracker:** `uv run jat serve` in the main checkout → http://127.0.0.1:8770
     (`/api/docs`), on Kai's data folder via `.env`. It migrates on start and serves
-    `frontend/dist`. **Kai runs it in their own terminal** (as of 2026-10-15: `pgrep -af "jat
+    `frontend/dist`. **Kai runs it in their own terminal** (as of 2026-10-25: `pgrep -af "jat
     serve"` shows it). On 2026-10-14 Kai said "start it up" and this session ran it as a
     background job, but that stopped when the session restarted, and Kai started their own.
     Never stop Kai's. After a merge that changes the backend, tell Kai to Ctrl+C and rerun it;
@@ -141,7 +141,7 @@ next action.
   - After API changes: `uv run python -m jat.openapi` then `pnpm --dir frontend gen:api`
     (`tests/test_openapi.py` fails on drift, including docstring changes).
   - Demo: `uv run python scripts/seed_demo.py <new empty dir>` then
-    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8875 was the last
+    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8884 was the last
     port). Rebuild `frontend/dist` in the worktree first so it serves the branch. TaskStop it
     after merging, and tell Kai the URL if they want to look.
   - Screenshots: Playwright with the system Chrome, from a throwaway env:
@@ -165,19 +165,26 @@ next action.
   `/applications/$id`, `/roles/$id`, `/companies/$id`, `/agencies/$id`, `/people/$id`,
   `/search?q=`.
 - **Header** (`components/Layout.tsx`): wordmark → `/`; **New application**; search (`/`);
-  **?** How it works (`components/HowItWorks.tsx`); theme toggle.
+  **?** How it works (`components/HowItWorks.tsx`); theme toggle. Every date picker rings today
+  (#82, theme `classNames` in `theme.ts` + `theme.module.css`).
 - **Overview** (`pages/HomePage.tsx`): stats; pipeline; *Needs attention*; *Coming up*;
   *Recent activity* (timeline items except `added`, so pitches show).
 - **Next actions** (`pages/NextActionsPage.tsx`, `api/next_actions.py`): replies to read,
   to-dos, offers to answer, waiting to hear back (people rows: Chased / Ghosted / Not
   interested; *Usually replies within N working days* and *longer than usual*, also on
   application rows via their recruiter), how did it go?, follow up, roles to decide, coming
-  up, gone quiet.
+  up, gone quiet. *How did it go?* (#87/#88, `components/OutcomeNotes.tsx`): a round's **Done**
+  asks for the debrief and questions asked, **Didn't happen** (round or call) for what
+  happened; nothing saves until you confirm; dialogs can't close mid-save.
 - **Application page and quick view** (`pages/ApplicationPage.tsx`,
   `components/ApplicationDrawer.tsx`): summary, then **At a glance**
   (`components/AtAGlance.tsx`, rules in `utils/attention.ts`, #65). Then details, interviews,
   documents sent, offer, notes, links, files (+ *From the role*), log activity, timeline;
-  to-dos, role and people on the right.
+  to-dos, role and people on the right. *Route* (`RouteLine`, #89) links the recruiter, agency
+  and company. Every application starts at the workflow's first stage (#83): one created later
+  gets an *implied* creation event a second before plus an implied move (`data.implied`,
+  `is_implied`, `in_time_order`); not undoable, not a stay, update, reply or weekly move;
+  migration 0013 backfilled it (first stage read from the data folder's `config.toml`).
 - **Roles** (`api/roles.py`, `components/Roles.tsx`, `pages/RolesPage.tsx`,
   `pages/RolePage.tsx`): pitched or spotted roles, **Apply** / **Interested** / **Pass** /
   Reconsider; a page per role with its files (shown on the application). Status (#77):
@@ -192,6 +199,12 @@ next action.
   *Interested* opens `ApplyModal` with `interested` (starting stage, no applied date; hidden
   when the workflow starts at Applied); the dialog's date follows before/after Applied until
   edited (`utils/applied.ts`). `move()` fills in `applied_on` when it reaches Applied or later.
+  Changing a role's person (#92, `_role_recruiter_changed` in `api/routers.py` via the CRUD
+  `after_update` hook) gives its open, unarchived, non-referral applications that had the old
+  person (or nobody) the new one only where they fit (same agency; someone at the role's
+  company for direct); others keep theirs with a note; route and agency never change. Notes
+  use `note_change` (`manual` event, `data.bookkeeping`, not activity; `_activity_time` skips
+  them). Recruiter changes on an application are noted too. The role form shows a hint.
 - **People** (`pages/RecruitersPage.tsx` tiles with All / Agencies / Companies / Independent /
   *Favourites · n* / *Ghosted · n*, favourites first; `pages/PersonPage.tsx`): calls, roles mentioned, applications, interviews,
   to-dos, notes, links, files; **Timeline**, **Edit**, **Merge…**, **Delete**.
@@ -221,12 +234,32 @@ next action.
   matching one) and records it on the ticked `application_ids` (sent on `applied_on`, else the
   earliest attachment linked to that application). *Not a CV* (localStorage `jat.notACv`,
   "Show … you said aren't CVs").
-- **Insights** (`pages/InsightsPage.tsx`): tabs *Applications* (Sankey, stage table, routes,
-  scorecard), *Recruiter conversations* (`components/Conversations.tsx`,
+- **Board** (`components/Board.tsx`, `utils/board.ts`): *Show closed stages*, and **A column
+  per interview round** (#91, localStorage `jat.board.byRound`): an active stage whose id/name
+  says "interview" splits into *No round yet*, then Round 1… up to the furthest (empty gaps
+  only up to Round 6); a card's round is `current_round` (next booked, else last done). Only
+  *No round yet* takes drops (`isRoundColumn`, keys `<stage>#round-<n>`, `stageOfColumn`).
+- **Interviews page** (`pages/InterviewsPage.tsx`, #90): a pencil per row (the round's form)
+  and **Reschedule** for booked rounds (`components/Reschedule.tsx`: new time, optional reason;
+  end moves with it). `interviews.rescheduled_count` / `rescheduled_from` (migration 0014,
+  backfilled count); `PATCH` with a moved booked time counts it and keeps the old time
+  (`reschedule_reason`, max 500, goes on the timeline); a *Rescheduled* badge.
+- **Insights** (`pages/InsightsPage.tsx`): tabs *The whole picture* (default, #84:
+  `GET /insights/whole-flow`, `whole_flow`/`source_of` in `domain/insights.py`: sources
+  *Through a recruiter* / *Referred* / *You found it*, roles with no application to
+  *Decided not to apply* or *Deciding whether to apply*), *Applications* (Sankey, stage table,
+  routes, scorecard), *Recruiter conversations* (`components/Conversations.tsx`,
   `domain/conversations.py`, #66) and *CVs and cover letters* (#71:
   `domain/document_performance.py`, `GET /insights/documents`,
   `components/DocumentPerformance.tsx`, Fisher's exact test in `utils/abtest.ts`; a note
   linking to Documents when CV files aren't versions yet). *Weekly activity* under all.
+  All Sankeys (`components/SankeyChart.tsx`, #84–#86): a spur from each active stage to where
+  things wait (`holding` nodes: *Waiting to hear back*, *Still interviewing*…, built in
+  `_flow_out`/`_with_holding` in `api/insights.py`), placed just after their stage; outcomes on
+  the right; *Decided not to apply* (`PASSED_NAME`) beside Applied; `untangle` searches column
+  orders for the fewest weighted crossings (`tangle`), once per flow at a nominal size, capped
+  at 300 layouts; labels wrap (`wrap`) and get a halo; height grows with busy columns; narrow
+  screens scroll sideways.
 - **Timeline** (`pages/TimelinePage.tsx`, `api/timeline.py`, #67/#70): list by day or lanes
   (per role by default, or person, company, agency). View, period and *About* live in the URL
   (`useTimelineSearch`; the router JSON-parses `?period=30` into a number); person, company and
@@ -237,32 +270,49 @@ next action.
   applications (+ `/quick`, `/move`, `/undo`, `/activities`, `/contacts`), interviews, offers,
   notes, links, attachments, documents (+ `cv-files`, `cv-files/adopt`), todos; summaries;
   `role-summaries`, `next-actions`, `timeline`, `meetings`,
-  `insights/{flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
+  `insights/{whole-flow,flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
   (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-15, after #80)
+### 4. Current state (snapshot 2026-10-25, after #92)
 
-- **main at `5e30dbc`** (merge of #80), plus this doc's PR until it merges. No other open PRs,
+- **main at `2863e6a`** (merge of #92), plus this doc's PR until it merges. No other open PRs,
   worktrees or remote branches.
-- **Merged since the last snapshot:** #78 compaction doc; #79 roles *Closed* (withdrawn while
-  only interested says *Withdrawn*, not Applied; Insights counts it as passed) and role lines
-  wrapping in narrow cards; #80 favourite people (migration 0012). Roadmap tasks are `done`.
-- **Tests on main:** 335 backend, 125 frontend. The machine is often heavily loaded (load
-  average ~30 from other jobs): frontend tests that time out at ~2 s in a full run pass when
-  run on their own; rerun those files before suspecting the code.
-- **Kai's tracker** runs in Kai's terminal. #79 and #80 changed the backend (#80 adds
-  migration 0012); Kai was told to restart. Read-only check: `GET /api/openapi.json` shows
-  `favourite` on `ContactOut` once restarted.
-- **Kai's latest messages, in order** (since #77): "update /home/kai/…/docs/COMPACTION.md to
-  hep with a new compaction" (#78); "it says applied but its actually withdrawn after being
-  interested" (#79); "UI bug here" (role row squashed in a narrow card; fixed in #79); "I want
-  to be able to mark a recruiter as VIP, or favourite, or very good, etc etc" (#80); "what is
-  screen for? lots of the first stage interview is screening anyway, get to know each other
-  etc" (answered: a default stage for a short recruiter/HR screen, optional; gave Kai a
-  `config.toml` `[workflow]` block for their data folder without Screen; offered to drop it
-  from the defaults, no answer yet; never edit Kai's config ourselves); "if theyre a favourite
-  they should get a gold star next to their name" (that's #80, not merged at the time); "merge
-  it once ready and update local main" (done); then this compaction refresh.
+- **Merged since the last snapshot:** #81 compaction doc; #82 today ringed in date pickers;
+  #83 every application starts at Interested (migration 0013); #84 the whole picture + waiting
+  spurs; #85 spurs beside their stage; #86 untangled Sankeys, *Decided not to apply*,
+  outcomes on the right; #87 How did it go? asks for notes; #88 fix: Enter crashed that dialog;
+  #89 Route links; #90 edit and reschedule rounds (migration 0014); #91 a board column per
+  interview round; #92 a role's recruiter carries over to its applications. Roadmap tasks are
+  `done`.
+- **Tests on main:** 350 backend, 146 frontend. The machine is sometimes loaded: frontend
+  tests that time out in a full run pass when run on their own; rerun those files first.
+- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-25). #90 and #92 changed
+  the backend (#90 adds migration 0014); Kai was told to restart after each. Read-only check:
+  `GET /api/openapi.json` shows `rescheduled_count` on `InterviewOut` once restarted.
+- **Kai's messages since #80, in order:** "Update …/docs/COMPACTION.md to help with claude code
+  compact command" (#81); "how do i start tghis sthing again" (answered: `uv run jat serve` in
+  the main checkout, then http://127.0.0.1:8770); "this calendar view should highlight the
+  current day" (#82); "if i mark a role as applied without marking as interested first, it
+  should automatically have interested label/time just before applied. also backfill" (#83);
+  "first image says ive applied to 10 … second image says ive applied for 13. perhaps we can
+  also create a super-graph … split that up" (#84); "if an item is currently in interested, it
+  should have a spur … deciding whether to apply … waiting to hear back … for all statuses"
+  (#84); "merge and update local main when done"; "nice!"; "the right hand edge … dont all have
+  to align at the very right hand edge … deciding to apply … directly above applied" (#85);
+  "same for the recruiter conversations page, and also … rename passed … it sounds like I
+  passed an interview" (#86); "try and make it so it automatically sorts the spacing out so
+  theres as little overlap as possible / applied --> rejected crosses through interviewing"
+  (#86); "withdrawn could happen after any stage … so perhaps that should be further out to the
+  right" (#86: outcomes back on the right); "when i click … done or didnt happen i should get a
+  modal to add notes" (#87); "merge it once ready and update local main"; "i clicked done … pressed
+  enter and got this" + "i was trying to create a new line not save, it happens with both enter
+  and also shift+enter" (#88); "recruiter name here should be clickable in the application
+  route" (#89); "i should be able to edit an interview from this view so i can reschedule it,
+  also good to mark it as rescheduled" (#90); "merge it once ready and update local main"; "it
+  would be nice to have a column per interview round, but with a toggle" (#91); "i shouldnt be
+  able to skip from applied straight to interviewing round 2 … sequential" (#91); "if i change
+  the recruiter associated with a role, it doesnt update the corresponding application. it
+  should, and it should be recorded that it changed" (#92); then this compaction refresh.
 
 ### 5. Work in flight and candidates
 
@@ -272,8 +322,9 @@ next action.
     own `config.toml` with the block we gave).
   - Drafts for other places to post (r/Python showcase format, a Show HN); Kai has the
     r/selfhosted megathread comment. Kai posts; never post on Kai's behalf.
-  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Insights tabs incl. CVs,
-    Timeline by role, ghosts); show a preview first.
+  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (the whole picture,
+    Insights tabs incl. CVs, Timeline by role, ghosts, board rounds); show a preview first. Its
+    `scripts/demo_gif/scene.html` caption "A Sankey diagram from applied to offer" is stale.
   - Visitor stats for the website: Google Search Console and/or GoatCounter (footer wording
     would change). Needs Kai to create the account.
 - **Noticed, not promised:**
@@ -291,6 +342,14 @@ next action.
   - The application page's People card ignores a recruiter set through the route.
   - Overview stats show zeros before the first application; its "roles to decide" line isn't
     linked.
+  - Sankeys: the whole picture can still have a flow brushing a holding node's label (e.g.
+    Screen → Withdrawn under *Still interviewing*); `untangle` only reorders columns.
+  - Recruiter conversations' stat tiles and table still say *Passed* (only the Sankey says
+    *Decided not to apply*).
+  - Board round columns split only stages named "interview"; a Screen stage with rounds doesn't.
+  - Reschedules before #90 have a count but no earlier time; a status change plus a new time
+    in one save isn't counted as a reschedule.
+  - `insights.png` was retaken in #86; `insights-stats.png` and `demo.gif` still show older UI.
   - Small nits left on purpose: re-passing a role re-stamps `decided_on`; all-day timeline
     items at UTC midnight; `GET /meetings?upcoming` defaults to UTC; timeline "pitched"
     wording even for a referrer.
@@ -359,6 +418,24 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   applied.
 - **Favourites:** one star (not a rating); separate from ghosted (both can show); favourites
   first on the Recruiters page.
+- **Every application starts at the first stage:** implied events (`data.implied`) fill it in;
+  they aren't undoable and don't count as a stay, update, reply or move; the Timeline shows the
+  pair as one *Added at …* entry; the application timeline shows both.
+- **Sankeys:** holding spurs for every active stage (DECIDING only when the first stage is
+  before Applied); holding nodes just after their stage; outcomes (closed/success) on the right
+  edge because they can follow any stage; *Decided not to apply* beside Applied; column order
+  searched for fewest crossings. "Passed" is never used as a Sankey label.
+- **The whole picture:** sources by precedence referral > recruiter (person on the role, or an
+  application with a recruiter/agency) > found; a role applied to twice counts twice.
+- **Board rounds:** only stages named "interview"; rounds are sequential and come from
+  interviews, so only *No round yet* takes drops.
+- **Reschedules:** counted only when a booked round's time moves (not adding/clearing a time,
+  not with a status change in the same save); the end moves with the start; the reason lives on
+  the timeline only.
+- **A role's person changing:** never changes an application's route or agency; only open,
+  unarchived, non-referral applications that had the old person or nobody, and only where the
+  new person fits; removing the person changes nothing; notes are bookkeeping.
+- **Notes dialogs:** nothing saves until confirmed; can't close while saving.
 - **Workflow:** *Screen* stays in the default unless Kai says otherwise; Kai's own stages live
   in their data folder's `config.toml` (we give snippets, never edit it).
 - **Ghosts:** only `closed_as == "ghosted"` gets a ghost (not *Not interested*); taking it off
@@ -425,6 +502,21 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **CI:** a website build check runs when docs/screenshots change; `mergeStateStatus` is
   UNSTABLE until it passes.
 
+- **React synthetic events:** never read `e.currentTarget.value` inside a state updater
+  (`setX((v) => …e.currentTarget…)`): React clears it before the updater runs, which crashed
+  the notes dialog on Enter (#88). jsdom tests don't catch it; read the value first.
+- **EnterWorktree** refuses when the worktree is already the cwd (e.g. after `cd` into it in
+  the same Bash call); you're still isolated, carry on.
+- **Demo servers** don't reload backend code: after a backend change, TaskStop and restart
+  `jat serve` before screenshotting (a stale server showed the old node order in #84).
+- **d3-sankey:** a custom `nodeSort` is applied once and kept through relaxation; `undefined`
+  lets d3 reorder by position. `nodeAlign` decides columns. Search for orderings outside the
+  render path (memo on the flow), not on every resize.
+- **Migrations that read config:** `migrate()` passes `cfg.attributes["data_dir"]`; a
+  `config.toml` that doesn't load must stop the migration, never fall back silently (#83).
+- **Data-touching features** (rewriting applications from another edit) get a reviewer told
+  to focus on data safety; #92's first version flipped routes and was reworked before merge.
+
 ### 8a. How Kai works
 
 - Uses the tracker for a real job search and reports gaps as they hit them, often several in
@@ -433,6 +525,9 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - Asks short questions ("how do i run thius?"): answer plainly with the exact command.
 - Values findability, honesty about state, docs and images that match the code, a tidy repo,
   and the project being discoverable on GitHub.
+- Refines visual things in quick rounds (the Sankeys took #84–#86): show a demo URL with each
+  round, fold follow-ups into the open PR, and expect "merge it once ready and update local
+  main" at the end.
 
 ### 9. Drop
 
