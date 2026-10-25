@@ -59,8 +59,10 @@ next action.
   Ctrl+C and rerun `uv run jat serve` in their terminal; a frontend-only change needs a page
   refresh.
 - **Version and status.** "it is ready, im using it. i just havent bumped a version number to
-  the first major release". Don't bump the version or tag a release unless Kai asks. Docs say
-  "ready and in daily use (0.1.0, not yet bumped to 1.0)".
+  the first major release". Kai then asked for 1.0.0 (released 2026-10-25) and for semver on
+  every PR: "most are patch unless its new feature then it would be minor. it should be very
+  explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
+  (*Versions and releases*): bump in each PR, release each version, ask before any major.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
   Recruitment, Alex Morgan, Riley Chen, Sam Patel, Jordan Lee…) and example.com. Never act on

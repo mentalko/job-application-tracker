@@ -94,7 +94,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is it ready?",
-    a: "Yes. Every planned feature is built, and it's in daily use for a real job search. The version is still 0.1.0 only because it hasn't been bumped to 1.0 yet. Issues and pull requests are very welcome.",
+    a: "Yes. Every planned feature is built, and it's in daily use for a real job search. Version 1.0 is out, and every release is on GitHub. Issues and pull requests are very welcome.",
   },
   {
     q: "Is it multi-user?",

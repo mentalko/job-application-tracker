@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased (0.1.0)
+Versions follow [semantic versioning](https://semver.org/): a patch for fixes and small
+changes, a minor version for new features, a major version for anything that breaks how you
+use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
+Numbers in brackets are pull requests.
 
-Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P7)
-is built, merged and in daily use; the version hasn't been bumped to 1.0 yet. Numbers in
-brackets are pull requests.
+## 1.0.0 (2026-10-25)
+
+The first release. Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P7) is built,
+merged and in daily use for a real job search.
 
 ### Tracking
 - **Applications list** with search and filters (stage, route, agency, "needs chasing",

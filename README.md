@@ -164,8 +164,9 @@ to applications, roles or recruiters as plain files? It spots identical ones and
 
 ## ✨ Features
 
-Ready and in daily use for a real job search (0.1.0; the version just hasn't been bumped to
-1.0 yet). See the [changelog](CHANGELOG.md) and the [user guide](docs/guide/README.md).
+Version 1.0: ready and in daily use for a real job search. See the [changelog](CHANGELOG.md),
+the [releases](https://github.com/waddington/job-application-tracker/releases) and the
+[user guide](docs/guide/README.md).
 
 | | Feature |
 |---|---|

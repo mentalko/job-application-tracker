@@ -1,7 +1,8 @@
 # Contributing
 
-Thanks for thinking about it. Job Application Tracker is ready and in daily use (version
-0.1.0, not yet bumped to 1.0). Bug reports, ideas and pull requests all help.
+Thanks for thinking about it. Job Application Tracker is ready and in daily use (version 1.0
+and up, following [semantic versioning](https://semver.org/)). Bug reports, ideas and pull
+requests all help.
 
 ## Ways to help
 
