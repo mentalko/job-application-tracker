@@ -7,7 +7,7 @@ No account. No cloud. No AI. No tracking.**
 
 Kanban board, recruiter CRM, interview rounds, follow-up reminders, offers side by side and a
 Sankey diagram of your whole search. Your data lives in a folder on your own disk, with
-automatic git backups.
+optional automatic git backups.
 
 [![Website](https://img.shields.io/badge/website-waddington.github.io-d9480f)](https://waddington.github.io/job-application-tracker/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
