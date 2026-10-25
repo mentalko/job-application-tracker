@@ -6,8 +6,8 @@
 > all data in one local directory outside the code (SQLite plus a plain-text JSON Lines and
 > Markdown export), with optional automatic git snapshots as backups.
 
-Status: ready and in daily use (version 0.1.0, not yet bumped to 1.0); every planned feature
-is built (see CHANGELOG.md). Windows support, a one-command install and Docker are planned.
+Status: version 1.0, ready and in daily use; versions follow semantic versioning, with a
+GitHub release for each (see CHANGELOG.md). Windows support, a one-command install and Docker are planned.
 
 What it does:
 - Overview home page: counts, pipeline, what needs attention, what's coming up, recent
