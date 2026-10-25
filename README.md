@@ -2,22 +2,27 @@
 
 # 🎯 Job Application Tracker
 
-**Stop losing track of your job hunt.**
-A self-hosted, local-first job application tracker for software engineers, with a recruiter
-CRM, calls and the roles they pitch, interview rounds, Markdown notes, CV versions, a *"who
-should I chase today?"* page, a timeline of everything and a Sankey diagram of your whole
-funnel.
+**A self-hosted job application tracker for software engineers.<br>
+No account. No cloud. No AI. No tracking.**
+
+Kanban board, recruiter CRM, interview rounds, follow-up reminders, offers side by side and a
+Sankey diagram of your whole search. Your data lives in a folder on your own disk, with
+optional automatic git backups.
 
 [![Website](https://img.shields.io/badge/website-waddington.github.io-d9480f)](https://waddington.github.io/job-application-tracker/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status: in daily use](https://img.shields.io/badge/status-in%20daily%20use-brightgreen)
-![Local-first](https://img.shields.io/badge/data-100%25%20local-brightgreen)
-![No tracking](https://img.shields.io/badge/telemetry-none-brightgreen)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](#-contributing)
+![Account: none](https://img.shields.io/badge/account-none-brightgreen)
+![Telemetry: none](https://img.shields.io/badge/telemetry-none-brightgreen)
+![AI: none](https://img.shields.io/badge/AI-none-brightgreen)
+![Linux and macOS](https://img.shields.io/badge/runs%20on-Linux%20%7C%20macOS-555)
 
-**[🌐 Website](https://waddington.github.io/job-application-tracker/) · [📖 User guide](docs/guide/README.md) · [🤝 Contributing](CONTRIBUTING.md)**
+🔒 Runs on localhost · 🗂️ SQLite + plain-text JSONL and Markdown · 🔁 Automatic git snapshots · 📦 Apache-2.0
 
-⭐ **Star the repo to follow along. It's being built in the open, one PR at a time.**
+**[🌐 Website](https://waddington.github.io/job-application-tracker/) · [📖 User guide](docs/guide/README.md) · [🚀 Get started](#-getting-started) · [🤝 Contributing](CONTRIBUTING.md)**
+
+⭐ **If you'd rather your job search didn't live in someone else's cloud, star the repo. It
+helps other people find it.**
 
 </div>
 
@@ -44,7 +49,18 @@ way tech hiring actually works:
   conversion and time per stage, direct vs recruiter outcomes and a scorecard for every
   recruiter and agency.
 
-No job-board scraping. No SaaS. No account. **Your job search stays on your disk.**
+## 🔒 Yours, and only yours
+
+- **No account, no cloud.** It runs on `localhost`. There's nothing to sign up for and no
+  server of ours your data goes to.
+- **No AI.** Nothing reads, summarises, scores or uploads your notes, CVs or emails.
+- **No tracking.** No telemetry and no analytics. The app never sends email, never contacts
+  anyone and never calls out to the web.
+- **Your files, in open formats.** One folder outside the code: a SQLite database plus a
+  plain-text export (JSON Lines and Markdown notes) you can read without the app.
+- **Simple backups.** Make the folder a git repo and every change is snapshotted
+  automatically; `jat push` sends it to your own private remote. Or download a single zip.
+- **No scraping.** It tracks the applications *you* make; it's not a job-search engine.
 
 ## 📸 Screenshots
 
@@ -58,6 +74,22 @@ pipeline by stage and recent activity. **New application** and a numbered **How 
 are at the top of every page.
 
 ![The Overview: counts, the pipeline by stage, what needs attention, what's coming up and recent activity](docs/screenshots/overview.png)
+
+**Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
+interview round each one is at.
+
+![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
+
+**Insights: the whole picture.** One Sankey diagram of every role, from where it came from
+(through a recruiter, a referral, or you found it) to passing on it, deciding, or applying and
+how far it got, with what's still waiting just after each stage: deciding whether to apply,
+waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
+applications, filtered by route. Date range and counts on hover for both.
+
+![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted](docs/screenshots/insights.png)
+
+<details>
+<summary><b>More screenshots</b>: Next actions, a recruiter's page, roles, the Timeline, an application, insights, CVs compared, offers and search</summary>
 
 **Next actions.** Replies to read, your own to-dos, offers to answer, who you're waiting to hear back from,
 interviews and calls waiting for an outcome, follow-ups due, roles to decide on, what's coming
@@ -86,11 +118,6 @@ each one reads from the call it came up on to its outcome.
 
 ![The Timeline as lanes: one row per role, with dots for calls, pitches, stage moves, interviews and offers](docs/screenshots/timeline.png)
 
-**Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
-interview round each one is at.
-
-![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
-
 **Everything about an application in one place.** *At a glance* says what it needs and
 how long ago things happened ("Gone quiet: no activity for 12 days", "Applied 3 weeks ago").
 Below that: interview rounds in your own words ("Round 3 · System design test"), the CV
@@ -98,14 +125,6 @@ version you sent, Markdown notes, links, files and exported emails, and the full
 history.
 
 ![An application page: At a glance (what is coming up and key dates as "3 weeks ago"), then interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
-
-**Insights: the whole picture.** One Sankey diagram of every role, from where it came from
-(through a recruiter, a referral, or you found it) to passing on it, deciding, or applying and
-how far it got, with what's still waiting just after each stage: deciding whether to apply,
-waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
-applications, filtered by route. Date range and counts on hover for both.
-
-![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted](docs/screenshots/insights.png)
 
 **Conversion, time in stage, direct vs recruiter, and a recruiter scorecard.** Which stages
 you get stuck at, whether agencies or direct applications do better for you, and which
@@ -141,72 +160,63 @@ to applications, roles or recruiters as plain files? It spots identical ones and
 </tr>
 </table>
 
+</details>
+
 ## ✨ Features
 
-> ✅ **Ready and in daily use (0.1.0).** Every planned feature is built and being used for a
-> real job search; the version just hasn't been bumped to 1.0 yet. See the
-> [changelog](CHANGELOG.md). Tracking,
-> recruiters and person pages, calls and meetings, roles to decide, to-dos, interview rounds, notes,
-> links, files and emails, CV versions, the Overview, *Next actions* and *Timeline* pages,
-> waiting to hear back, insights (Sankey diagram, funnel stats, recruiter scorecards), offer
-> comparison, one-click backups and full-text search all work today. Everything marked ✅ is
-> merged and running.
+Ready and in daily use for a real job search (0.1.0; the version just hasn't been bumped to
+1.0 yet). See the [changelog](CHANGELOG.md) and the [user guide](docs/guide/README.md).
 
-| | Feature | Status |
-|---|---|---|
-| 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) | ✅ Available |
-| 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted | ✅ Available |
-| 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo | ✅ Available |
-| 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
-| 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, calls, the roles they've mentioned, notes and every application they're part of; one person per email address and LinkedIn profile, and **merge** two records of the same person in one click | ✅ Available |
-| 🗑️ | **Rename and delete** companies, roles, agencies, people and applications (or archive them) | ✅ Available |
-| ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
-| 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
-| 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles | ✅ Available |
-| 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, role, company, agency or person; emails land on the timeline at the time they were sent | ✅ Available |
-| 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
-| 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
-| 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
-| 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about; a **Timeline** button on each person, company and agency opens it filtered to them | ✅ Available |
-| 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" | ✅ Available |
-| ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
-| ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |
-| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them), mark it interested (tracked, not applied yet) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) | ✅ Available |
-| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline | ✅ Available |
-| 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase; when they reply, **They've replied** puts it at the top of Next actions until you've read it; for people, **Chased**, **Ghosted** or **Not interested** in one click; a ghost marks anyone who ghosted you across the app (their page, applications, calls, Next actions, the Timeline, search and Insights), a *Ghosted* filter lists them, and **Not a ghost** takes it off any time; star your favourite recruiters so they stand out and come first; each person shows how long they *usually* take to reply, in working days, and says when you've been waiting longer than usual | ✅ Available |
-| 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
-| 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
-| 📈 | **Insights**: the whole picture (every role from where it came from to what's still waiting at each stage), conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
-| 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency | ✅ Available |
-| 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real); CV files attached to applications, roles or recruiters become versions in one click | ✅ Available |
-| 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
-| 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
-| 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links | ✅ Available |
-| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore | ✅ Available |
+| | Feature |
+|---|---|
+| 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) |
+| 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted |
+| 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo |
+| 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent |
+| 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, calls, the roles they've mentioned, notes and every application they're part of; one person per email address and LinkedIn profile, and **merge** two records of the same person in one click |
+| 🗑️ | **Rename and delete** companies, roles, agencies, people and applications (or archive them) |
+| ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job |
+| 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere |
+| 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles |
+| 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, role, company, agency or person; emails land on the timeline at the time they were sent |
+| 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used |
+| 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs |
+| 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page |
+| 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about; a **Timeline** button on each person, company and agency opens it filtered to them |
+| 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" |
+| ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet |
+| ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) |
+| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them), mark it interested (tracked, not applied yet) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) |
+| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline |
+| 📨 | **Waiting to hear back**: mark that you've replied and see who to chase; **They've replied** puts it at the top of Next actions; **Chased**, **Ghosted** or **Not interested** in one click, with a ghost by anyone who ghosted you; star favourite recruiters; see how many working days each person *usually* takes to reply |
+| 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions |
+| 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover |
+| 📈 | **Insights**: the whole picture (every role from where it came from to what's still waiting at each stage), conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity |
+| 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency |
+| 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real); CV files attached to applications, roles or recruiters become versions in one click |
+| 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency |
+| 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions |
+| 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links |
+| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
-[roadmap](docs/ROADMAP.yaml).
+[roadmap](docs/ROADMAP.yaml): next up are Windows support, a one-command install and Docker.
 
 ## 🤔 Why not a spreadsheet, Notion, Huntr or Teal?
 
 | | Spreadsheet or Notion | Hosted trackers (Huntr, Teal, …) | **Job Application Tracker** |
 |---|---|---|---|
 | Your data stays on your machine | Sometimes | ❌ | ✅ |
+| No account or sign-up | Depends | ❌ | ✅ |
+| No AI features | Depends | ❌ | ✅ |
+| No tracking or analytics | Depends | ❌ | ✅ |
+| Works offline | Sometimes | ❌ | ✅ |
+| Export you can read and diff | CSV | Partial | ✅ JSON Lines + Markdown, in git |
 | Recruiters with several roles | Manual | Partial | ✅ First-class |
 | Real stage workflow and history | ❌ | Partial | ✅ |
 | Notes, files, emails and CV versions per application | Messy | Partial | ✅ |
 | "Who do I chase today?" | ❌ | Partial | ✅ |
 | Free and open source | ✅ | ❌ | ✅ Apache-2.0 |
-
-It's also deliberately **not** a job-search engine. There's no scraping and there are no
-job-board feeds. It tracks the applications *you* make.
-
-## 🔒 Privacy by design
-
-- Runs on `localhost`. No accounts, no cloud and no telemetry.
-- All your data lives in **one directory outside the code**, in open formats you can read
-  without the app. Back it up by copying the folder, or keep it in a private git repo.
-- The app never sends email, never contacts anyone, and never fetches data from the web.
 
 ## 🚀 Getting started
 
@@ -214,8 +224,9 @@ job-board feeds. It tracks the applications *you* make.
 > your data lives and how the app finds it, backups and restoring, using it on a second
 > computer, customising stages, every command, and troubleshooting.
 
-You need Python 3.12+ with [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with
-[pnpm](https://pnpm.io/) to build the web UI.
+It runs on **Linux or macOS** (Windows isn't supported yet). You need Python 3.12+ with
+[uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with [pnpm](https://pnpm.io/) to build
+the web UI. With those installed, setup takes about ten minutes.
 
 ```bash
 git clone https://github.com/waddington/job-application-tracker.git
@@ -251,29 +262,17 @@ page for the data location: it's `--data-dir` or `JAT_DATA_DIR`
 The server only listens on `127.0.0.1` by default. `uv run jat --help` lists the other
 commands (`archive`, `export`, `restore`, `snapshot`, `migrate`, `info`).
 
-**Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
-progress and live PR status of the build itself. It needs nothing but Python; the
-[`gh` CLI](https://cli.github.com/) adds PR status.
-
-## 🗺️ Roadmap
-
-| Phase | What ships |
-|---|---|
-| **P0** Foundations | Planning, project dashboard, stack decision |
-| **P1** Core | Data directory, entities, workflow engine, local JSON API, app shell |
-| **P2** Tracking views | List, board, detail pages, recruiters, duplicate warning |
-| **P3** Notes and documents | Notes, links, attachments, `.eml`, CV versions, interviews |
-| **P4** Next actions | Stale applications, follow-ups, snooze, upcoming items |
-| **P5** Insights | Sankey, funnel stats, recruiter scorecard |
-| **P6** Extras | Offers, backup archive, full-text search |
-| **P7** Feedback from real use | Deleting, people pages, waiting to hear back, Overview, Timeline, help, calls and meetings, roles to decide |
-
 ## ❓ FAQ
 
 **Is it free?** Yes. It's open source under the Apache-2.0 licence.
 
 **Where is my data stored?** In a single directory on your own machine that you choose, kept
 separate from the code. Nothing is uploaded anywhere.
+
+**Does it use AI?** No. Nothing in it calls an AI service or sends your data anywhere.
+
+**Does it run on Windows?** Not yet: it runs on Linux and macOS. Windows support, a
+one-command install and Docker are on the [roadmap](docs/ROADMAP.yaml).
 
 **Does it scrape LinkedIn or job boards?** No. By design, it tracks the applications you
 make and doesn't search for jobs.
@@ -310,7 +309,8 @@ role they mentioned. Each waits under *Roles* until you decide: apply, mark inte
 with your own description ("Round 2 · Engineering manager chat", "Round 3 · System design
 test"), and the board shows the current one.
 
-**Does it work offline?** Yes. It's a local web app with no external services.
+**Does it work offline?** Yes. It's a local web app with no external services; only
+`jat push`, when you run it, talks to your own git remote.
 
 **Is it multi-user?** No. It's a personal tool for one job seeker, running on localhost.
 

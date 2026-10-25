@@ -1,49 +1,51 @@
 # Job Application Tracker
 
 > An open-source (Apache-2.0), self-hosted, local-first web app for tracking a job search,
-> built for software engineers. It tracks applications, recruiters and agencies (one
-> recruiter can have many roles), configurable interview stages with timestamped history,
-> numbered interview rounds described in the user's own words ("Round 2 · System design
-> test"), duplicate-submission warnings, Markdown notes, attachments and exported emails,
-> CV and cover-letter versions, calls with recruiters and the roles they pitch (to apply
-> for or pass on), an Overview home page, a "Next actions" page for stalled applications and
-> who to chase, a timeline across everything, and insights: a Sankey diagram of the
-> funnel, conversion and time per stage, direct vs recruiter outcomes and a recruiter
-> scorecard. It never scrapes job boards or contacts
-> anyone, and all data stays in one local directory outside the code.
+> built for software engineers. No account, no cloud, no AI and no tracking or telemetry: it
+> runs on localhost (Linux or macOS), never scrapes job boards or contacts anyone, and keeps
+> all data in one local directory outside the code (SQLite plus a plain-text JSON Lines and
+> Markdown export), with optional automatic git snapshots as backups.
 
 Status: ready and in daily use (version 0.1.0, not yet bumped to 1.0); every planned feature
-is built (see CHANGELOG.md). Available now: an Overview home page (counts, pipeline, what needs
-attention, what's coming up, recent activity, a numbered "How it works"), a Timeline across
-every role, application, company, agency and person (by day or as lanes, one row per role
-from the call it came up on to its outcome; a Timeline button on each person, company and agency page opens
-`/timeline?about=contact:<id>&period=all` (or `company:`, `agency:`); `GET /api/v1/timeline`),
-a Next actions page at `/next-actions` (your own to-dos, on their own or about a person,
-company, agency, role or application, `/api/v1/todos`; follow-ups due, applications gone quiet,
-interviews coming up, one-click follow-up, snooze and Ghosted, waiting to hear back, replies to read, and chased / ghosted / not interested for people, with a ghost before a ghosted person's name across the app, a Ghosted filter on Recruiters and Not a ghost to take it off; favourite people (`favourite` on contacts) starred next to their name across the app, filtered and listed first; "usually replies within N working days" per person, weekends excluded (`replies` and `usual_reply_days` on contacts), with "longer than usual" when you're waiting past it), person pages with booked and logged
-calls and meetings (`/api/v1/meetings`; one person per email address and LinkedIn profile;
-merge two records of one person, `POST /api/v1/contacts/{id}/merge`), roles to decide before applying (a Roles page;
-pitched by whom, on which call; apply, mark interested (tracked at the starting stage, role status `interested`, or `closed` with `closed_as`, the stage it ended at, when every application closed before Applied) or pass; a page per role with its files, such as the
-job description, which also show on the application; `/api/v1/role-summaries`), renaming and
-deleting, applications list and Kanban board (move between any stages), application
-pages (with an "At a glance" card: what needs attention, for how long, and key dates as
-"3 weeks ago"), company, recruiter and agency pages, recruiter CRM, numbered interview rounds (rescheduled from the Interviews page, and marked so), duplicate
-warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
-timeline, versioned CVs and cover letters, an Insights page (the whole picture: one Sankey
-diagram of every role from its source, through a recruiter, referred or found yourself, to
-passed, deciding, or its stages and what's still waiting at each, `GET
-/api/v1/insights/whole-flow`; a Sankey diagram of stage flows filtered by date and route; conversion and median time per stage; direct vs recruiter
-outcomes; weekly activity; a recruiter and agency scorecard; and a Recruiter
-conversations tab: calls, roles pitched, applied or passed, where pitched roles went, time
-to decide, per person and agency, and why you passed, `GET /api/v1/insights/conversations`),
-an A/B test of CV and cover-letter versions (CV files attached to applications, roles or people (a CV sent to a recruiter), identical by content, become versions in one go: `GET /api/v1/cv-files`, `POST /api/v1/cv-files/adopt`, optionally for chosen `application_ids`; heard back, screens or interviews, offers, a 95%
-range, and Fisher's exact test between two; `GET /api/v1/insights/documents`),
-offers compared side by side
-(salary, bonus, equity, pension and holiday, or day rate, IR35 and length, with a
-worth-a-year figure and reply deadlines in Next actions), git-backed snapshots, a one-click
-zip backup of the whole data directory (`GET /api/v1/backup/archive` or `jat archive`),
-restore (`jat restore`), and full-text search across everything, notes included
-(`GET /api/v1/search?q=`, or press / in the app).
+is built (see CHANGELOG.md). Windows support, a one-command install and Docker are planned.
+
+What it does:
+- Overview home page: counts, pipeline, what needs attention, what's coming up, recent
+  activity, a numbered "How it works".
+- Applications list and Kanban board (move between any stages; optionally a column per
+  interview round), application pages with an "At a glance" card (what needs attention, for
+  how long, key dates as "3 weeks ago"), duplicate-submission warnings, renaming, deleting.
+- Recruiter CRM: agencies and people (one person per email address and LinkedIn profile;
+  merge two records, `POST /api/v1/contacts/{id}/merge`), person pages with booked and logged
+  calls and meetings (`/api/v1/meetings`), favourites (`favourite` on contacts), and
+  chased / ghosted / not interested, with a ghost before a ghosted person's name everywhere.
+- Roles to decide before applying (`/api/v1/role-summaries`): pitched by whom, on which
+  call; apply, mark interested (role status `interested`, or `closed` with `closed_as`) or
+  pass; a page per role whose files (e.g. the job description) show on the application.
+- Next actions (`/next-actions`): to-dos (`/api/v1/todos`), follow-ups due, applications gone
+  quiet, waiting to hear back, replies to read, interviews coming up, one-click follow-up,
+  snooze and Ghosted, and "usually replies within N working days" per person (`replies`,
+  `usual_reply_days` on contacts).
+- Interview rounds in the user's own words ("Round 2 · System design test"), rescheduled from
+  the Interviews page and marked so.
+- Markdown notes as real files, links, attachments and `.eml` import onto the timeline;
+  versioned CVs and cover letters.
+- Timeline across every role, application, company, agency and person, by day or as lanes
+  (`GET /api/v1/timeline`; `/timeline?about=contact:<id>&period=all`, or `company:`, `agency:`).
+- Insights: the whole picture, one Sankey diagram from each role's source (through a
+  recruiter, referred, found yourself) to passed, deciding, its stages and what's still
+  waiting (`GET /api/v1/insights/whole-flow`); stage flows by date and route; conversion and
+  median time per stage; direct vs recruiter outcomes; weekly activity; a recruiter and
+  agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`).
+- An A/B test of CV and cover-letter versions (heard back, screens or interviews, offers, a
+  95% range, Fisher's exact test; `GET /api/v1/insights/documents`); identical CV files on
+  applications, roles or people become versions (`GET /api/v1/cv-files`,
+  `POST /api/v1/cv-files/adopt`).
+- Offers side by side (salary, bonus, equity, pension and holiday, or day rate, IR35 and
+  length, with a worth-a-year figure and reply deadlines in Next actions).
+- Backups: git-backed snapshots, a one-click zip (`GET /api/v1/backup/archive` or
+  `jat archive`), restore (`jat restore`).
+- Full-text search across everything, notes included (`GET /api/v1/search?q=`, or press /).
 
 Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
 committed to the user's private data repo); React 19, TypeScript, Mantine, TanStack

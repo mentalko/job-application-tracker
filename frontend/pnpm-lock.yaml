@@ -102,6 +102,9 @@ importers:
       prettier:
         specifier: ^3.9.9
         version: 3.9.9
+      swagger-ui-dist:
+        specifier: ^5.34.0
+        version: 5.34.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -525,6 +528,9 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@scarf/scarf@1.4.0':
+    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
@@ -1723,6 +1729,9 @@ packages:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==}
     engines: {node: '>=18'}
 
+  swagger-ui-dist@5.34.0:
+    resolution: {integrity: sha512-H6tAIjr3XqE31PbkZl0OFya1ziRLDfTwh3J6OHdumPtPCLfjTnyLeagl/55kFNZcTOz9a9QI9WP0FXldwiGJag==}
+
   tabbable@6.5.0:
     resolution: {integrity: sha512-wieBHXygIm7OyQOu5hQlkk62/WyCFYGlWg7L6/ZCUZwx0o398Zkn4pVmMyfYhfMG8kGrj/Krt8eIk6UKC6VzwA==}
 
@@ -2415,6 +2424,8 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
+
+  '@scarf/scarf@1.4.0': {}
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -3828,6 +3839,10 @@ snapshots:
       inline-style-parser: 0.2.7
 
   supports-color@10.2.2: {}
+
+  swagger-ui-dist@5.34.0:
+    dependencies:
+      '@scarf/scarf': 1.4.0
 
   tabbable@6.5.0: {}
 

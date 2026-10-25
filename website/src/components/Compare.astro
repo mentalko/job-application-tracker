@@ -1,12 +1,15 @@
 ---
 // The README's comparison, as a table. "yes" / "no" render as marks; anything else as text.
 const rows: [string, string, string, string][] = [
-  ["Your data stays on your machine", "Sometimes", "no", "yes"],
+  ["Your data stays on your computer", "Sometimes", "no", "yes"],
+  ["No account or sign-up", "Depends", "no", "yes"],
+  ["No tracking or analytics", "Depends", "no", "yes"],
+  ["No AI features", "Depends", "no", "yes"],
   ["Recruiters with several roles", "Manual", "Partial", "First-class"],
   ["Real stage workflow and history", "no", "Partial", "yes"],
   ["Notes, files, emails and CV versions", "Messy", "Partial", "yes"],
   ['"Who do I chase today?"', "no", "Partial", "yes"],
-  ["Free and open source", "yes", "no", "Apache-2.0"],
+  ["Free", "yes", "Paid plans", "Free and open source"],
 ];
 const mark = (v: string) => (v === "yes" ? "✓" : v === "no" ? "✕" : v);
 const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
@@ -15,12 +18,13 @@ const cls = (v: string) => (v === "yes" ? "yes" : v === "no" ? "no" : "txt");
 <section class="section" aria-labelledby="compare-h">
   <div class="wrap">
     <div class="center head">
-      <p class="eyebrow reveal">Why not a spreadsheet?</p>
+      <p class="eyebrow reveal">A free Huntr and Teal alternative</p>
       <h2 class="h2 reveal" id="compare-h">
-        Spreadsheets don't <span class="serif grad">nudge</span> you.
+        Better than a spreadsheet, <span class="serif grad">kinder</span> than a subscription.
       </h2>
       <p class="lede reveal">
-        And hosted trackers want your data, your email and a subscription. This one wants nothing.
+        Spreadsheets don't remind you who to chase. Hosted trackers want your data, your email and often a
+        subscription. This one wants nothing.
       </p>
     </div>
 

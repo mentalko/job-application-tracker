@@ -5,9 +5,11 @@ export const REPO = "https://github.com/waddington/job-application-tracker";
 export const SITE_URL = "https://waddington.github.io/job-application-tracker/";
 // The user guide lives on GitHub; the site links to it.
 export const GUIDE = `${REPO}/blob/main/docs/guide/`;
-export const TITLE = "Job Application Tracker: the open-source, self-hosted job search tracker";
+// The <title> and meta description: the words people search for first ("free", "private",
+// "job application tracker"), then what sets it apart. Keep the description near 160 characters.
+export const TITLE = "Free Job Application Tracker: private, no sign-up, open source";
 export const DESCRIPTION =
-  "A free, open-source, self-hosted job application tracker for software engineers. Kanban board, recruiter CRM, interview rounds, follow-up reminders, offers side by side and a Sankey funnel. Local-first: your data stays on your machine.";
+  "A free, private job application tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No account, no cloud, no tracking.";
 
 export const ROTATING = ["application", "recruiter", "interview round", "follow-up", "offer", "ghosting"];
 
@@ -36,9 +38,9 @@ export const MARQUEE = [
 
 export const STATS = [
   { value: 0, suffix: "", label: "accounts to create" },
-  { value: 0, suffix: "", label: "bytes of telemetry" },
-  { value: 100, suffix: "%", label: "of your data on your disk" },
-  { value: 26, suffix: "", label: "features built" },
+  { value: 0, suffix: "", label: "trackers or ads" },
+  { value: 0, suffix: "", label: "subscription fees" },
+  { value: 100, suffix: "%", label: "of your data on your computer" },
 ];
 
 export const FAQ: { q: string; a: string }[] = [
@@ -47,28 +49,48 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Yes. It's open source under the Apache-2.0 licence. No plans, no seats, no trial.",
   },
   {
+    q: "Do I need to be technical?",
+    a: "A little, for now. Setting it up means installing Python and Node.js (the install guide links to both), then about ten minutes copying and pasting a few commands into the Terminal app. After that it's a normal web page in your browser. A one-command install and a double-click app are planned.",
+  },
+  {
+    q: "Is it like Huntr or Teal?",
+    a: "It does the same job: a board of your applications, the people involved, interviews, follow-ups and offers. The difference is where it lives. Huntr and Teal are websites that keep your job search on their servers, behind an account and often a subscription. This runs on your own computer, free, with nothing to sign up for.",
+  },
+  {
+    q: "Does it use AI?",
+    a: "No. Nothing reads, summarises, scores or uploads your notes, CVs or emails.",
+  },
+  {
     q: "Where is my data stored?",
     a: "In one folder on your own machine that you choose, kept separate from the code: a SQLite database, a readable JSON Lines export, your Markdown notes and your files. Nothing is uploaded anywhere.",
   },
   {
     q: "Does it scrape LinkedIn or job boards?",
-    a: "No. By design it tracks the applications you make. It never searches for jobs, never fetches from the web and never contacts anyone.",
+    a: "No. By design it tracks the applications you make. It never searches for jobs, never calls out to the web and never contacts anyone.",
   },
   {
-    q: "What do I need to run it?",
-    a: "It's a developer tool: Python 3.12+ with uv, Node.js 22.12+ with pnpm to build the web UI, and git for automatic snapshots. Linux or macOS. Ideally your data folder is a private git repo, so every change is backed up.",
+    q: "Does it run on Windows?",
+    a: "Not yet: it runs on Mac and Linux. Windows support is next on the roadmap.",
+  },
+  {
+    q: "Does it work on my phone?",
+    a: "No. It runs on your computer and you use it in your computer's browser.",
+  },
+  {
+    q: "Can I import my spreadsheet?",
+    a: "Not yet. You add applications by hand: one short form, where anything new (a company, a recruiter) is created as you type.",
   },
   {
     q: "How do I back it up?",
-    a: "If the data folder is a git repo, the app commits a snapshot after each burst of changes and `jat push` sends them to your private remote. For a single file, download a zip from the sidebar or run `jat archive`.",
+    a: "Download a backup from the sidebar: one zip file with everything you need to restore. If you're comfortable with git, the folder can also keep its own full history and copy it to a private repo you own.",
   },
   {
-    q: "Can I use it on two computers?",
-    a: "Yes, one at a time: clone your private data repo on the second machine, point JAT_DATA_DIR at it and run `jat init`. When you switch, push on one, then pull and `jat restore --force` on the other.",
+    q: "What do developers need to run it?",
+    a: "Python 3.12+ with uv, Node.js 22.12+ with pnpm to build the web UI, and optionally git for automatic snapshots (`jat push` sends them to your private remote). The user guide covers a second computer and every command.",
   },
   {
     q: "Can I use it for non-software jobs?",
-    a: "Yes. It's built with tech hiring in mind (recruiters, coding interviews, take-home tasks), but the stages are yours to configure in config.toml.",
+    a: "Yes. It's built with tech hiring in mind (recruiters, coding interviews, take-home tasks), but the stages are yours to change in a settings file.",
   },
   {
     q: "Is it ready?",

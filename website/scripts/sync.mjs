@@ -25,6 +25,7 @@ function syncAll() {
     if (name.endsWith(".png")) copy(`docs/screenshots/${name}`, `src/assets/screenshots/${name}`);
   }
   copy("docs/social-preview.png", "public/og.png");
+  copy("docs/screenshots/overview.png", "public/screenshot.png"); // the structured data's screenshot
   copy("frontend/public/favicon.svg", "public/favicon.svg");
   copy("frontend/public/apple-touch-icon.png", "public/apple-touch-icon.png");
   copy("llms.txt", "public/llms.txt");
