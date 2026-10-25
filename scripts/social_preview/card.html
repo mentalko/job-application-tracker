@@ -1,0 +1,223 @@
+<!doctype html>
+<!--
+  The GitHub social preview (docs/social-preview.png), 1280x640. Rendered by make_card.py.
+  ?layout=b (default): "No account. No cloud. No AI. No tracking." as the headline.
+  ?layout=a: the name as the headline, with a checklist of eight points.
+  Text sizes are chosen to stay readable when GitHub and chat apps shrink the card to ~400px wide:
+  nothing important below 32px, and nothing within 48px of an edge.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1280px;
+        height: 640px;
+        overflow: hidden;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        color: #fff;
+        background:
+          radial-gradient(900px 600px at 85% 110%, #3b4fd8 0%, transparent 60%),
+          linear-gradient(135deg, #171c4f 0%, #22297a 55%, #2d3aa6 100%);
+        position: relative;
+      }
+      .shot {
+        position: absolute;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgb(0 0 0 / 45%);
+        background: #fff;
+      }
+      .shot img {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        object-position: left top;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .brand svg {
+        width: 64px;
+        height: 64px;
+        flex: none;
+      }
+      .name {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .muted {
+        color: #c9d1ff;
+      }
+
+      /* Layout B: the "No X" headline. */
+      .b .shot {
+        left: 985px;
+        top: 175px;
+        width: 760px;
+        height: 520px;
+        transform: rotate(-6deg);
+        opacity: 0.55;
+      }
+      .b .shot img {
+        width: 1100px;
+        margin-left: -240px;
+        margin-top: -40px;
+        height: auto;
+      }
+      .b .text {
+        position: absolute;
+        left: 72px;
+        top: 64px;
+        width: 900px;
+      }
+      .b .name {
+        font-size: 44px;
+      }
+      .b h1 {
+        margin-top: 44px;
+        font-size: 84px;
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -0.035em;
+      }
+      .b h1 span {
+        display: block;
+      }
+      .b .sub {
+        margin-top: 34px;
+        font-size: 36px;
+        line-height: 1.3;
+        font-weight: 600;
+      }
+      .b .foot {
+        position: absolute;
+        left: 72px;
+        bottom: 52px;
+        font-size: 30px;
+        font-weight: 600;
+      }
+
+      /* Layout A: the name, then a checklist. */
+      .a .shot {
+        left: 820px;
+        top: 96px;
+        width: 520px;
+        height: 448px;
+      }
+      .a .shot img {
+        width: 1300px;
+        margin-left: -213px;
+        margin-top: -150px;
+        height: auto;
+      }
+      .a .text {
+        position: absolute;
+        left: 72px;
+        top: 60px;
+        width: 720px;
+      }
+      .a .name {
+        font-size: 64px;
+        line-height: 1.02;
+      }
+      .a .tag {
+        margin-top: 22px;
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .a ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 36px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+      }
+      .a li {
+        font-size: 34px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .a li::before {
+        content: "✓";
+        flex: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #4ade80;
+        color: #14304a;
+        font-size: 26px;
+        display: grid;
+        place-items: center;
+      }
+      .a .foot {
+        position: absolute;
+        left: 72px;
+        bottom: 48px;
+        font-size: 28px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <template id="icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect width="24" height="24" rx="5" fill="#4c6ef5" />
+        <g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="4.5" />
+          <circle cx="12" cy="12" r="1" />
+        </g>
+      </svg>
+    </template>
+
+    <main id="b" class="b" hidden>
+      <div class="shot"><img src="../../docs/screenshots/board.png" alt="" /></div>
+      <div class="text">
+        <div class="brand"><span data-icon></span><span class="name">Job Application Tracker</span></div>
+        <h1><span>No account. No cloud.</span><span>No AI. No tracking.</span></h1>
+        <p class="sub">Your job search in plain files and git backups,<br />on your own machine.</p>
+      </div>
+      <p class="foot muted">Self-hosted · Open source · Free</p>
+    </main>
+
+    <main id="a" class="a" hidden>
+      <div class="shot"><img src="../../docs/screenshots/board.png" alt="" /></div>
+      <div class="text">
+        <div class="brand"><span data-icon></span><span class="name">Job Application<br />Tracker</span></div>
+        <p class="tag muted">Your job search, on your own machine.</p>
+        <ul>
+          <li>No account</li>
+          <li>No cloud</li>
+          <li>No AI</li>
+          <li>No tracking</li>
+          <li>Plain files</li>
+          <li>Git backups</li>
+          <li>Self-hosted</li>
+          <li>Open source</li>
+        </ul>
+      </div>
+      <p class="foot muted">Free · Apache-2.0</p>
+    </main>
+
+    <script>
+      const layout = new URLSearchParams(location.search).get("layout") === "a" ? "a" : "b";
+      document.getElementById(layout).hidden = false;
+      const icon = document.getElementById("icon").innerHTML;
+      for (const el of document.querySelectorAll("[data-icon]")) el.outerHTML = icon;
+    </script>
+  </body>
+</html>
