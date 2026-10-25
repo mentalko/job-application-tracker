@@ -162,6 +162,11 @@ brackets are pull requests.
   a styled scene per feature, 1.5 seconds each, with slides between (#63).
 - **A website** (https://waddington.github.io/job-application-tracker/): an animated landing page built with Astro from `website/` and
   published to GitHub Pages; plus a contributing guide and issue templates (#64).
+- **No account, no cloud, no AI, no tracking, said up front**: the README, `llms.txt` and a new
+  social card (built by `scripts/social_preview/make_card.py`, readable at thumbnail size) lead
+  with it; the website speaks to job seekers who aren't developers, with plainer words, an
+  honest "about ten minutes" setup and a fuller FAQ. The API docs page (`/api/docs`) now
+  serves Swagger UI from the app instead of a CDN, so nothing is fetched from the web (#96).
 
 ### Left out on purpose
 No job-board searching or scraping, no quick-add from URLs, no MCP server and no `.ics`
