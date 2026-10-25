@@ -9,6 +9,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -59,6 +60,21 @@ def _api_router() -> APIRouter:
     return api
 
 
+def _api_docs(app: FastAPI) -> None:
+    """Swagger UI at /api/docs, with its script and styles from the built frontend (dist/api-docs/)
+    instead of FastAPI's default CDN, so the page fetches nothing from the web."""
+
+    @app.get("/api/docs", include_in_schema=False)
+    def docs():
+        return get_swagger_ui_html(
+            openapi_url=app.openapi_url or "/api/openapi.json",
+            title=f"{app.title} API",
+            swagger_js_url="/api-docs/swagger-ui-bundle.js",
+            swagger_css_url="/api-docs/swagger-ui.css",
+            swagger_favicon_url="/favicon.svg",
+        )
+
+
 def _mount_frontend(app: FastAPI, dist: Path) -> None:
     index = dist / "index.html"
     if (dist / "assets").is_dir():
@@ -100,7 +116,7 @@ def create_app(
         lifespan=lifespan,
         title="Job Application Tracker",
         version=__version__,
-        docs_url="/api/docs",
+        docs_url=None,  # served by _api_docs, without a CDN
         openapi_url="/api/openapi.json",
         redoc_url=None,
     )
@@ -123,6 +139,7 @@ def create_app(
     )
     app.include_router(_api_router())
     app.include_router(api_v1)
+    _api_docs(app)
     _mount_frontend(app, dist)
     return app
 

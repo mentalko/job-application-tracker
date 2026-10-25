@@ -67,6 +67,16 @@ def test_openapi_available(data_dir, dist):
     assert "/api/v1/health" in client.get("/api/openapi.json").json()["paths"]
 
 
+def test_api_docs_load_nothing_from_the_web(data_dir, dist):
+    (dist / "api-docs").mkdir()
+    (dist / "api-docs" / "swagger-ui-bundle.js").write_text("// swagger")
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+    page = client.get("/api/docs")
+    assert page.status_code == 200 and "/api/openapi.json" in page.text
+    assert "http" not in page.text  # no CDN, no external favicon: every URL is on this app
+    assert client.get("/api-docs/swagger-ui-bundle.js").text == "// swagger"
+
+
 def test_requires_initialised_data_dir(tmp_path):
     with pytest.raises(RuntimeError, match="jat init"):
         create_app(tmp_path / "empty")
