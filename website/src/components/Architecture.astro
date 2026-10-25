@@ -6,7 +6,7 @@ import { GUIDE, STACK } from "../data";
   <div class="wrap">
     <div class="split">
       <div>
-        <p class="eyebrow reveal">Local-first, for real</p>
+        <p class="eyebrow reveal">Private by design</p>
         <h2 class="h2 reveal" id="arch-h">
           Your job hunt is <span class="serif grad">nobody else's</span> business.
         </h2>
@@ -17,16 +17,16 @@ import { GUIDE, STACK } from "../data";
         </p>
         <ul class="points">
           <li class="reveal">
-            <b>Runs on 127.0.0.1.</b> No accounts, no cloud, no telemetry. It never sends email or fetches
-            from the web.
+            <b>Nothing leaves your computer.</b> No account, no cloud, no tracking and no AI. It never sends
+            email, contacts anyone or fetches anything from the web.
           </li>
           <li class="reveal">
-            <b>Plain files.</b> SQLite for speed, a JSON Lines export you can diff, real Markdown notes and
-            your files as they are.
+            <b>Ordinary files.</b> Everything is saved in one folder: your notes as text files, your CVs and
+            attachments as they are, and an export you can read without the app.
           </li>
           <li class="reveal">
-            <b>Backups for free.</b> Make the folder a private git repo: the app commits a snapshot after each
-            burst of changes, and <code>jat push</code> sends them off-machine.
+            <b>Easy backups.</b> Download one zip of everything from the sidebar. If you use git, the folder
+            keeps its own history and <code>jat push</code> copies it to your private repo.
           </li>
         </ul>
         <a class="btn btn-ghost reveal" href={`${GUIDE}your-data.md`}>
@@ -73,7 +73,7 @@ import { GUIDE, STACK } from "../data";
     </div>
 
     <div class="stack reveal" aria-label="Built with">
-      <span class="label">Built with</span>
+      <span class="label">For developers: built with</span>
       {STACK.map((s) => (
         <span class="chip">{s}</span>
       ))}

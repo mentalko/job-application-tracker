@@ -1,16 +1,14 @@
 ---
 import { Image } from "astro:assets";
-import { GUIDE, REPO, ROTATING } from "../data";
+import { REPO, ROTATING } from "../data";
 import { shot } from "../shots";
-
-const clone = "git clone https://github.com/waddington/job-application-tracker.git";
 ---
 
 <section class="hero">
   <div class="wrap hero-text">
     <a class="pill reveal" href={`${REPO}/blob/main/CHANGELOG.md`}>
       <span class="dot"></span>
-      <span>Open source · in daily use · Apache-2.0</span>
+      <span>Free · open source · in daily use</span>
       <span class="arrow">→</span>
     </a>
 
@@ -26,47 +24,26 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
           <span class={i === 0 ? "on" : ""}>{w}</span>
         ))}
       </span>
-      <br />A self-hosted, open-source CRM for your job hunt, built by a software engineer for software
-      engineers. Kanban board, recruiter CRM, interview rounds, follow-ups, offers and a Sankey funnel, all in
-      a folder on your disk.
+      <br />
+      Your whole job search in one place, and a list of exactly who to follow up with today. It runs on your
+      own computer: no account, no subscription, nobody watching.
     </p>
 
     <div class="ctas reveal" style="--d:.24s">
-      <a class="btn btn-primary" href={`${GUIDE}install.md`} data-magnetic>
+      <a class="btn btn-primary" href="#quickstart" data-magnetic>
         Get started, it's free <span class="arrow">→</span>
       </a>
-      <a class="btn btn-ghost" href="#quickstart" data-magnetic>
-        <span class="mono">$</span> Quick start
+      <a class="btn btn-ghost" href="#how" data-magnetic>
+        See it in action <span class="arrow">↓</span>
       </a>
     </div>
 
-    <div class="clone reveal" style="--d:.32s">
-      <code>
-        <span class="prompt">$</span> {clone}
-      </code>
-      <button type="button" class="copy" data-copy={clone} aria-label="Copy the git clone command">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <rect
-            x="9"
-            y="9"
-            width="12"
-            height="12"
-            rx="2"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          ></rect>
-          <path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2"></path>
-        </svg>
-      </button>
-    </div>
-
-    <ul class="trust reveal" style="--d:.4s" aria-label="Promises">
-      <li>Apache-2.0</li>
-      <li>No account</li>
-      <li>No telemetry</li>
-      <li>No scraping</li>
-      <li>Runs on localhost</li>
+    <ul class="trust reveal" style="--d:.32s" aria-label="Promises">
+      <li>Free forever</li>
+      <li>No sign-up</li>
+      <li>No tracking or ads</li>
+      <li>Your data stays on your computer</li>
+      <li>Open source</li>
     </ul>
   </div>
 
@@ -118,7 +95,7 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
 
 <style>
   .hero {
-    padding-top: 150px;
+    padding-top: 112px;
     position: relative;
   }
   .hero-text {
@@ -162,11 +139,11 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
     }
   }
   h1 {
-    font-size: clamp(44px, 8vw, 104px);
+    font-size: clamp(42px, 7vw, 84px);
     line-height: 0.98;
     letter-spacing: -0.045em;
     font-weight: 700;
-    margin: 28px 0 24px;
+    margin: 24px 0 20px;
     max-width: 1050px;
     text-wrap: balance;
   }
@@ -179,7 +156,7 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
     color: var(--muted);
     font-size: clamp(17px, 1.8vw, 21px);
     max-width: 720px;
-    margin: 0 0 36px;
+    margin: 0 0 30px;
     text-wrap: pretty;
   }
   .rotate {
@@ -218,61 +195,6 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
     gap: 14px;
     flex-wrap: wrap;
     justify-content: center;
-  }
-  .mono {
-    font-family: var(--mono);
-    color: var(--cyan);
-  }
-  .clone {
-    /* Always dark, whatever the palette: its own light-on-dark colours. */
-    --text: #f2ede4;
-    --muted: #a8a196;
-    --faint: #7a7368;
-    --surface-2: rgb(255 255 255 / 0.07);
-    --border: rgb(255 255 255 / 0.1);
-    --border-strong: rgb(255 255 255 / 0.16);
-    color: var(--text);
-    margin-top: 26px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    max-width: 100%;
-    padding: 6px 6px 6px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--term);
-    font-family: var(--mono);
-    font-size: 13.5px;
-  }
-  .clone code {
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-  }
-  .prompt {
-    color: var(--cyan);
-    margin-right: 6px;
-  }
-  .copy {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 0;
-    background: var(--surface-2);
-    color: var(--muted);
-    cursor: pointer;
-    transition:
-      color 0.2s,
-      background 0.2s;
-  }
-  .copy:hover {
-    color: var(--text);
-  }
-  .copy:global(.copied) {
-    color: var(--green);
   }
   .trust {
     list-style: none;
@@ -416,7 +338,10 @@ const clone = "git clone https://github.com/waddington/job-application-tracker.g
       margin-top: 56px;
     }
     .hero {
-      padding-top: 120px;
+      padding-top: 100px;
+    }
+    .rotate {
+      min-width: 0;
     }
   }
   @property --lean {
