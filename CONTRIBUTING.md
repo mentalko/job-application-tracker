@@ -54,8 +54,12 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 | `frontend/` | The web UI: React, TypeScript, Mantine, TanStack Router and Query |
 | `docs/guide/` | The user guide |
 | `website/` | The project website: one Astro landing page |
-| `scripts/` | Demo data (`seed_demo.py`) and the README's demo GIF |
+| `scripts/` | Demo data (`seed_demo.py`), the README's demo GIF and the social preview card |
 | `docs/prd/`, `docs/rfc/`, `docs/ROADMAP.yaml` | The product plan, design decisions and roadmap |
+
+**Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
+progress and live PR status of the build itself. It needs nothing but Python; the
+[`gh` CLI](https://cli.github.com/) adds PR status.
 
 ## Checks
 
