@@ -245,38 +245,43 @@ export function MeetingLine({
   showWho?: boolean;
 }) {
   const where = meeting.agency_name ?? meeting.company_name;
+  // The date stays on one line beside the title; buttons get a line of their own underneath.
   return (
-    <Group justify="space-between" wrap="nowrap" align="flex-start">
-      <div style={{ minWidth: 0 }}>
-        <Text fw={600} size="sm" truncate="end">
-          {meeting.label}
-        </Text>
-        <Group gap={6}>
-          {showWho && (
-            <Anchor component={Link} to={`/people/${meeting.contact_id}`} size="xs">
-              <PersonName id={meeting.contact_id} name={meeting.contact_name} size={12} />
-              {where ? ` · ${where}` : ""}
-            </Anchor>
-          )}
-          {meeting.application_id && (
-            <Anchor component={Link} to={`/applications/${meeting.application_id}`} size="xs">
-              {meeting.application_company_name} · {meeting.role_title}
-            </Anchor>
-          )}
-          {meeting.meeting_url && meeting.status === "scheduled" && (
-            <Anchor href={meeting.meeting_url} target="_blank" rel="noreferrer" size="xs">
-              Join link
-            </Anchor>
-          )}
-        </Group>
-      </div>
-      <Group gap="xs" wrap="nowrap">
-        <Text size="xs" c="dimmed" ta="right">
+    <Stack gap={4}>
+      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
+        <div style={{ minWidth: 0 }}>
+          <Text fw={600} size="sm" truncate="end">
+            {meeting.label}
+          </Text>
+          <Group gap={6}>
+            {showWho && (
+              <Anchor component={Link} to={`/people/${meeting.contact_id}`} size="xs">
+                <PersonName id={meeting.contact_id} name={meeting.contact_name} size={12} />
+                {where ? ` · ${where}` : ""}
+              </Anchor>
+            )}
+            {meeting.application_id && (
+              <Anchor component={Link} to={`/applications/${meeting.application_id}`} size="xs">
+                {meeting.application_company_name} · {meeting.role_title}
+              </Anchor>
+            )}
+            {meeting.meeting_url && meeting.status === "scheduled" && (
+              <Anchor href={meeting.meeting_url} target="_blank" rel="noreferrer" size="xs">
+                Join link
+              </Anchor>
+            )}
+          </Group>
+        </div>
+        <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
           {formatDateTime(meeting.starts_at)}
         </Text>
-        {action}
       </Group>
-    </Group>
+      {action && (
+        <Group gap={6} wrap="wrap">
+          {action}
+        </Group>
+      )}
+    </Stack>
   );
 }
 

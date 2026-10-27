@@ -143,70 +143,105 @@ function AppLine({
   // Waiting on it: how long its recruiter usually takes.
   const recruiter = row.awaiting_reply_since ? contacts?.find((c) => c.id === row.recruiter_id) : undefined;
   return (
-    // The badge, detail and buttons move under the name when there isn't room for both (phones).
-    <Group justify="space-between" wrap="wrap" gap="xs">
-      <UnstyledButton
-        onClick={() => onOpen(row.id)}
-        style={{ flex: "1 1 180px", minWidth: 0 }}
-        aria-label={`Open ${row.company_name}`}
-      >
-        <Group gap="xs" wrap="nowrap">
-          <div style={{ minWidth: 0 }}>
-            <Text fw={600} size="sm" truncate="end">
-              {row.company_name}
-            </Text>
-            <Text size="xs" c="dimmed" truncate="end">
-              {row.role_title}
-              {row.recruiter_name && (
-                <>
-                  {" · "}
-                  <PersonName id={row.recruiter_id} name={row.recruiter_name} size={12} />
-                </>
-              )}
-            </Text>
-            {recruiter && (
-              <ReplyHabit contact={{ ...recruiter, awaiting_reply_since: row.awaiting_reply_since }} />
+    <Row
+      who={
+        <UnstyledButton
+          onClick={() => onOpen(row.id)}
+          style={{ display: "block", minWidth: 0 }}
+          aria-label={`Open ${row.company_name}`}
+        >
+          <Text fw={600} size="sm" truncate="end">
+            {row.company_name}
+          </Text>
+          <Text size="xs" c="dimmed" truncate="end">
+            {row.role_title}
+            {row.recruiter_name && (
+              <>
+                {" · "}
+                <PersonName id={row.recruiter_id} name={row.recruiter_name} size={12} />
+              </>
             )}
-          </div>
+          </Text>
+        </UnstyledButton>
+      }
+      habit={
+        recruiter && <ReplyHabit contact={{ ...recruiter, awaiting_reply_since: row.awaiting_reply_since }} />
+      }
+      status={
+        <>
+          <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
+          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+            {detail}
+          </Text>
+        </>
+      }
+      actions={action}
+    />
+  );
+}
+
+/**
+ * The shape of a row that needs you: who or what on the left, its stage and status on the
+ * right (kept on one line), anything about how they usually reply under the name, and the
+ * buttons on their own line, left-aligned, so rows look the same whatever the column's width.
+ */
+function Row({
+  who,
+  habit,
+  status,
+  actions,
+}: {
+  who: ReactNode;
+  habit?: ReactNode;
+  status: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <Stack gap={4}>
+      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
+        <div style={{ minWidth: 0 }}>{who}</div>
+        <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+          {status}
         </Group>
-      </UnstyledButton>
-      <Group gap="xs" wrap="nowrap" style={{ marginLeft: "auto" }}>
-        <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
-        <Text size="xs" c="dimmed" maw={120} ta="right">
-          {detail}
-        </Text>
-        {action}
       </Group>
-    </Group>
+      {habit}
+      {actions && (
+        <Group gap={6} wrap="wrap">
+          {actions}
+        </Group>
+      )}
+    </Stack>
   );
 }
 
 function InterviewLine({ interview, action }: { interview: Interview; action?: ReactNode }) {
   const when = interview.starts_at ?? interview.deadline_at;
   return (
-    <Group justify="space-between" wrap="nowrap">
-      <div style={{ minWidth: 0 }}>
-        <Text fw={600} size="sm" truncate="end">
-          {interview.label}
-        </Text>
-        <Anchor component={Link} to={`/applications/${interview.application_id}`} size="xs">
-          {interview.company_name} · {interview.role_title}
-        </Anchor>
-      </div>
-      <Group gap="xs" wrap="nowrap">
-        <Text size="xs" c="dimmed" ta="right">
+    <Row
+      who={
+        <>
+          <Text fw={600} size="sm" truncate="end">
+            {interview.label}
+          </Text>
+          <Anchor component={Link} to={`/applications/${interview.application_id}`} size="xs">
+            {interview.company_name} · {interview.role_title}
+          </Anchor>
+        </>
+      }
+      status={
+        <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
           {when ? `${interview.starts_at ? "" : "Due "}${formatDateTime(when)}` : "Not booked yet"}
         </Text>
-        {action}
-      </Group>
-    </Group>
+      }
+      actions={action}
+    />
   );
 }
 
 function OfferLine({ offer, today }: { offer: Offer; today: string }) {
   const overdue = offer.respond_by! < today;
   return (
-    <Group justify="space-between" wrap="nowrap">
+    <Group justify="space-between" wrap="nowrap" align="flex-start">
       <div style={{ minWidth: 0 }}>
         <Text fw={600} size="sm" truncate="end">
           {headline(offer)}
@@ -215,7 +250,7 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
           {offer.company_name} · {offer.role_title}
         </Anchor>
       </div>
-      <Text size="xs" c={overdue ? "red" : "orange"} ta="right">
+      <Text size="xs" c={overdue ? "red" : "orange"} ta="right" style={{ whiteSpace: "nowrap" }}>
         {overdue ? "Reply was due" : "Reply by"} {formatDate(offer.respond_by)}
       </Text>
     </Group>
@@ -225,35 +260,40 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
 function PersonWaitingLine({ person }: { person: Contact }) {
   const where = person.title ?? "";
   return (
-    // The buttons move under the name when there isn't room for both (phones).
-    <Group justify="space-between" wrap="wrap" gap="xs">
-      <div style={{ minWidth: 0 }}>
-        <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
-          <PersonName id={person.id} name={person.name} />
-        </Anchor>
-        {where && (
-          <Text size="xs" c="dimmed" truncate="end">
-            {where}
-          </Text>
-        )}
-        {!person.reply_to_read_since && <ReplyHabit contact={person} />}
-      </div>
-      <Group gap="xs" wrap="wrap" justify="flex-end" style={{ marginLeft: "auto" }}>
-        <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"}>
+    <Row
+      who={
+        <>
+          <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
+            <PersonName id={person.id} name={person.name} />
+          </Anchor>
+          {where && (
+            <Text size="xs" c="dimmed" truncate="end">
+              {where}
+            </Text>
+          )}
+        </>
+      }
+      habit={!person.reply_to_read_since && <ReplyHabit contact={person} />}
+      status={
+        <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"} style={{ whiteSpace: "nowrap" }}>
           {person.reply_to_read_since
             ? repliedLabel(person.reply_to_read_since)
             : waitingOrChased(person, waitingLabel)}
         </Text>
-        <PersonWaiting
-          id={person.id}
-          since={person.awaiting_reply_since}
-          toRead={person.reply_to_read_since}
-          compact
-          who={person.name}
-        />
-        <PersonChase contact={person} compact />
-      </Group>
-    </Group>
+      }
+      actions={
+        <>
+          <PersonWaiting
+            id={person.id}
+            since={person.awaiting_reply_since}
+            toRead={person.reply_to_read_since}
+            compact
+            who={person.name}
+          />
+          <PersonChase contact={person} compact />
+        </>
+      }
+    />
   );
 }
 
