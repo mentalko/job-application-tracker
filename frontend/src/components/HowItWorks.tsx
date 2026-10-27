@@ -36,11 +36,11 @@ const STEPS: { title: string; body: ReactNode }[] = [
     ),
   },
   {
-    title: "Check Next actions",
+    title: "Start from Today",
     body: (
       <>
-        Follow-ups that are due, applications that have gone quiet, interviews and calls coming up, and people
-        to chase.
+        <b>Your move</b> is what to do now (replies to read, follow-ups due, your to-dos), <b>Coming up</b> is
+        what's booked, and <b>Waiting on them</b> is who to chase.
       </>
     ),
   },
@@ -55,7 +55,7 @@ const STEPS: { title: string; body: ReactNode }[] = [
   },
 ];
 
-/** The everyday loop as numbered steps (used by the help button and the Overview). */
+/** The everyday loop as numbered steps (used by the help button and the Today page). */
 export function HowItWorks() {
   return (
     <Stack gap="sm">

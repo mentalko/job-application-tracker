@@ -30,7 +30,7 @@ const before = (c: Contact) => ({
 /**
  * Chase someone, or stop expecting anything from them, as small labelled buttons (`compact` in
  * lists): **Chased** (you sent a nudge; you're
- * waiting again from today), **Ghosted** or **Not interested** (they leave Next actions). Each
+ * waiting again from today), **Ghosted** or **Not interested** (they leave Today). Each
  * says what it did, with an Undo.
  */
 function useAct(contact: Contact) {
@@ -92,7 +92,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           leftSection={<IconGhost2 size={14} />}
           disabled={pending}
           onClick={() =>
-            act({ closed_as: "ghosted", closed_on: today() }, `${contact.name}: ghosted, off Next actions`)
+            act({ closed_as: "ghosted", closed_on: today() }, `${contact.name}: ghosted, off Today`)
           }
           aria-label={`Ghosted: ${contact.name}`}
         >
@@ -109,7 +109,7 @@ export function PersonChase({ contact, compact }: { contact: Contact; compact?: 
           onClick={() =>
             act(
               { closed_as: "not_interested", closed_on: today() },
-              `${contact.name}: not interested, off Next actions`,
+              `${contact.name}: not interested, off Today`,
             )
           }
           aria-label={`Not interested: ${contact.name}`}

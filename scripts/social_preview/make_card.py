@@ -3,8 +3,9 @@
     python3 scripts/social_preview/make_card.py [--layout a|b] [--out card.png]
 
 Needs google-chrome (headless). The card is card.html rendered by Chrome; its screenshot is
-docs/screenshots/insights.png, the whole-picture Sankey (fictional demo data only). After building, upload the PNG by hand in
-the repo's Settings > General > Social preview; the website copies it as its og:image.
+docs/screenshots/insights.png, the whole-picture Sankey (fictional demo data only). After
+building, upload the PNG by hand in the repo's Settings > General > Social preview; the
+website copies it as its og:image.
 """
 
 from __future__ import annotations

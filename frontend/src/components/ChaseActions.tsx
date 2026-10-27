@@ -20,7 +20,7 @@ const SNOOZE = [
 ];
 
 /**
- * One-click chasing for Next actions (PRD FR18): set a follow-up date, snooze, or give up and
+ * One-click chasing on Today (PRD FR18): set a follow-up date, snooze, or give up and
  * mark it Ghosted. Every move is on the timeline and can be undone from the application.
  */
 export function ChaseActions({ row }: { row: ApplicationRow }) {

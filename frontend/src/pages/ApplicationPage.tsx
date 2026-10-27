@@ -69,7 +69,7 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
           />
           <DateInput
             label="Follow up on"
-            description="Shows in Next actions on this date"
+            description="Shows on Today, under Your move, on this date"
             clearable
             value={followUp}
             onChange={(v) => setFollowUp(toDate(v))}

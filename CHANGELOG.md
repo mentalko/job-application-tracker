@@ -5,6 +5,18 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.0 (2026-10-27)
+
+- **Today**: the Overview and Next actions are one home page, sorted by what you do about each
+  thing. *Your move* (replies to read, offers to answer, how did it go?, to-dos due, follow-ups,
+  roles to decide), *Coming up* (interviews, calls and dated to-dos, then rounds not booked yet)
+  and *Waiting on them* (waiting to hear back, gone quiet), under one line of numbers and the
+  pipeline; two columns on a wide screen. Each item is a tile, and most keep their buttons faint
+  until you point at them. Old *Next actions* links open Today (#99).
+- Rows keep the same shape in any width: name and status on one line, buttons underneath, so
+  nothing squashes to a letter on a phone. Calls on person pages get the same layout (#99).
+- The demo data now has something in every section of Today (#99).
+
 ## 1.0.0 (2026-10-25)
 
 The first release. Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P7) is built,

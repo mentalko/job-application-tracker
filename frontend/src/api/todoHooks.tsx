@@ -19,7 +19,7 @@ function notifyError(error: Error) {
 }
 
 /**
- * To-dos, open ones by default, in Next actions' order: due in the next two weeks (overdue
+ * To-dos, open ones by default, in Today's order: due in the next two weeks (overdue
  * first), then undated, then later; ticked-off ones after, most recently done first.
  */
 export function useTodos(filters: TodoFilters = {}, enabled = true) {

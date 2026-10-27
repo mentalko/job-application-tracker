@@ -42,9 +42,9 @@ way tech hiring actually works:
 - 📝 **The details are scattered everywhere.** Notes on calls, interviews and roles, Google
   Doc links, PDFs, exported emails, and the exact CV and cover letter you sent: all in one
   place.
-- ⏰ **Things go quiet.** An *Overview* home page and a *Next actions* page show which
-  applications have stalled, who you're waiting to hear back from, what's coming up and who
-  to chase. A *Timeline* shows everything that happened, across every company and person.
+- ⏰ **Things go quiet.** The *Today* home page sorts it all by what you do about it: *your
+  move* (replies to read, follow-ups due, your to-dos), what's *coming up*, and who you're
+  *waiting on*, including applications that have stalled. A *Timeline* shows everything that happened, across every company and person.
 - 📊 **You want to know what's working.** A Sankey diagram shows where applications go, with
   conversion and time per stage, direct vs recruiter outcomes and a scorecard for every
   recruiter and agency.
@@ -66,14 +66,15 @@ way tech hiring actually works:
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
 
-![A quick tour: the Overview, Next actions, the Kanban board, a recruiter with calls and the roles they pitched, a role's page, offers side by side, the Sankey funnel, the Timeline and search](docs/screenshots/demo.gif)
+![A quick tour: the home page, what to chase, the Kanban board, a recruiter with calls and the roles they pitched, a role's page, offers side by side, the Sankey funnel, the Timeline and search](docs/screenshots/demo.gif)
 
-**Overview, the home page.** Where things stand at a glance: what's active, what needs
-attention, who you're waiting on, interviews and calls coming up, offers to answer, the
-pipeline by stage and recent activity. **New application** and a numbered **How it works**
-are at the top of every page.
+**Today, the home page.** Everything that needs you, sorted by what you do about it: **Your
+move** (replies to read, offers to answer, how did it go?, to-dos, follow-ups, roles to
+decide), **Coming up** (interviews, calls and dated to-dos) and **Waiting on them** (who
+you're waiting to hear back from, and what's gone quiet), under one line of numbers and the
+pipeline. Each item is a tile, and most keep their buttons faint until you point at them.
 
-![The Overview: counts, the pipeline by stage, what needs attention, what's coming up and recent activity](docs/screenshots/overview.png)
+![Today: active applications, interviews and offers in one line with the pipeline; Your move with replies to read, offers, a call to mark, to-dos, a follow-up and roles to decide; Coming up; and Waiting on them](docs/screenshots/overview.png)
 
 **Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
 interview round each one is at.
@@ -89,13 +90,13 @@ applications, filtered by route. Date range and counts on hover for both.
 ![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted](docs/screenshots/insights.png)
 
 <details>
-<summary><b>More screenshots</b>: Next actions, a recruiter's page, roles, the Timeline, an application, insights, CVs compared, offers and search</summary>
+<summary><b>More screenshots</b>: who you're waiting on, a recruiter's page, roles, the Timeline, an application, insights, CVs compared, offers and search</summary>
 
-**Next actions.** Replies to read, your own to-dos, offers to answer, who you're waiting to hear back from,
-interviews and calls waiting for an outcome, follow-ups due, roles to decide on, what's coming
-up and what's gone quiet. Follow up, snooze or mark Ghosted in one click.
+**Waiting on them.** Who you've replied to and are waiting on (red once it's been longer than
+the stage allows, with how long each person usually takes), and applications that have gone
+quiet. Heard back, follow up, snooze or mark Ghosted in one click.
 
-![Next actions: replies to read, your to-dos, offers to answer, waiting to hear back, follow-ups, roles to decide and what's coming up](docs/screenshots/next-actions.png)
+![Waiting on them: three you're waiting to hear back from, one in red as time to chase and a recruiter taking longer than usual, then two applications gone quiet; the tile under the pointer shows its buttons](docs/screenshots/next-actions.png)
 
 **Recruiters, their calls and the roles they pitch.** Book a call with an agenda, note how it
 went, add the roles they mentioned, then apply, mark interested or pass on each. Every person has a page
@@ -182,21 +183,20 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, role, company, agency or person; emails land on the timeline at the time they were sent |
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs |
-| 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page |
+| 🏠 | **Today** (the home page): *Your move* (replies to read, offers to answer, how did it go?, to-dos, follow-ups, roles to decide), *Coming up* and *Waiting on them* (waiting to hear back, gone quiet), under the numbers and pipeline; a numbered *How it works* and **New application** on every page |
 | 🕰️ | **Timeline** across everything: calls, pitched and passed roles, applications, interviews and offers, by day or as lanes (one row per role, person, company or agency), filtered by period, kind or who it's about; a **Timeline** button on each person, company and agency opens it filtered to them |
 | 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" |
-| ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet |
-| ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) |
+| ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Today and the page they're about, and tick them off (with undo) |
 | 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them), mark it interested (tracked, not applied yet) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) |
-| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline |
-| 📨 | **Waiting to hear back**: mark that you've replied and see who to chase; **They've replied** puts it at the top of Next actions; **Chased**, **Ghosted** or **Not interested** in one click, with a ghost by anyone who ghosted you; star favourite recruiters; see how many working days each person *usually* takes to reply |
-| 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions |
+| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Today and the Timeline |
+| 📨 | **Waiting to hear back**: mark that you've replied and see who to chase; **They've replied** puts it at the top of Today; **Chased**, **Ghosted** or **Not interested** in one click, with a ghost by anyone who ghosted you; star favourite recruiters; see how many working days each person *usually* takes to reply |
+| 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Today |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover |
 | 📈 | **Insights**: the whole picture (every role from where it came from to what's still waiting at each stage), conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity |
 | 🗣️ | **Recruiter conversations** in Insights: calls held, roles pitched, applied or passed (with your reasons), where pitched roles went, time to decide, per person and per agency |
 | 🧪 | **Which CV works best**: an A/B test of your CV and cover-letter versions (heard back, screens or interviews, offers, how sure each number is, and whether a gap is likely real); CV files attached to applications, roles or recruiters become versions in one click |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency |
-| 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions |
+| 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show on Today |
 | 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore |
 

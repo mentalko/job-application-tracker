@@ -20,17 +20,18 @@ describe("app shell", () => {
     for (const item of NAV) {
       expect(nav).toHaveTextContent(item.label);
     }
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 2, name: "Today" })).toBeInTheDocument();
     // The menu is grouped, and the wordmark goes home.
     for (const group of NAV_GROUPS) {
       expect(within(nav).getByRole("group", { name: group })).toBeInTheDocument();
     }
-    expect(within(nav).getByRole("group", { name: "Today" })).toHaveTextContent("OverviewNext actions");
-    expect(within(nav).getByRole("group", { name: "Review" })).toHaveTextContent("InsightsTimeline");
-    expect(screen.getByRole("link", { name: "Job Application Tracker: overview" })).toHaveAttribute(
-      "href",
-      "/",
+    // Today is one page, so its group doesn't repeat the name as a heading.
+    expect(within(nav).getByRole("group", { name: "Today" })).toHaveTextContent(/^Today$/);
+    expect(within(nav).getByRole("group", { name: "Your applications" })).toHaveTextContent(
+      /^Your applications/,
     );
+    expect(within(nav).getByRole("group", { name: "Review" })).toHaveTextContent("InsightsTimeline");
+    expect(screen.getByRole("link", { name: "Job Application Tracker: today" })).toHaveAttribute("href", "/");
     expect(screen.getAllByRole("button", { name: "New application" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Download a backup" })).toHaveAttribute(
       "href",

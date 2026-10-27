@@ -52,7 +52,7 @@ describe("chasing people", () => {
       "PATCH /api/v1/contacts/c1": alex(),
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     const section = (await screen.findByRole("heading", { name: "Waiting to hear back" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
@@ -63,7 +63,7 @@ describe("chasing people", () => {
     );
 
     fireEvent.click(within(section).getByRole("button", { name: "Ghosted: Alex Morgan" }));
-    expect(await screen.findByText("Alex Morgan: ghosted, off Next actions")).toBeInTheDocument();
+    expect(await screen.findByText("Alex Morgan: ghosted, off Today")).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole("button", { name: "Undo" }).at(-1)!);
     await waitFor(() => {
       const patches = calls.filter((c) => c.method === "PATCH").map((c) => c.body);
@@ -88,7 +88,7 @@ describe("chasing people", () => {
       },
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     expect(await screen.findByText("Chased 2 days ago")).toBeInTheDocument();
   });
 

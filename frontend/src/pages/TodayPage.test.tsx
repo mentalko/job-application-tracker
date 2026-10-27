@@ -4,11 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, todo, WORKFLOW } from "../test/mockApi";
+import { item, meeting, mockApi, roleSummary, row, todo, WORKFLOW } from "../test/mockApi";
 
-function renderHome() {
-  render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/next-actions"] }))} />);
+function renderAt(path: string) {
+  render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
 }
+
+const renderHome = () => renderAt("/");
+
+/** The group (Your move, Coming up, Waiting on them) a heading sits in. */
+const bucket = (name: string) =>
+  screen.getByRole("heading", { level: 3, name }).closest("[id]") as HTMLElement;
 
 const interview = (overrides: Record<string, unknown> = {}) => ({
   id: "i1",
@@ -40,7 +46,7 @@ const interview = (overrides: Record<string, unknown> = {}) => ({
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
-describe("next actions", () => {
+describe("today: what to do", () => {
   it("shows what to chase, what's coming up and what needs an outcome", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,
@@ -75,12 +81,12 @@ describe("next actions", () => {
     });
     renderHome();
     const followUps = (await screen.findByRole("heading", { name: "Follow up" })).closest(
-      ".mantine-Card-root",
+      '[role="group"]',
     ) as HTMLElement;
     expect(within(followUps).getByText("Fabrikam")).toBeInTheDocument();
     const quiet = screen
       .getByRole("heading", { name: "Gone quiet" })
-      .closest(".mantine-Card-root") as HTMLElement;
+      .closest('[role="group"]') as HTMLElement;
     expect(within(quiet).getByText("Litware")).toBeInTheDocument();
     expect(within(quiet).getByText(/12 days ago/)).toBeInTheDocument();
     expect(screen.getByText("Round 2 · System design test")).toBeInTheDocument();
@@ -102,7 +108,7 @@ describe("next actions", () => {
     });
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
-      .closest(".mantine-Card-root") as HTMLElement;
+      .closest('[role="group"]') as HTMLElement;
     // Didn't happen asks what happened first; cancelling it changes nothing.
     fireEvent.click(within(outcome).getByRole("button", { name: /^Didn't happen:/ }));
     fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
@@ -132,6 +138,7 @@ describe("next actions", () => {
         awaiting_outcome: [],
         today: "2026-09-30",
       },
+      "/api/v1/applications": [row({ id: "a1" })],
       "/api/v1/health": {},
     });
     renderHome();
@@ -229,6 +236,7 @@ describe("next actions", () => {
       "GET /api/v1/agencies": [],
       "GET /api/v1/role-summaries": [],
       "GET /api/v1/applications": [],
+      "GET /api/v1/timeline": { items: [], now: "2026-09-30T10:00:00Z" },
       "POST /api/v1/todos": todo({ id: "t3" }),
       "GET /api/v1/todos": [todo({ id: "t9", text: "Update my portfolio", done_at: "2026-09-29T10:00:00Z" })],
       "/api/v1/health": {},
@@ -256,5 +264,193 @@ describe("next actions", () => {
         entity_id: "c2",
       }),
     );
+  });
+});
+
+const NOTHING = {
+  follow_ups: [],
+  stale: [],
+  upcoming: [],
+  awaiting_outcome: [],
+  offer_deadlines: [],
+  waiting: [],
+  waiting_people: [],
+  today: "2026-10-02",
+};
+
+describe("today: where things stand", () => {
+  it("walks you through getting started when there are no applications", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [],
+      "/api/v1/contacts": [],
+      "/api/v1/next-actions": NOTHING,
+      "/api/v1/timeline": { items: [], now: "2026-10-02T10:00:00Z" },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(await screen.findByRole("heading", { name: "Getting started" })).toBeInTheDocument();
+    expect(screen.getByText("Add an application")).toBeInTheDocument();
+    // The header's (full and phone-sized) and the card's.
+    expect(screen.getAllByRole("button", { name: "New application" })).toHaveLength(3);
+  });
+
+  it("before the first application, shows the roles, calls and people you have", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Morgan", details: [] }],
+      "/api/v1/next-actions": {
+        ...NOTHING,
+        roles_to_decide: [roleSummary({ title: "Platform Engineer", company_name: "Fabrikam" })],
+        meetings: [meeting()],
+        meetings_to_close: [],
+      },
+      "/api/v1/timeline": {
+        items: [
+          item({ id: "contact:c1", category: "added", title: "Added Alex Morgan", application_id: null }),
+        ],
+        now: "2026-10-02T10:00:00Z",
+      },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(
+      await screen.findByText(
+        /So far: 1 role to decide on, 1 call coming up, 1 person added\. Apply for one of the roles and/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
+    expect(within(bucket("Your move")).getByRole("heading", { name: "Roles to decide" })).toBeInTheDocument();
+    expect(
+      within(bucket("Coming up")).getByText("Call with Alex Morgan: Market catch-up"),
+    ).toBeInTheDocument();
+    // Setting things up is most of what's happened so far, so it shows under Recent activity.
+    fireEvent.click(screen.getByRole("button", { name: "Recent activity" }));
+    expect(await screen.findByText("Added Alex Morgan")).toBeInTheDocument();
+  });
+
+  it("doesn't flash the getting-started card while the rest is still loading", async () => {
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Morgan", details: [] }],
+      "/api/v1/next-actions": NOTHING,
+      "/api/v1/timeline": { items: [], now: "2026-10-02T10:00:00Z" },
+      "/api/v1/health": {},
+    });
+    // Hold the people request back: until it answers, the page mustn't decide it's empty.
+    const fetchMock = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.includes("/api/v1/contacts")) await held;
+      return fetchMock(input, init);
+    });
+    renderHome();
+    await screen.findByRole("heading", { level: 2, name: "Today" });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
+    release();
+    expect(await screen.findByText(/So far: 1 person added\./)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
+  });
+
+  it("puts each thing in one group: your move, coming up or waiting on them", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [
+        row({ id: "a1", stage: "applied" }),
+        row({ id: "a2", stage: "applied", company_name: "Fabrikam" }),
+        row({ id: "a3", stage: "screen", company_name: "Litware" }),
+      ],
+      "/api/v1/contacts": [],
+      "/api/v1/next-actions": {
+        ...NOTHING,
+        stale: [row({ id: "a2", company_name: "Fabrikam", days_since_activity: 12 })],
+        waiting: [row({ id: "a3", company_name: "Litware", awaiting_reply_since: "2026-09-30" })],
+        to_read: [row({ id: "a1", company_name: "Contoso", reply_to_read_since: "2026-10-01" })],
+        // Due today, and one for next month: the first is yours to do now, the second comes up later.
+        todos: [
+          todo({ due_on: "2026-10-02" }),
+          todo({ id: "t2", text: "Renew my portfolio", due_on: "2026-11-01" }),
+        ],
+        // A round with no date yet: coming up, but not an interview "in the next two weeks".
+        upcoming: [
+          {
+            id: "i9",
+            application_id: "a1",
+            company_name: "Contoso",
+            role_title: "Backend Engineer",
+            label: "Round 3",
+            starts_at: null,
+            deadline_at: null,
+          },
+        ],
+      },
+      "/api/v1/timeline": { items: [item()], now: "2026-10-02T10:00:00Z" },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    // The numbers are one line; each group's heading carries its own count.
+    expect(await screen.findByRole("link", { name: "3 active" })).toHaveAttribute("href", "/applications");
+    expect(screen.getByRole("link", { name: "0 interviews in the next two weeks" })).toHaveAttribute(
+      "href",
+      "/interviews",
+    );
+    expect(screen.getByRole("link", { name: "0 offers to answer" })).toHaveAttribute("href", "/offers");
+    // A reply to read and a to-do due today; waiting to hear back and gone quiet.
+    expect(screen.getByLabelText("2 in Your move")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 in Waiting on them")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 in Coming up")).toBeInTheDocument();
+
+    const move = bucket("Your move");
+    expect(within(move).getByText("Contoso")).toBeInTheDocument();
+    expect(within(move).getByText("Reply to their message")).toBeInTheDocument();
+    expect(within(move).queryByText("Renew my portfolio")).not.toBeInTheDocument();
+
+    const ahead = bucket("Coming up");
+    expect(within(ahead).getByText("Renew my portfolio")).toBeInTheDocument();
+    expect(within(ahead).getByText("Round 3")).toBeInTheDocument();
+    expect(within(ahead).getByText("Not booked yet")).toBeInTheDocument();
+
+    const theirs = bucket("Waiting on them");
+    expect(within(theirs).getByText("Litware")).toBeInTheDocument();
+    expect(within(theirs).getByText("Fabrikam")).toBeInTheDocument();
+    expect(within(theirs).getByText(/12 days ago/)).toBeInTheDocument();
+
+    expect(screen.queryByText(/1970/)).not.toBeInTheDocument();
+    expect(screen.getByText("Applied 2")).toBeInTheDocument();
+    expect(screen.getByText("Screen 1")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Recent activity" }));
+    expect(await screen.findByText("Call with Alex")).toBeInTheDocument();
+    expect(screen.getByText("Full timeline").closest("a")).toHaveAttribute("href", "/timeline");
+  });
+
+  it("sends old Next actions links to Today", async () => {
+    mockApi({ "/api/v1/workflow": WORKFLOW, "/api/v1/next-actions": NOTHING, "/api/v1/health": {} });
+    const router = makeRouter(createMemoryHistory({ initialEntries: ["/next-actions"] }));
+    render(<App router={router} />);
+    expect(await screen.findByRole("heading", { level: 2, name: "Today" })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/");
+    expect(screen.queryByRole("link", { name: "Next actions" })).not.toBeInTheDocument();
+  });
+
+  it("says so when what's next can't load, but carries on without the rest", async () => {
+    mockApi({ "/api/v1/workflow": WORKFLOW, "/api/v1/health": {} });
+    renderHome();
+    expect(await screen.findByText(/Couldn't load what's next/, {}, { timeout: 8000 })).toBeInTheDocument();
+  }, 10000);
+
+  it("shows the groups at once even if your applications, people and timeline don't load", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/next-actions": { ...NOTHING, todos: [todo()] },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(await screen.findByText("Reply to their message")).toBeInTheDocument();
+    expect(screen.queryByText(/Couldn't load/)).not.toBeInTheDocument();
   });
 });

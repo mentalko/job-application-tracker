@@ -67,7 +67,7 @@ function ReplyButtons({
       loading={spinning("read")}
       onClick={() => change("read", { reply_to_read_since: today() })}
       aria-label={who ? `They've replied: ${who}` : undefined}
-      title="Their reply needs reading: it goes to the top of Next actions"
+      title="Their reply needs reading: it goes to the top of Today"
     >
       They've replied
     </Button>

@@ -228,7 +228,7 @@ function AboutSelect({ value, onChange }: { value: string | null; onChange: (v: 
 
 /**
  * Add a to-do: about `about` when given (a person's page, a role), or with a picker for what
- * it's about (Next actions).
+ * it's about (Today).
  */
 export function AddTodo({
   about,
@@ -313,8 +313,7 @@ export function TodosCard({ entityType, entityId }: { entityType: TodoAbout; ent
         ))}
         {todos && !open.length && (
           <Text size="sm" c="dimmed">
-            Nothing to do here. Add a reminder in your own words; it shows in Next actions until you tick it
-            off.
+            Nothing to do here. Add a reminder in your own words; it shows on Today until you tick it off.
           </Text>
         )}
         {done.map((t) => (
