@@ -1,11 +1,11 @@
 # Using the app
 
-A tour of every page. The sidebar has them all, in groups: *Today* (Overview, Next actions),
+A tour of every page. The sidebar has them all, in groups: *Today* (the home page),
 *Your applications* (Roles, Applications, Interviews, Offers), *People and companies*, *Files
 and notes* and *Review* (Insights, Timeline). Along
 the top, on every page:
 
-- the name, which takes you back to the [Overview](#overview-home);
+- the name, which takes you back to [Today](#today-home);
 - **New application**;
 - the search box (press <kbd>/</kbd>), which finds anything;
 - **?** (*How it works*), the everyday loop in five numbered steps;
@@ -69,7 +69,7 @@ any. Add them as **roles** first, then decide on each:
 - Deleting a call keeps the roles from it; they just aren't linked to a call any more.
 
 **A role's page.** Click a role's name anywhere (the Roles page, a company, a person, a call,
-Next actions, an application's *Role* card, search, the Timeline) to open its page:
+Today, an application's *Role* card, search, the Timeline) to open its page:
 
 - what it is (pay, terms, location, the job ad), who told you about it and on which call,
   when you added it, and why you passed if you did; your notes on it;
@@ -86,67 +86,64 @@ was closed later), *Closed* (every application closed before any got to *Applied
 ghosted while only interested; the badge says how the latest one ended, e.g. *Withdrawn*, and
 the role links to that one), *Passed* or *All*. An application you record straight at a closed
 stage with an applied date (a past one that was rejected) counts as applied. Roles
-to decide also show on Next actions and count towards *Needs attention* on the Overview. On
+to decide also show under *Your move* on Today. On
 the Timeline you'll see who mentioned which role, and the ones you passed on. A role you
 applied for through **New application** with the same title at the same company counts as
 applied too.
 
-## Overview (home)
+## Today (home)
 
-Where things stand, at a glance:
+Everything that needs you, in one place, sorted by what you do about it. At the top, one line:
+active applications, interviews in the next two weeks and offers to answer (each opens its
+page), with the pipeline of active applications by stage underneath. Then three groups; on a
+wide screen *Your move* is on the left and the other two sit beside it:
 
-- **Counts**: active applications, how many need attention (replies to read, to-dos due,
-  follow-ups due, gone quiet and roles to decide),
-  interviews in the next two weeks, how many you're waiting to hear back from, and offers to
-  answer soon. Each one opens the page with the details.
-- **Pipeline**: active applications by stage.
-- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Needs
-  attention starts with [replies to read](#waiting-to-hear-back), then your
-  [to-dos](#to-dos) due today or earlier, or with no date. Coming
-  up lists up to six interviews, task deadlines and calls in time order, then offer reply
-  deadlines.
-- **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
-  companies, agencies and people being added.
-- **How it works**: the same numbered steps as the **?** button.
-
-With nothing in the tracker yet, it shows a *Getting started* card instead, with a **New
-application** button. Once you've added anything else (people, companies, agencies, calls
-or roles) but no applications, the Overview shows it as usual (recent activity then includes what you've added), under a short
-*No applications yet* card that sums up what you have and links to **Roles to decide** and
-**New application**.
-
-## Next actions
-
-What needs doing, in this order:
+**Your move**: things to do now, in this order:
 
 - **Replies to read**: applications and people who've replied that you still need to read
   (see [Waiting to hear back](#waiting-to-hear-back)), oldest first; **Read it** clears it.
-- **To-dos**: your own reminders (see [To-dos](#to-dos)): the ones due in the next two weeks
-  (overdue first), then the ones with no date, then later ones. Add one here, about anything
-  or nothing in particular.
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
-- **Waiting to hear back**: applications and people you've replied to (see
-  [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
-  waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
-  it to *Replies to read*.
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
   call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
   the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
   notes). Nothing changes until you save; the notes can stay empty.
+- **To-dos**: your own reminders due today or earlier, or with no date (see [To-dos](#to-dos)).
+  Add one here, about anything or nothing in particular.
 - **Follow up**: applications whose follow-up date is today or earlier.
 - **Roles to decide**: roles you've added with no application that you haven't passed on
   (see [Roles to decide](#roles-to-decide)), oldest first, with **Apply**, **Interested** and
   **Pass**.
-- **Coming up**: interviews, task deadlines and [calls](#calls-and-meetings) in the next two
-  weeks, soonest first, then rounds not booked yet.
+
+**Coming up**: nothing to do yet. Interviews, task deadlines, [calls](#calls-and-meetings) and
+to-dos with a later date, soonest first, then rounds not booked yet.
+
+**Waiting on them**: who you're waiting for.
+
+- **Waiting to hear back**: applications and people you've replied to (see
+  [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
+  waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
+  it to *Replies to read*.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
   or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
   [Customising](customising.md)).
 
-On the others: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it (3 days,
-1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application, one with
-a follow-up date in the future, or one with an interview booked ahead never counts as gone
-quiet.
+Each item is a tile. Its buttons stay faint until you point at it (on a touch screen they always
+show). On an application: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it
+(3 days, 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application,
+one with a follow-up date in the future, or one with an interview booked ahead never counts as
+gone quiet. Click an application's name for its quick view.
+
+At the bottom, folded away: **Recent activity** (the last two weeks of the
+[Timeline](#timeline), leaving out companies, agencies and people being added) and **How it
+works** (the same numbered steps as the **?** button).
+
+With nothing in the tracker yet, it shows a *Getting started* card instead, with a **New
+application** button. Once you've added anything else (people, companies, agencies, calls
+or roles) but no applications, Today shows it as usual under a short *No applications yet*
+card that sums up what you have (recent activity then includes what you've added).
+
+Today replaced the separate Overview and Next actions pages; old *Next actions* links and
+bookmarks open it.
 
 ### To-dos
 
@@ -155,11 +152,11 @@ messaged me, I need to reply*, *look into the company to see if I like what they
 for the salary band*.
 
 - **Add one** from the *To-dos* card on an application, company, agency or person page; from
-  the to-do button (a list with ticks) on a role, wherever roles are listed; or at the top of
-  Next actions, where **About** picks what it's about (or leave it empty). A date is optional.
+  the to-do button (a list with ticks) on a role, wherever roles are listed; or under *To-dos*
+  on Today, where **About** picks what it's about (or leave it empty). A date is optional.
 - **Tick it off** with its checkbox; **Undo** in the message that pops up brings it back. It
-  leaves Next actions and the Overview; on its page it stays ticked (the last three), and
-  **Done recently** under Next actions' to-dos lists the last ten, so you can untick one.
+  leaves Today; on its page it stays ticked (the last three), and
+  **Done recently** under Today's to-dos lists the last ten, so you can untick one.
 - **Edit** (the pencil) changes the words or the date; the bin deletes it (with **Undo** too).
 - Overdue to-dos are marked in red, today's in orange. Each one links to what it's about (a
   role's opens its company).
@@ -248,7 +245,7 @@ Everything about one application:
 - **Route**: how it came about (through a recruiter at an agency, directly, a referral), with
   the recruiter, agency or company linked to their page.
 - **At a glance**: what this application needs, by the same rules as
-  [Next actions](#next-actions) (a reply to read, to-dos due by today or undated, an offer to
+  [Today](#today-home) (a reply to read, to-dos due by today or undated, an offer to
   answer in the next two weeks, a round waiting for an outcome, a follow-up due, gone quiet,
   waiting to hear back), each with how long it's been ("for 12 days", "overdue by 2 days");
   then what's coming up (booked rounds and ones not booked yet, later to-dos and follow-ups,
@@ -256,7 +253,7 @@ Everything about one application:
   its current stage, the last call, email or message, the last interview, and the last
   activity (things logged for a later date count once they happen). A closed or archived
   application has nothing to chase, though your own to-dos on it still show, as they do on
-  Next actions. The quick view (clicking a row in the list or a card on the board) shows it
+  Today. The quick view (clicking a row in the list or a card on the board) shows it
   too.
 - **Details**: applied date, follow-up date, snooze, tags, and **Archived**.
 - **Interviews**: numbered rounds in your own words ("Round 2 · Engineering manager chat"),
@@ -279,13 +276,12 @@ Everything about one application:
 When you've replied to someone and the ball is in their court, press **I've replied,
 waiting** (on the application page, or on a person's page for conversations that aren't about
 one application). It goes on the timeline, the application shows how long you've been
-waiting, and it appears under *Waiting to hear back* on Next actions instead of *Gone quiet*.
+waiting, and it appears under *Waiting to hear back* on Today instead of *Gone quiet*.
 Press **Heard back** when they reply; moving the application to another stage clears it too.
 
 When they've replied but you haven't read it properly yet (it came in on your phone, or it's
 long), press **They've replied** instead, whether or not you were waiting. It goes to the top
-of Next actions under *Replies to read*, and at the top of *Needs attention* on the Overview,
-until you press **Read it**; the applications list and board mark it *reply to read*. Saying
+of Today, under *Your move* in *Replies to read*, until you press **Read it**; the applications list and board mark it *reply to read*. Saying
 **I've replied, waiting** clears it too. A reply to read is never *gone quiet* or a follow-up to chase; moving the application to
 another stage clears it, and undoing the move puts it back.
 
@@ -295,10 +291,10 @@ and hearing back on the Monday is one working day). That's when you press **They
 or **Heard back**, or an application you were waiting on moves to another stage (not one you
 chose yourself: *Withdrawn*, *Declined*, *Accepted* or *Ghosted*); an application counts for
 its recruiter. Chasing and marking them *Ghosted* don't count, and undoing a stage move takes
-its reply back. Days are your local days. A person's tile, their page and their rows on Next
-actions then say *Usually replies within 2 working days* (the middle of their reply times,
-rounded up), or *Replied once, in 3 working days*; an application you're waiting on, on Next
-actions, shows its recruiter's. When you've been waiting longer than that, Next actions and
+its reply back. Days are your local days. A person's tile, their page and their rows on Today
+then say *Usually replies within 2 working days* (the middle of their reply times,
+rounded up), or *Replied once, in 3 working days*; an application you're waiting on, on Today,
+shows its recruiter's. When you've been waiting longer than that, Today and
 their tile add *waiting 3 working days longer than usual*, which helps tell slow from gone.
 Replies already in your applications' history (waiting, then *They replied* or *Heard back*,
 or a move on) were counted when you updated; waits on people before then weren't recorded, so
@@ -306,17 +302,17 @@ theirs start now. Merging two people keeps both their replies, and deleting an a
 keeps its recruiter's.
 
 **Chasing people, or giving up on them.** For people (a recruiter you're talking to outside
-any one application), three buttons sit next to *Waiting* or *Replies to read* on Next
-actions, and at the top of their page:
+any one application), three buttons sit under them in *Waiting to hear back* or *Replies to read* on
+Today, and at the top of their page:
 
 - **Chased**: you sent a nudge. You're waiting on them again from today, and
-  Next actions says *Chased today* instead of how long you've been waiting.
+  Today says *Chased today* instead of how long you've been waiting.
 - **Ghosted** and **Not interested**: you've stopped expecting
-  anything. They leave Next actions; their page and their Recruiters tile say *Ghosted* or
+  anything. They leave Today; their page and their Recruiters tile say *Ghosted* or
   *Not interested*, with the date. Someone who ghosted you gets a ghost: in place of the
   person icon on their page, and before their name on their tile, on the applications they
   brought you (the list, the board, the quick view, the People card, company, agency and role
-  pages), on calls, Next actions, Timeline entries and per-person rows, search results, and
+  pages), on calls, Today, Timeline entries and per-person rows, search results, and
   Insights (*Who you talk to* and the recruiter scorecard). Role lines say *(ghosted)* after
   the name.
   To take it off, whenever you like (a week later, say, when they were just slow), press
@@ -325,7 +321,7 @@ actions, and at the top of their page:
   too.
 
 Each pops up a message with **Undo**, and goes on the Timeline. (For applications, **Ghosted**
-is a stage: see [Next actions](#next-actions).)
+is a stage: see [Today](#today-home).)
 
 ### Emails
 
@@ -375,7 +371,7 @@ them.
 **Favourites.** Star the people you rate (a recruiter who's genuinely good to work with): the
 ☆ on their tile, or next to their name on their page. A favourite gets a gold star next to
 their name in the same places as the ghost (see *Ghosted* above): their tile and page, the
-applications they brought you, calls, Next actions, the Timeline, search and Insights; role
+applications they brought you, calls, Today, the Timeline, search and Insights; role
 lines put a ★ after the name. Favourites come first on the Recruiters page. Click the star
 again to unstar them; editing a person never changes it.
 
@@ -419,14 +415,14 @@ meetings** on their page:
 - **Book a call**: who it's with, what it's about, when, how (phone, video or in person), a
   meeting link or where, and an agenda (what to ask, what to tell them).
 - To log a call that already happened, pick **Happened** as its status and say how it went.
-- Once its time has passed, it waits under *How did it go?* on Next actions. **Happened**
+- Once its time has passed, it waits under *How did it go?* on Today. **Happened**
   asks for notes; **Didn't happen** asks what happened, then closes it.
 - If it's about one application, pick it under **About an application**; the call then shows
   with that application on the Timeline.
 - Under a call that happened, **Add roles from this call** adds the roles they mentioned, to
   [decide on](#roles-to-decide) later. The call lists them with their status.
 
-Calls show under *Coming up* on Next actions and the Overview, on the Timeline, and in
+Calls show under *Coming up* on Today, on the Timeline, and in
 search. Interview rounds for an application stay on the application's page.
 
 An **agency page** shows its recruiters and every role it put you forward for. Applications
@@ -578,7 +574,7 @@ the role); roles you found yourself aren't counted here.
 
 Calls count in a date range by when they happen; roles by when you added them. A call
 counts as held once it's marked *Happened*; one still marked booked after its time waits on
-Next actions for you to say how it went.
+Today for you to say how it went.
 
 **CVs and cover letters**: an A/B test of your CV versions. It works from what you record:
 add a CV on [Documents](#documents) with a new version each time you change it, then on each
