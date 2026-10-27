@@ -8,7 +8,6 @@ import {
   Group,
   Loader,
   Progress,
-  SegmentedControl,
   Stack,
   Text,
   Title,
@@ -385,33 +384,7 @@ const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
  * strip of numbers and the pipeline (PRD FR18, US5). It replaced the separate Overview and Next
  * actions pages, which overlapped.
  */
-// PREVIEW ONLY: three ways to tell rows apart, while Kai picks one. Remove before merging.
-const LOOKS = ["lines", "tiles", "inbox", "blend"] as const;
-type Look = (typeof LOOKS)[number];
-function useLook(): [Look, (look: Look) => void] {
-  const [look, setLook] = useState<Look>(() => {
-    try {
-      const saved = localStorage.getItem("jat.today.look");
-      return LOOKS.includes(saved as Look) ? (saved as Look) : "blend";
-    } catch {
-      return "blend";
-    }
-  });
-  return [
-    look,
-    (next) => {
-      setLook(next);
-      try {
-        localStorage.setItem("jat.today.look", next);
-      } catch {
-        // private window: it just won't be remembered
-      }
-    },
-  ];
-}
-
 export function TodayPage() {
-  const [look, setLook] = useLook();
   const { data, isLoading, isError } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
   const { data: rows } = useApplications({});
@@ -499,7 +472,7 @@ export function TodayPage() {
   ].filter(Boolean);
 
   return (
-    <Stack maw={1600} className={classes[look]}>
+    <Stack maw={1600}>
       <Group justify="space-between" align="flex-end">
         <div>
           <Title order={2}>Today</Title>
@@ -507,22 +480,6 @@ export function TodayPage() {
             {dayjs(today).format("dddd D MMMM")}
           </Text>
         </div>
-        <Group gap="xs">
-          <Text size="xs" c="dimmed">
-            Preview a look:
-          </Text>
-          <SegmentedControl
-            size="xs"
-            value={look}
-            onChange={(v) => setLook(v as Look)}
-            data={[
-              { value: "lines", label: "Lines" },
-              { value: "tiles", label: "Tiles" },
-              { value: "inbox", label: "Inbox" },
-              { value: "blend", label: "Tiles + faint buttons" },
-            ]}
-          />
-        </Group>
       </Group>
 
       {isLoading || settling ? (
