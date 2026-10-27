@@ -392,14 +392,16 @@ describe("today: where things stand", () => {
       "/api/v1/health": {},
     });
     renderHome();
-    expect(await screen.findByRole("link", { name: "Active: 3" })).toHaveAttribute("href", "/applications");
-    // A reply to read and a to-do due today.
-    expect(screen.getByRole("link", { name: "Your move: 2" })).toHaveAttribute("href", "#your-move");
-    expect(screen.getByRole("link", { name: "Waiting on them: 2" })).toHaveAttribute(
+    // The numbers are one line; each group's heading carries its own count.
+    expect(await screen.findByRole("link", { name: "3 active" })).toHaveAttribute("href", "/applications");
+    expect(screen.getByRole("link", { name: "0 interviews in the next two weeks" })).toHaveAttribute(
       "href",
-      "#waiting-on-them",
+      "/interviews",
     );
-    expect(screen.getByRole("link", { name: "Interviews: 0" })).toHaveAttribute("href", "/interviews");
+    expect(screen.getByRole("link", { name: "0 offers to answer" })).toHaveAttribute("href", "/offers");
+    // A reply to read and a to-do due today; waiting to hear back and gone quiet.
+    expect(within(bucket("Your move")).getByText("2")).toBeInTheDocument();
+    expect(within(bucket("Waiting on them")).getByText("2")).toBeInTheDocument();
 
     const move = bucket("Your move");
     expect(within(move).getByText("Contoso")).toBeInTheDocument();

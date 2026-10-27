@@ -8,7 +8,6 @@ import {
   Group,
   Loader,
   Progress,
-  SimpleGrid,
   Stack,
   Text,
   Title,
@@ -102,20 +101,28 @@ function Section({
 }) {
   if (!count) return null;
   return (
-    <Card withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Group gap="xs">
-            <Title order={4}>{title}</Title>
-            <Badge variant="light">{count}</Badge>
-          </Group>
-          <Text size="xs" c="dimmed">
-            {hint}
+    <Stack gap="xs">
+      <SectionLabel title={title} count={count} hint={hint} />
+      {children}
+    </Stack>
+  );
+}
+
+/** A section's name and count, small and grey; its explanation shows on hover. */
+function SectionLabel({ title, count, hint }: { title: string; count: number; hint: string }) {
+  return (
+    <Tooltip label={hint} position="top-start" openDelay={300}>
+      <Group gap={6} style={{ alignSelf: "flex-start" }}>
+        <Title order={4} fz="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.04em" }}>
+          {title}
+        </Title>
+        {count > 0 && (
+          <Text size="xs" c="dimmed" fw={700}>
+            · {count}
           </Text>
-        </Group>
-        {children}
-      </Stack>
-    </Card>
+        )}
+      </Group>
+    </Tooltip>
   );
 }
 
@@ -256,80 +263,31 @@ function TodosSection({ todos }: { todos: Todo[] }) {
   const [showDone, setShowDone] = useState(false);
   const { data: done } = useTodos({ status: "done" }, showDone);
   return (
-    <Card withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Group gap="xs">
-            <Title order={4}>To-dos</Title>
-            {todos.length > 0 && <Badge variant="light">{todos.length}</Badge>}
-          </Group>
+    <Stack gap="xs">
+      <SectionLabel title="To-dos" count={todos.length} hint="Your own reminders; tick them off when done" />
+      {todos.map((t) => (
+        <TodoLine key={t.id} todo={t} />
+      ))}
+      <AddTodo />
+      <Anchor
+        component="button"
+        type="button"
+        size="xs"
+        c="dimmed"
+        style={{ alignSelf: "flex-start" }}
+        onClick={() => setShowDone((v) => !v)}
+      >
+        {showDone ? "Hide done" : "Done recently"}
+      </Anchor>
+      {showDone &&
+        (done?.length ? (
+          done.slice(0, 10).map((t) => <TodoLine key={t.id} todo={t} />)
+        ) : (
           <Text size="xs" c="dimmed">
-            Your own reminders; tick them off when done
+            Nothing ticked off yet.
           </Text>
-        </Group>
-        {todos.map((t) => (
-          <TodoLine key={t.id} todo={t} />
         ))}
-        <AddTodo />
-        <Anchor
-          component="button"
-          type="button"
-          size="xs"
-          c="dimmed"
-          style={{ alignSelf: "flex-start" }}
-          onClick={() => setShowDone((v) => !v)}
-        >
-          {showDone ? "Hide done" : "Done recently"}
-        </Anchor>
-        {showDone &&
-          (done?.length ? (
-            done.slice(0, 10).map((t) => <TodoLine key={t.id} todo={t} />)
-          ) : (
-            <Text size="xs" c="dimmed">
-              Nothing ticked off yet.
-            </Text>
-          ))}
-      </Stack>
-    </Card>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  hint,
-  to,
-  href,
-}: {
-  label: string;
-  value: number | undefined;
-  hint: string;
-  /** Another page, or `href` for a group further down this one. */
-  to?: string;
-  href?: string;
-}) {
-  const card = (
-    <Card withBorder padding="sm" h="100%">
-      <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-        {label}
-      </Text>
-      <Text fz={24} fw={700} lh={1.25}>
-        {value ?? "…"}
-      </Text>
-      <Text size="xs" c="dimmed">
-        {hint}
-      </Text>
-    </Card>
-  );
-  const name = `${label}: ${value ?? "…"}`;
-  return to ? (
-    <UnstyledButton component={Link} to={to} aria-label={name}>
-      {card}
-    </UnstyledButton>
-  ) : (
-    <UnstyledButton component="a" href={href} aria-label={name}>
-      {card}
-    </UnstyledButton>
+    </Stack>
   );
 }
 
@@ -364,8 +322,12 @@ function Bucket({
           {hint}
         </Text>
       </Group>
-      {count === 0 && empty}
-      {children}
+      <Card withBorder padding="md">
+        <Stack gap="lg">
+          {count === 0 && empty}
+          {children}
+        </Stack>
+      </Card>
     </Stack>
   );
 }
@@ -514,49 +476,42 @@ export function TodayPage() {
           )}
 
           {rows && (
-            <SimpleGrid cols={{ base: 2, sm: 3, lg: 5 }} spacing="sm">
-              <Stat label="Active" value={active.length} to="/applications" hint="applications in play" />
-              <Stat label="Your move" value={yourMove} href="#your-move" hint="to do now" />
-              <Stat label="Interviews" value={booked.length} to="/interviews" hint="in the next two weeks" />
-              <Stat
-                label="Waiting on them"
-                value={waitingOn}
-                href="#waiting-on-them"
-                hint="to hear back or gone quiet"
-              />
-              <Stat label="Offers" value={offers.length} to="/offers" hint="to answer soon" />
-            </SimpleGrid>
-          )}
-
-          {pipeline.length > 0 && (
             <Card withBorder padding="sm">
-              <Group justify="space-between" mb={6}>
-                <Text size="sm" fw={600}>
-                  Pipeline
-                </Text>
-                <Anchor component={Link} to="/applications" size="sm">
-                  Applications
+              <Group gap="lg" wrap="wrap" mb={pipeline.length ? 8 : 0}>
+                <Anchor component={Link} to="/applications" size="sm" c="var(--mantine-color-text)">
+                  <b>{active.length}</b> active
+                </Anchor>
+                <Anchor component={Link} to="/interviews" size="sm" c="var(--mantine-color-text)">
+                  <b>{booked.length}</b> {booked.length === 1 ? "interview" : "interviews"} in the next two
+                  weeks
+                </Anchor>
+                <Anchor component={Link} to="/offers" size="sm" c="var(--mantine-color-text)">
+                  <b>{offers.length}</b> {offers.length === 1 ? "offer" : "offers"} to answer
                 </Anchor>
               </Group>
-              <Progress.Root size={20} aria-label="Active applications by stage">
-                {pipeline.map(({ stage, count }) => (
-                  <Tooltip key={stage.id} label={`${stage.name}: ${count}`}>
-                    <Progress.Section value={(count / active.length) * 100} color={stage.color}>
-                      <Progress.Label>{count}</Progress.Label>
-                    </Progress.Section>
-                  </Tooltip>
-                ))}
-              </Progress.Root>
-              <Group gap="md" mt={6}>
-                {pipeline.map(({ stage, count }) => (
-                  <Text key={stage.id} size="xs">
-                    <Text span c={`${stage.color}.6`} fw={700}>
-                      ●
-                    </Text>{" "}
-                    {stages.get(stage.id)?.name ?? stage.id} {count}
-                  </Text>
-                ))}
-              </Group>
+              {pipeline.length > 0 && (
+                <>
+                  <Progress.Root size={16} aria-label="Active applications by stage">
+                    {pipeline.map(({ stage, count }) => (
+                      <Tooltip key={stage.id} label={`${stage.name}: ${count}`}>
+                        <Progress.Section value={(count / active.length) * 100} color={stage.color}>
+                          <Progress.Label>{count}</Progress.Label>
+                        </Progress.Section>
+                      </Tooltip>
+                    ))}
+                  </Progress.Root>
+                  <Group gap="md" mt={6}>
+                    {pipeline.map(({ stage, count }) => (
+                      <Text key={stage.id} size="xs" c="dimmed">
+                        <Text span c={`${stage.color}.6`} fw={700}>
+                          ●
+                        </Text>{" "}
+                        {stages.get(stage.id)?.name ?? stage.id} {count}
+                      </Text>
+                    ))}
+                  </Group>
+                </>
+              )}
             </Card>
           )}
 
@@ -569,18 +524,15 @@ export function TodayPage() {
                 hint="Things to do now"
                 count={yourMove}
                 empty={
-                  <Card withBorder p="md">
-                    <Group gap="sm" wrap="nowrap">
-                      <IconConfetti size={28} stroke={1.4} />
-                      <div>
-                        <Text fw={600}>All caught up</Text>
-                        <Text size="sm" c="dimmed">
-                          Nothing needs you right now. Replies, follow-ups and anything gone quiet show up
-                          here.
-                        </Text>
-                      </div>
-                    </Group>
-                  </Card>
+                  <Group gap="sm" wrap="nowrap">
+                    <IconConfetti size={28} stroke={1.4} />
+                    <div>
+                      <Text fw={600}>All caught up</Text>
+                      <Text size="sm" c="dimmed">
+                        Nothing needs you right now. Replies, follow-ups and your to-dos show up here.
+                      </Text>
+                    </div>
+                  </Group>
                 }
               >
                 <Section
@@ -680,11 +632,7 @@ export function TodayPage() {
                     </Text>
                   }
                 >
-                  {comingUp.length > 0 && (
-                    <Card withBorder>
-                      <Stack gap="sm">{comingUp.map((c) => c.node)}</Stack>
-                    </Card>
-                  )}
+                  {comingUp.length > 0 && <Stack gap="sm">{comingUp.map((c) => c.node)}</Stack>}
                 </Bucket>
 
                 <Bucket
