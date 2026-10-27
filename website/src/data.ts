@@ -20,7 +20,7 @@ export const MARQUEE = [
     "Interview rounds",
     "Sankey funnel",
     "Offers side by side",
-    "Next actions",
+    "Today page",
     "Timeline",
     "To-dos",
   ],

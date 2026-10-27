@@ -10,8 +10,10 @@ Status: version 1.0, ready and in daily use; versions follow semantic versioning
 GitHub release for each (see CHANGELOG.md). Windows support, a one-command install and Docker are planned.
 
 What it does:
-- Overview home page: counts, pipeline, what needs attention, what's coming up, recent
-  activity, a numbered "How it works".
+- Today, the home page (`/`; `/next-actions` redirects there): Your move (replies to read,
+  offers to answer, how did it go?, to-dos due, follow-ups, roles to decide), Coming up
+  (interviews, calls, dated to-dos, unbooked rounds) and Waiting on them (waiting to hear
+  back, gone quiet), under counts and the pipeline; a numbered "How it works".
 - Applications list and Kanban board (move between any stages; optionally a column per
   interview round), application pages with an "At a glance" card (what needs attention, for
   how long, key dates as "3 weeks ago"), duplicate-submission warnings, renaming, deleting.
@@ -22,7 +24,7 @@ What it does:
 - Roles to decide before applying (`/api/v1/role-summaries`): pitched by whom, on which
   call; apply, mark interested (role status `interested`, or `closed` with `closed_as`) or
   pass; a page per role whose files (e.g. the job description) show on the application.
-- Next actions (`/next-actions`): to-dos (`/api/v1/todos`), follow-ups due, applications gone
+- What Today lists (`GET /api/v1/next-actions`): to-dos (`/api/v1/todos`), follow-ups due, applications gone
   quiet, waiting to hear back, replies to read, interviews coming up, one-click follow-up,
   snooze and Ghosted, and "usually replies within N working days" per person (`replies`,
   `usual_reply_days` on contacts).
@@ -42,7 +44,7 @@ What it does:
   applications, roles or people become versions (`GET /api/v1/cv-files`,
   `POST /api/v1/cv-files/adopt`).
 - Offers side by side (salary, bonus, equity, pension and holiday, or day rate, IR35 and
-  length, with a worth-a-year figure and reply deadlines in Next actions).
+  length, with a worth-a-year figure and reply deadlines on Today).
 - Backups: git-backed snapshots, a one-click zip (`GET /api/v1/backup/archive` or
   `jat archive`), restore (`jat restore`).
 - Full-text search across everything, notes included (`GET /api/v1/search?q=`, or press /).
