@@ -395,7 +395,10 @@ describe("today: where things stand", () => {
     expect(await screen.findByRole("link", { name: "Active: 3" })).toHaveAttribute("href", "/applications");
     // A reply to read and a to-do due today.
     expect(screen.getByRole("link", { name: "Your move: 2" })).toHaveAttribute("href", "#your-move");
-    expect(screen.getByRole("link", { name: "Waiting: 1" })).toHaveAttribute("href", "#waiting-on-them");
+    expect(screen.getByRole("link", { name: "Waiting on them: 2" })).toHaveAttribute(
+      "href",
+      "#waiting-on-them",
+    );
     expect(screen.getByRole("link", { name: "Interviews: 0" })).toHaveAttribute("href", "/interviews");
 
     const move = bucket("Your move");

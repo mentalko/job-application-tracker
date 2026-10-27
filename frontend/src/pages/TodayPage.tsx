@@ -135,10 +135,11 @@ function AppLine({
   // Waiting on it: how long its recruiter usually takes.
   const recruiter = row.awaiting_reply_since ? contacts?.find((c) => c.id === row.recruiter_id) : undefined;
   return (
-    <Group justify="space-between" wrap="nowrap">
+    // The badge, detail and buttons move under the name when there isn't room for both (phones).
+    <Group justify="space-between" wrap="wrap" gap="xs">
       <UnstyledButton
         onClick={() => onOpen(row.id)}
-        style={{ flex: 1, minWidth: 0 }}
+        style={{ flex: "1 1 180px", minWidth: 0 }}
         aria-label={`Open ${row.company_name}`}
       >
         <Group gap="xs" wrap="nowrap">
@@ -161,9 +162,9 @@ function AppLine({
           </div>
         </Group>
       </UnstyledButton>
-      <Group gap="xs" wrap="nowrap">
+      <Group gap="xs" wrap="nowrap" style={{ marginLeft: "auto" }}>
         <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
-        <Text size="xs" c="dimmed" w={120} ta="right">
+        <Text size="xs" c="dimmed" maw={120} ta="right">
           {detail}
         </Text>
         {action}
@@ -517,10 +518,10 @@ export function TodayPage() {
               <Stat label="Your move" value={yourMove} href="#your-move" hint="to do now" />
               <Stat label="Interviews" value={booked.length} to="/interviews" hint="in the next two weeks" />
               <Stat
-                label="Waiting"
-                value={waiting.length + waitingPeople.length}
+                label="Waiting on them"
+                value={waitingOn}
                 href="#waiting-on-them"
-                hint="to hear back"
+                hint="to hear back or gone quiet"
               />
               <Stat label="Offers" value={offers.length} to="/offers" hint="to answer soon" />
             </SimpleGrid>
