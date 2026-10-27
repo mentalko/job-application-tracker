@@ -1,13 +1,71 @@
-/* A thin line between rows, so each one reads as its own item. */
-.rows > * + * {
+/* How rows are told apart. Three looks while Kai chooses (the switcher on the page). */
+
+/* The tile and hover colour: a light grey, a lifted grey in the dark theme. */
+.tiles,
+.inbox {
+  --today-tint: var(--mantine-color-gray-1);
+}
+:where([data-mantine-color-scheme="dark"]) .tiles,
+:where([data-mantine-color-scheme="dark"]) .inbox {
+  --today-tint: var(--mantine-color-dark-6);
+}
+
+/* Lines: a thin line between rows, a line with more room between sections. */
+.lines .rows > * + * {
   border-top: 1px solid var(--mantine-color-default-border);
   margin-top: var(--mantine-spacing-xs);
   padding-top: var(--mantine-spacing-xs);
 }
-
-/* Between the sections of a group (Waiting to hear back, Gone quiet…): a little more room. */
-.sections > * + * {
+.lines .sections > * + * {
   border-top: 1px solid var(--mantine-color-default-border);
   margin-top: var(--mantine-spacing-md);
   padding-top: var(--mantine-spacing-md);
+}
+
+/* Tiles: each row a soft tile, sections apart by space alone. */
+.tiles .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tiles .rows > * {
+  background: var(--today-tint);
+  border-radius: var(--mantine-radius-md);
+  padding: 10px 12px;
+}
+.tiles .sections > * + * {
+  margin-top: var(--mantine-spacing-lg);
+}
+
+/* Inbox: white space, the row under the pointer lights up, its buttons stay faint until then. */
+.inbox .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 -10px;
+}
+.inbox .rows > * {
+  border-radius: var(--mantine-radius-md);
+  padding: 8px 10px;
+  transition: background 120ms;
+}
+.inbox .rows > *:hover,
+.inbox .rows > *:focus-within {
+  background: var(--today-tint);
+}
+.inbox .actions {
+  opacity: 0.35;
+  transition: opacity 120ms;
+}
+.inbox .rows > *:hover .actions,
+.inbox .rows > *:focus-within .actions {
+  opacity: 1;
+}
+@media (hover: none) {
+  .inbox .actions {
+    opacity: 1; /* no pointer to hover with: always show them */
+  }
+}
+.inbox .sections > * + * {
+  margin-top: var(--mantine-spacing-xl);
 }
