@@ -630,7 +630,15 @@ export function TodayPage() {
                     <InterviewLine key={i.id} interview={i} action={<InterviewOutcome interview={i} />} />
                   ))}
                   {meetingsToClose.map((m) => (
-                    <MeetingLine key={m.id} meeting={m} action={<MeetingOutcome meeting={m} />} />
+                    <MeetingLine
+                      key={m.id}
+                      meeting={m}
+                      action={
+                        <Group gap={6} className={classes.actions}>
+                          <MeetingOutcome meeting={m} />
+                        </Group>
+                      }
+                    />
                   ))}
                 </Section>
                 <TodosSection todos={todosNow} />
