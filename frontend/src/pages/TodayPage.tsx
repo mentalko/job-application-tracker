@@ -54,6 +54,7 @@ import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
 import { TimelineRow } from "./TimelinePage";
+import classes from "./TodayPage.module.css";
 
 export function useNextActions() {
   // "Today" is your local day, not UTC's: send the date and the start of it with its offset.
@@ -103,7 +104,7 @@ function Section({
   return (
     <Stack gap="xs">
       <SectionLabel title={title} count={count} hint={hint} />
-      {children}
+      <div className={classes.rows}>{children}</div>
     </Stack>
   );
 }
@@ -305,9 +306,13 @@ function TodosSection({ todos }: { todos: Todo[] }) {
   return (
     <Stack gap="xs">
       <SectionLabel title="To-dos" count={todos.length} hint="Your own reminders; tick them off when done" />
-      {todos.map((t) => (
-        <TodoLine key={t.id} todo={t} />
-      ))}
+      {todos.length > 0 && (
+        <div className={classes.rows}>
+          {todos.map((t) => (
+            <TodoLine key={t.id} todo={t} />
+          ))}
+        </div>
+      )}
       <AddTodo />
       <Anchor
         component="button"
@@ -363,10 +368,10 @@ function Bucket({
         </Text>
       </Group>
       <Card withBorder padding="md">
-        <Stack gap="lg">
+        <div className={classes.sections}>
           {count === 0 && empty}
           {children}
-        </Stack>
+        </div>
       </Card>
     </Stack>
   );
@@ -672,7 +677,7 @@ export function TodayPage() {
                     </Text>
                   }
                 >
-                  {comingUp.length > 0 && <Stack gap="sm">{comingUp.map((c) => c.node)}</Stack>}
+                  {comingUp.length > 0 && <div className={classes.rows}>{comingUp.map((c) => c.node)}</div>}
                 </Bucket>
 
                 <Bucket

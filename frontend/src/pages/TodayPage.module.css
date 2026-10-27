@@ -1,0 +1,13 @@
+/* A thin line between rows, so each one reads as its own item. */
+.rows > * + * {
+  border-top: 1px solid var(--mantine-color-default-border);
+  margin-top: var(--mantine-spacing-xs);
+  padding-top: var(--mantine-spacing-xs);
+}
+
+/* Between the sections of a group (Waiting to hear back, Gone quiet…): a little more room. */
+.sections > * + * {
+  border-top: 1px solid var(--mantine-color-default-border);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-md);
+}
