@@ -313,8 +313,7 @@ export function TodosCard({ entityType, entityId }: { entityType: TodoAbout; ent
         ))}
         {todos && !open.length && (
           <Text size="sm" c="dimmed">
-            Nothing to do here. Add a reminder in your own words; it shows in Next actions until you tick it
-            off.
+            Nothing to do here. Add a reminder in your own words; it shows on Today until you tick it off.
           </Text>
         )}
         {done.map((t) => (

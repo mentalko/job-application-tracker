@@ -112,7 +112,7 @@ describe("calls and meetings", () => {
     );
   });
 
-  it("shows calls in Next actions", async () => {
+  it("shows calls on Today", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/next-actions": {
@@ -131,8 +131,8 @@ describe("calls and meetings", () => {
       },
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
-    const coming = (await screen.findByRole("heading", { name: "Coming up" })).closest(".mantine-Card-root")!;
+    renderAt("/");
+    const coming = (await screen.findByRole("heading", { level: 3, name: "Coming up" })).closest("[id]")!;
     expect(
       within(coming as HTMLElement).getByText("Call with Alex Morgan: Market catch-up"),
     ).toBeInTheDocument();

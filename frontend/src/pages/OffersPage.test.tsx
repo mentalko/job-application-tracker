@@ -129,7 +129,7 @@ describe("offers", () => {
     });
   });
 
-  it("lists offers to answer in Next actions", async () => {
+  it("lists offers to answer on Today", async () => {
     mockApi({
       "/api/v1/next-actions": {
         follow_ups: [],
@@ -142,7 +142,7 @@ describe("offers", () => {
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     const section = (await screen.findByRole("heading", { name: "Offers to answer" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;

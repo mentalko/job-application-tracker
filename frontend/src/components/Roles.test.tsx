@@ -203,7 +203,7 @@ describe("roles to decide", () => {
     });
   });
 
-  it("asks for a decision in Next actions", async () => {
+  it("asks for a decision on Today", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/next-actions": {
@@ -221,7 +221,7 @@ describe("roles to decide", () => {
       },
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     const section = (await screen.findByRole("heading", { name: "Roles to decide" })).closest(
       ".mantine-Card-root",
     )!;

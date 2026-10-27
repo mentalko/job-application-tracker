@@ -1,4 +1,10 @@
-import { createRootRoute, createRoute, createRouter, type RouterHistory } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  redirect,
+  type RouterHistory,
+} from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { Layout } from "./components/Layout";
@@ -9,12 +15,10 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { CompaniesPage } from "./pages/CompaniesPage";
 import { CompanyPage } from "./pages/CompanyPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
-import { HomePage } from "./pages/HomePage";
 import { InsightsPage } from "./pages/InsightsPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { OffersPage } from "./pages/OffersPage";
 import { NotesPage } from "./pages/NotesPage";
-import { NextActionsPage } from "./pages/NextActionsPage";
 import { NotFound } from "./pages/NotFound";
 import { PersonPage } from "./pages/PersonPage";
 import { Placeholder } from "./pages/Placeholder";
@@ -23,13 +27,13 @@ import { RolePage } from "./pages/RolePage";
 import { RolesPage } from "./pages/RolesPage";
 import { SearchPage } from "./pages/SearchPage";
 import { TimelinePage } from "./pages/TimelinePage";
+import { TodayPage } from "./pages/TodayPage";
 
 const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFound });
 
 // Pages that are built; everything else in NAV shows its "coming soon" placeholder.
 const PAGES: Record<string, () => JSX.Element> = {
-  "/": HomePage,
-  "/next-actions": NextActionsPage,
+  "/": TodayPage,
   "/timeline": TimelinePage,
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
@@ -80,6 +84,15 @@ const roleRoute = createRoute({
   component: RolePage,
 });
 
+// Next actions and the Overview became one Today page: old links and bookmarks land there.
+const nextActionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/next-actions",
+  beforeLoad: () => {
+    throw redirect({ to: "/", replace: true });
+  },
+});
+
 const searchRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/search",
@@ -96,6 +109,7 @@ const routeTree = rootRoute.addChildren([
   personRoute,
   roleRoute,
   searchRoute,
+  nextActionsRoute,
 ]);
 
 export function makeRouter(history?: RouterHistory) {

@@ -65,7 +65,7 @@ export function Layout() {
               to="/"
               underline="never"
               c="inherit"
-              aria-label="Job Application Tracker: overview"
+              aria-label="Job Application Tracker: today"
             >
               <Group gap="xs" wrap="nowrap">
                 <IconTarget size={22} />
@@ -85,25 +85,32 @@ export function Layout() {
       </AppShell.Header>
 
       <AppShell.Navbar p="xs" aria-label="Main navigation">
-        {NAV_GROUPS.map((group, n) => (
-          <div key={group} role="group" aria-label={group}>
-            {n > 0 && <Divider my={4} />}
-            <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>
-              {group}
-            </Text>
-            {NAV.filter((item) => item.group === group).map((item) => (
-              <NavLink
-                key={item.path}
-                component={Link}
-                to={item.path}
-                label={item.label}
-                leftSection={<item.icon size={18} stroke={1.6} />}
-                active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
-                onClick={close}
-              />
-            ))}
-          </div>
-        ))}
+        {NAV_GROUPS.map((group, n) => {
+          const items = NAV.filter((item) => item.group === group);
+          // A heading that only repeats its one item's name ("Today") says nothing.
+          const heading = !(items.length === 1 && items[0]!.label === group);
+          return (
+            <div key={group} role="group" aria-label={group}>
+              {n > 0 && <Divider my={4} />}
+              {heading && (
+                <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>
+                  {group}
+                </Text>
+              )}
+              {items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  label={item.label}
+                  leftSection={<item.icon size={18} stroke={1.6} />}
+                  active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
+                  onClick={close}
+                />
+              ))}
+            </div>
+          );
+        })}
         <Stack gap={4} mt="auto" p="xs">
           <ApiStatus />
           <Text size="xs" c="dimmed">

@@ -77,7 +77,7 @@ describe("waiting to hear back", () => {
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     const section = (await screen.findByRole("heading", { name: "Waiting to hear back" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
@@ -131,7 +131,7 @@ describe("waiting to hear back", () => {
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/health": {},
     });
-    renderAt("/next-actions");
+    renderAt("/");
     const heading = await screen.findByRole("heading", { name: "Replies to read" });
     const section = heading.closest(".mantine-Card-root") as HTMLElement;
     // It comes first: before your to-dos and everything else.
