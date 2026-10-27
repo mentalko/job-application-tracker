@@ -374,6 +374,26 @@ def seed(path: Path) -> None:
         by_title["Full-stack Engineer"].awaiting_reply_since = date.today() - timedelta(days=8)
         first_recruiter.awaiting_reply_since = date.today() - timedelta(days=4)
         recruiters["Jordan Lee"].favourite = True
+        # A follow-up that's due, a call whose time has passed (How did it go?), and a round
+        # that isn't booked yet, so every section of Today has something in it.
+        by_title["Lead Engineer"].follow_up_on = date.today() - timedelta(days=1)
+        s.add(
+            Meeting(
+                contact_id=recruiters["Sam Patel"].id,
+                kind="call",
+                title="Feedback on the final",
+                starts_at=days_ago(1),
+            )
+        )
+        s.add(
+            Interview(
+                application_id=by_title["Senior Backend Engineer"].id,
+                round=4,
+                title="Final with the CTO",
+                kind="final",
+                status="scheduled",
+            )
+        )
         # To-dos in your own words: about a person, a company, a role, and one about nothing.
         fabrikam_role = s.query(Role).filter_by(title="Platform Engineer (contract)").one()
         s.add_all(
