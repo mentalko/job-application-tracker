@@ -2,12 +2,49 @@
 
 /* The tile and hover colour: a light grey, a lifted grey in the dark theme. */
 .tiles,
-.inbox {
+.inbox,
+.blend {
   --today-tint: var(--mantine-color-gray-1);
+  --today-tint-strong: var(--mantine-color-gray-2);
 }
 :where([data-mantine-color-scheme="dark"]) .tiles,
-:where([data-mantine-color-scheme="dark"]) .inbox {
+:where([data-mantine-color-scheme="dark"]) .inbox,
+:where([data-mantine-color-scheme="dark"]) .blend {
   --today-tint: var(--mantine-color-dark-6);
+  --today-tint-strong: var(--mantine-color-dark-5);
+}
+
+/* Blend: tiles, with each tile's buttons faint until you point at it (or tab into it). */
+.blend .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.blend .rows > * {
+  background: var(--today-tint);
+  border-radius: var(--mantine-radius-md);
+  padding: 10px 12px;
+  transition: background 120ms;
+}
+.blend .rows > *:hover,
+.blend .rows > *:focus-within {
+  background: var(--today-tint-strong);
+}
+.blend .actions {
+  opacity: 0.35;
+  transition: opacity 120ms;
+}
+.blend .rows > *:hover .actions,
+.blend .rows > *:focus-within .actions {
+  opacity: 1;
+}
+@media (hover: none) {
+  .blend .actions {
+    opacity: 1;
+  }
+}
+.blend .sections > * + * {
+  margin-top: var(--mantine-spacing-lg);
 }
 
 /* Lines: a thin line between rows, a line with more room between sections. */

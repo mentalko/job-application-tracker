@@ -386,15 +386,15 @@ const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
  * actions pages, which overlapped.
  */
 // PREVIEW ONLY: three ways to tell rows apart, while Kai picks one. Remove before merging.
-const LOOKS = ["lines", "tiles", "inbox"] as const;
+const LOOKS = ["lines", "tiles", "inbox", "blend"] as const;
 type Look = (typeof LOOKS)[number];
 function useLook(): [Look, (look: Look) => void] {
   const [look, setLook] = useState<Look>(() => {
     try {
       const saved = localStorage.getItem("jat.today.look");
-      return LOOKS.includes(saved as Look) ? (saved as Look) : "inbox";
+      return LOOKS.includes(saved as Look) ? (saved as Look) : "blend";
     } catch {
-      return "inbox";
+      return "blend";
     }
   });
   return [
@@ -519,6 +519,7 @@ export function TodayPage() {
               { value: "lines", label: "Lines" },
               { value: "tiles", label: "Tiles" },
               { value: "inbox", label: "Inbox" },
+              { value: "blend", label: "Tiles + faint buttons" },
             ]}
           />
         </Group>
