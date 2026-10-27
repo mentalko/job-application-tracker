@@ -13,6 +13,7 @@ import {
   Title,
   Tooltip,
   UnstyledButton,
+  VisuallyHidden,
 } from "@mantine/core";
 import { IconConfetti } from "@tabler/icons-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -102,18 +103,24 @@ function Section({
 }) {
   if (!count) return null;
   return (
-    <Stack gap="xs">
+    <Stack gap="xs" role="group" aria-label={title}>
       <SectionLabel title={title} count={count} hint={hint} />
       <div className={classes.rows}>{children}</div>
     </Stack>
   );
 }
 
-/** A section's name and count, small and grey; its explanation shows on hover. */
+/** A section's name and count, small and grey; its explanation shows on hover or focus, and is
+ * read out by screen readers. */
 function SectionLabel({ title, count, hint }: { title: string; count: number; hint: string }) {
   return (
-    <Tooltip label={hint} position="top-start" openDelay={300}>
-      <Group gap={6} style={{ alignSelf: "flex-start" }}>
+    <Tooltip
+      label={hint}
+      position="top-start"
+      openDelay={300}
+      events={{ hover: true, focus: true, touch: true }}
+    >
+      <Group gap={6} style={{ alignSelf: "flex-start" }} tabIndex={0}>
         <Title order={4} fz="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.04em" }}>
           {title}
         </Title>
@@ -122,6 +129,7 @@ function SectionLabel({ title, count, hint }: { title: string; count: number; hi
             · {count}
           </Text>
         )}
+        <VisuallyHidden>{hint}</VisuallyHidden>
       </Group>
     </Tooltip>
   );
@@ -304,7 +312,7 @@ function TodosSection({ todos }: { todos: Todo[] }) {
   const [showDone, setShowDone] = useState(false);
   const { data: done } = useTodos({ status: "done" }, showDone);
   return (
-    <Stack gap="xs">
+    <Stack gap="xs" role="group" aria-label="To-dos">
       <SectionLabel title="To-dos" count={todos.length} hint="Your own reminders; tick them off when done" />
       {todos.length > 0 && (
         <div className={classes.rows}>
@@ -326,7 +334,11 @@ function TodosSection({ todos }: { todos: Todo[] }) {
       </Anchor>
       {showDone &&
         (done?.length ? (
-          done.slice(0, 10).map((t) => <TodoLine key={t.id} todo={t} />)
+          <div className={classes.rows}>
+            {done.slice(0, 10).map((t) => (
+              <TodoLine key={t.id} todo={t} />
+            ))}
+          </div>
         ) : (
           <Text size="xs" c="dimmed">
             Nothing ticked off yet.
@@ -358,7 +370,7 @@ function Bucket({
         <Group gap="xs">
           <Title order={3}>{title}</Title>
           {count > 0 && (
-            <Badge variant="filled" size="lg" circle={count < 10}>
+            <Badge variant="filled" size="lg" circle={count < 10} aria-label={`${count} in ${title}`}>
               {count}
             </Badge>
           )}
@@ -385,9 +397,9 @@ const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
  * actions pages, which overlapped.
  */
 export function TodayPage() {
-  const { data, isLoading, isError } = useNextActions();
+  const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
-  const { data: rows } = useApplications({});
+  const { data: rows, isPending: appsPending, isError: appsFailed } = useApplications({});
   const { data: workflow } = useWorkflow();
   const { data: contacts, isPending: contactsPending, isError: contactsFailed } = useContacts();
   const today = useToday();
@@ -410,8 +422,9 @@ export function TodayPage() {
   const rolesToDecide = data?.roles_to_decide ?? [];
   const todos = data?.todos ?? [];
   // To-dos due today or before, or with no date, are yours to do now; dated ones wait their turn.
-  const todosNow = todos.filter((t) => !t.due_on || t.due_on <= data!.today);
-  const todosLater = todos.filter((t) => t.due_on && t.due_on > data!.today);
+  const day = data?.today ?? today;
+  const todosNow = todos.filter((t) => !t.due_on || t.due_on <= day);
+  const todosLater = todos.filter((t) => t.due_on && t.due_on > day);
   // Calls, interviews and dated to-dos in one list by time; rounds not booked yet go last.
   const comingUp = [
     ...meetings.map((m) => ({ key: m.id, at: m.starts_at, node: <MeetingLine key={m.id} meeting={m} /> })),
@@ -438,8 +451,11 @@ export function TodayPage() {
     rolesToDecide.length;
   const waitingOn = waiting.length + waitingPeople.length + (data?.stale.length ?? 0);
 
-  // The strip and the pipeline come from your applications; the groups only need Next actions.
-  const stages = stageLookup(workflow);
+  // The strip and the pipeline come from your applications; the groups only need the next-actions data.
+  // With nothing else to show, wait for your applications before choosing between the groups and
+  // Getting started, so one doesn't flash up and go. Otherwise show the groups straight away.
+  const nothingYet = data !== undefined && yourMove + comingUp.length + waitingOn === 0 && !todos.length;
+  const waitForApps = appsPending && !appsFailed && nothingYet;
   const active = (rows ?? []).filter((r) => r.stage_kind === "active");
   const booked = (data?.upcoming ?? []).filter((i) => i.starts_at || i.deadline_at);
   const pipeline = (workflow?.stages ?? [])
@@ -482,9 +498,9 @@ export function TodayPage() {
         </div>
       </Group>
 
-      {isLoading || settling ? (
+      {isLoading || waitForApps || settling ? (
         <Loader />
-      ) : isError || !data ? (
+      ) : !data ? (
         <Text c="red" size="sm">
           Couldn't load what's next. Is the tracker still running?
         </Text>
@@ -553,7 +569,7 @@ export function TodayPage() {
                         <Text span c={`${stage.color}.6`} fw={700}>
                           ●
                         </Text>{" "}
-                        {stages.get(stage.id)?.name ?? stage.id} {count}
+                        {stage.name} {count}
                       </Text>
                     ))}
                   </Group>

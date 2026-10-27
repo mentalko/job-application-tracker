@@ -72,7 +72,7 @@ way tech hiring actually works:
 move** (replies to read, offers to answer, how did it go?, to-dos, follow-ups, roles to
 decide), **Coming up** (interviews, calls and dated to-dos) and **Waiting on them** (who
 you're waiting to hear back from, and what's gone quiet), under one line of numbers and the
-pipeline. Each item is a tile whose buttons stay faint until you point at it.
+pipeline. Each item is a tile, and most keep their buttons faint until you point at them.
 
 ![Today: active applications, interviews and offers in one line with the pipeline; Your move with replies to read, offers, a call to mark, to-dos, a follow-up and roles to decide; Coming up; and Waiting on them](docs/screenshots/overview.png)
 

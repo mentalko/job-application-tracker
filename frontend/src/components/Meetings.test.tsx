@@ -136,7 +136,7 @@ describe("calls and meetings", () => {
     expect(
       within(coming as HTMLElement).getByText("Call with Alex Morgan: Market catch-up"),
     ).toBeInTheDocument();
-    const outcome = screen.getByRole("heading", { name: "How did it go?" }).closest(".mantine-Card-root")!;
+    const outcome = screen.getByRole("heading", { name: "How did it go?" }).closest('[role="group"]')!;
     expect(within(outcome as HTMLElement).getByText("Call with Alex Morgan: Intro")).toBeInTheDocument();
     expect(within(outcome as HTMLElement).getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
   });

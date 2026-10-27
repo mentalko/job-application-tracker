@@ -11,8 +11,8 @@ Numbers in brackets are pull requests.
   thing. *Your move* (replies to read, offers to answer, how did it go?, to-dos due, follow-ups,
   roles to decide), *Coming up* (interviews, calls and dated to-dos, then rounds not booked yet)
   and *Waiting on them* (waiting to hear back, gone quiet), under one line of numbers and the
-  pipeline; two columns on a wide screen. Each item is a tile whose buttons stay faint until you
-  point at it. Old *Next actions* links open Today (#99).
+  pipeline; two columns on a wide screen. Each item is a tile, and most keep their buttons faint
+  until you point at them. Old *Next actions* links open Today (#99).
 - Rows keep the same shape in any width: name and status on one line, buttons underneath, so
   nothing squashes to a letter on a phone. Calls on person pages get the same layout (#99).
 - The demo data now has something in every section of Today (#99).

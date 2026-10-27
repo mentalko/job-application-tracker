@@ -228,7 +228,7 @@ function AboutSelect({ value, onChange }: { value: string | null; onChange: (v: 
 
 /**
  * Add a to-do: about `about` when given (a person's page, a role), or with a picker for what
- * it's about (Next actions).
+ * it's about (Today).
  */
 export function AddTodo({
   about,

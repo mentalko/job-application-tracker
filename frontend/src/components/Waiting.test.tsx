@@ -79,7 +79,7 @@ describe("waiting to hear back", () => {
     });
     renderAt("/");
     const section = (await screen.findByRole("heading", { name: "Waiting to hear back" })).closest(
-      ".mantine-Card-root",
+      '[role="group"]',
     ) as HTMLElement;
     expect(within(section).getByText("Waiting 9 days · time to chase")).toHaveStyle({
       color: "var(--mantine-color-red-text)",
@@ -133,7 +133,7 @@ describe("waiting to hear back", () => {
     });
     renderAt("/");
     const heading = await screen.findByRole("heading", { name: "Replies to read" });
-    const section = heading.closest(".mantine-Card-root") as HTMLElement;
+    const section = heading.closest('[role="group"]') as HTMLElement;
     // It comes first: before your to-dos and everything else.
     const headings = screen.getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
     expect(headings[0]).toBe("Replies to read");
@@ -154,7 +154,7 @@ describe("waiting to hear back", () => {
     // Waiting on Fabrikam, and they've replied: read it later.
     const waiting = screen
       .getByRole("heading", { name: "Waiting to hear back" })
-      .closest(".mantine-Card-root") as HTMLElement;
+      .closest('[role="group"]') as HTMLElement;
     fireEvent.click(within(waiting).getByRole("button", { name: "They've replied: Fabrikam" }));
     await waitFor(() =>
       expect(calls.find((c) => c.path === "/api/v1/applications/a2")?.body).toEqual({

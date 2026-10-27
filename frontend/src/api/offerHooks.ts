@@ -36,7 +36,7 @@ function useRefreshOffers() {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: ["offers"] });
-    invalidateApplicationViews(qc); // the timeline logs offers; Next actions lists reply deadlines
+    invalidateApplicationViews(qc); // the timeline logs offers; Today lists reply deadlines
   };
 }
 

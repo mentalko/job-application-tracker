@@ -81,12 +81,12 @@ describe("today: what to do", () => {
     });
     renderHome();
     const followUps = (await screen.findByRole("heading", { name: "Follow up" })).closest(
-      ".mantine-Card-root",
+      '[role="group"]',
     ) as HTMLElement;
     expect(within(followUps).getByText("Fabrikam")).toBeInTheDocument();
     const quiet = screen
       .getByRole("heading", { name: "Gone quiet" })
-      .closest(".mantine-Card-root") as HTMLElement;
+      .closest('[role="group"]') as HTMLElement;
     expect(within(quiet).getByText("Litware")).toBeInTheDocument();
     expect(within(quiet).getByText(/12 days ago/)).toBeInTheDocument();
     expect(screen.getByText("Round 2 · System design test")).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe("today: what to do", () => {
     });
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
-      .closest(".mantine-Card-root") as HTMLElement;
+      .closest('[role="group"]') as HTMLElement;
     // Didn't happen asks what happened first; cancelling it changes nothing.
     fireEvent.click(within(outcome).getByRole("button", { name: /^Didn't happen:/ }));
     fireEvent.click(await screen.findByRole("button", { name: "Cancel" }));
@@ -138,6 +138,7 @@ describe("today: what to do", () => {
         awaiting_outcome: [],
         today: "2026-09-30",
       },
+      "/api/v1/applications": [row({ id: "a1" })],
       "/api/v1/health": {},
     });
     renderHome();
@@ -400,8 +401,9 @@ describe("today: where things stand", () => {
     );
     expect(screen.getByRole("link", { name: "0 offers to answer" })).toHaveAttribute("href", "/offers");
     // A reply to read and a to-do due today; waiting to hear back and gone quiet.
-    expect(within(bucket("Your move")).getByText("2")).toBeInTheDocument();
-    expect(within(bucket("Waiting on them")).getByText("2")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 in Your move")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 in Waiting on them")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 in Coming up")).toBeInTheDocument();
 
     const move = bucket("Your move");
     expect(within(move).getByText("Contoso")).toBeInTheDocument();
@@ -428,8 +430,27 @@ describe("today: where things stand", () => {
 
   it("sends old Next actions links to Today", async () => {
     mockApi({ "/api/v1/workflow": WORKFLOW, "/api/v1/next-actions": NOTHING, "/api/v1/health": {} });
-    renderAt("/next-actions");
+    const router = makeRouter(createMemoryHistory({ initialEntries: ["/next-actions"] }));
+    render(<App router={router} />);
     expect(await screen.findByRole("heading", { level: 2, name: "Today" })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/");
     expect(screen.queryByRole("link", { name: "Next actions" })).not.toBeInTheDocument();
+  });
+
+  it("says so when what's next can't load, but carries on without the rest", async () => {
+    mockApi({ "/api/v1/workflow": WORKFLOW, "/api/v1/health": {} });
+    renderHome();
+    expect(await screen.findByText(/Couldn't load what's next/, {}, { timeout: 8000 })).toBeInTheDocument();
+  }, 10000);
+
+  it("shows the groups at once even if your applications, people and timeline don't load", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/next-actions": { ...NOTHING, todos: [todo()] },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(await screen.findByText("Reply to their message")).toBeInTheDocument();
+    expect(screen.queryByText(/Couldn't load/)).not.toBeInTheDocument();
   });
 });

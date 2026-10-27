@@ -8,7 +8,7 @@ import type { Todo } from "../api/todoHooks";
 
 /**
  * What an application needs, and how long ago things happened, for its "At a glance" card.
- * The rules follow Next actions (src/jat/api/next_actions.py), so the two agree.
+ * The rules follow Today (the next-actions API, src/jat/api/next_actions.py), so the two agree.
  */
 
 export type Tone = "red" | "orange" | "blue" | "gray";
@@ -108,7 +108,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     });
   }
 
-  // Your own to-dos, whatever the stage (Next actions lists every open one): due by today,
+  // Your own to-dos, whatever the stage (Today lists every open one): due by today,
   // then undated; later ones are coming up.
   const openTodos = todos.filter((t) => !t.done_at);
   for (const todo of openTodos.filter((t) => t.due_on)) {

@@ -30,7 +30,7 @@ const before = (c: Contact) => ({
 /**
  * Chase someone, or stop expecting anything from them, as small labelled buttons (`compact` in
  * lists): **Chased** (you sent a nudge; you're
- * waiting again from today), **Ghosted** or **Not interested** (they leave Next actions). Each
+ * waiting again from today), **Ghosted** or **Not interested** (they leave Today). Each
  * says what it did, with an Undo.
  */
 function useAct(contact: Contact) {

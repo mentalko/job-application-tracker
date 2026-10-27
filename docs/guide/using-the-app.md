@@ -127,8 +127,9 @@ to-dos with a later date, soonest first, then rounds not booked yet.
   or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
   [Customising](customising.md)).
 
-Each item is a tile. Its buttons stay faint until you point at it (on a touch screen they always
-show). On an application: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it
+Each item is a tile. On most of them (replies, offers, calls, interviews, follow-ups and
+anything you're waiting on) the buttons stay faint until you point at the tile or tab into it;
+on a touch screen they always show. On an application: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it
 (3 days, 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application,
 one with a follow-up date in the future, or one with an interview booked ahead never counts as
 gone quiet. Click an application's name for its quick view.
