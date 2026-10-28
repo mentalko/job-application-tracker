@@ -1,0 +1,31 @@
+# Deployment: builds the app from this repository and serves the API + UI on :8770.
+# Data lives in the `jat_data` volume (a git-backed folder at /data inside the container).
+name: job-application-tracker
+
+services:
+  job-application-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8770:8770"
+    environment:
+      JAT_DATA_DIR: /data
+      JAT_HOST: 0.0.0.0
+      JAT_PORT: "8770"
+    volumes:
+      - jat_data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/v1/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  jat_data:
