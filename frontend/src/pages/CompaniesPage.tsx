@@ -19,19 +19,21 @@ import { useState } from "react";
 
 import { useCreateCompany } from "../api/detailHooks";
 import { useApplications, useCompanies } from "../api/hooks";
+import { useT } from "../i18n";
 
 function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
   const create = useCreateCompany();
   const navigate = useNavigate();
+  const t = useT();
   const form = useForm({
     initialValues: { name: "", website: "" },
     validate: {
-      name: (v) => (v.trim() ? null : "Name the company"),
-      website: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
+      name: (v) => (v.trim() ? null : t("people.nameCompany")),
+      website: (v) => (!v || /^https?:\/\//.test(v) ? null : t("people.linksStartHttpOrHttps")),
     },
   });
   return (
-    <Modal opened={opened} onClose={onClose} title="New company">
+    <Modal opened={opened} onClose={onClose} title={t("people.newCompany")}>
       <form
         onSubmit={form.onSubmit((values) =>
           create.mutate(
@@ -47,11 +49,15 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
         )}
       >
         <Stack>
-          <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-          <TextInput label="Website" placeholder="https://…" {...form.getInputProps("website")} />
+          <TextInput label={t("people.nameLabel")} data-autofocus {...form.getInputProps("name")} />
+          <TextInput
+            label={t("people.website")}
+            placeholder={t("people.websitePlaceholder")}
+            {...form.getInputProps("website")}
+          />
           <Group justify="flex-end">
             <Button type="submit" loading={create.isPending}>
-              Add company
+              {t("people.addCompany")}
             </Button>
           </Group>
         </Stack>
@@ -63,6 +69,7 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
 export function CompaniesPage() {
   const { data: companies, isLoading } = useCompanies();
   const { data: apps } = useApplications({});
+  const t = useT();
   const [q, setQ] = useState("");
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
@@ -82,7 +89,7 @@ export function CompaniesPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconBuilding size={26} stroke={1.6} />
-          <Title order={2}>Companies</Title>
+          <Title order={2}>{t("people.companiesTitle")}</Title>
           {companies && (
             <Badge variant="light" color="gray">
               {companies.length}
@@ -90,35 +97,33 @@ export function CompaniesPage() {
           )}
         </Group>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-          New company
+          {t("people.newCompany")}
         </Button>
       </Group>
       <TextInput
-        placeholder="Search companies"
+        placeholder={t("people.searchCompaniesPlaceholder")}
         leftSection={<IconSearch size={16} />}
         value={q}
         onChange={(e) => setQ(e.currentTarget.value)}
         w={300}
-        aria-label="Search companies"
+        aria-label={t("people.searchCompaniesAria")}
       />
       {isLoading ? (
         <Loader />
       ) : !shown.length ? (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">
-            {companies?.length
-              ? "No companies match."
-              : "No companies yet. They're added with applications too."}
+            {companies?.length ? t("people.noCompanyMatches") : t("people.companiesEmpty")}
           </Text>
         </Card>
       ) : (
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Company</Table.Th>
-              <Table.Th>Applications</Table.Th>
-              <Table.Th>In progress</Table.Th>
-              <Table.Th>Website</Table.Th>
+              <Table.Th>{t("people.thCompany")}</Table.Th>
+              <Table.Th>{t("people.applications")}</Table.Th>
+              <Table.Th>{t("people.thInProgress")}</Table.Th>
+              <Table.Th>{t("people.website")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -132,7 +137,7 @@ export function CompaniesPage() {
                   onKeyDown={(e) => e.key === "Enter" && open()}
                   tabIndex={0}
                   style={{ cursor: "pointer" }}
-                  aria-label={`Open ${c.name}`}
+                  aria-label={t("people.openNamed", { name: c.name })}
                 >
                   <Table.Td fw={600}>{c.name}</Table.Td>
                   <Table.Td>{s?.total ?? 0}</Table.Td>
@@ -140,7 +145,7 @@ export function CompaniesPage() {
                     {s?.active ?? 0}
                     {s?.stale ? (
                       <Text span c="red" size="xs" ml={6}>
-                        {s.stale} to chase
+                        {t("people.toChase", { n: s.stale })}
                       </Text>
                     ) : null}
                   </Table.Td>
@@ -166,9 +171,9 @@ export function CompaniesPage() {
       <NewCompanyModal opened={creating} onClose={() => setCreating(false)} />
       <Text size="xs" c="dimmed">
         <Anchor component={Link} to="/applications">
-          Applications
+          {t("people.applications")}
         </Anchor>{" "}
-        create companies as you add them.
+        {t("people.companiesFooter")}
       </Text>
     </Stack>
   );

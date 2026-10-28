@@ -2,18 +2,24 @@ import { Alert, Anchor, List, Text } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { Duplicate } from "../api/client";
+import { t, useT } from "../i18n";
 import { formatDate } from "../utils/time";
 
 function via(d: Duplicate): string {
-  if (d.route === "agency") return `via ${d.agency_name ?? d.recruiter_name ?? "a recruiter"}`;
-  if (d.route === "referral") return "by referral";
-  return "directly";
+  if (d.route === "agency")
+    return t("applications.duplicateVia", {
+      name: d.agency_name ?? d.recruiter_name ?? t("applications.duplicateARecruiter"),
+    });
+  if (d.route === "referral") return t("applications.duplicateByReferral");
+  return t("applications.duplicateDirectly");
 }
 
 function describe(d: Duplicate): string {
-  const how = d.applied_on ? `${via(d)} on ${formatDate(d.applied_on)}` : via(d);
-  const bits = [how, `now ${d.stage_name}`];
-  if (d.archived) bits.push("archived");
+  const how = d.applied_on
+    ? t("applications.duplicateOnDate", { via: via(d), date: formatDate(d.applied_on) })
+    : via(d);
+  const bits = [how, t("applications.duplicateNowStage", { stage: d.stage_name })];
+  if (d.archived) bits.push(t("applications.duplicateArchived"));
   return bits.join(" · ");
 }
 
@@ -30,6 +36,7 @@ export function DuplicateWarning({
   title: string;
   onNavigate?: () => void;
 }) {
+  const t = useT();
   if (!duplicates.length) return null;
   return (
     <Alert color="yellow" variant="light" icon={<IconCopy size={18} />} title={title}>
@@ -37,11 +44,11 @@ export function DuplicateWarning({
         {duplicates.map((d) => (
           <List.Item key={d.id}>
             <Anchor component={Link} to={`/applications/${d.id}`} size="sm" onClick={onNavigate}>
-              {d.role_title} at {d.company_name}
+              {t("applications.duplicateLink", { role: d.role_title, company: d.company_name })}
             </Anchor>{" "}
             <Text span size="sm" c="dimmed">
               {describe(d)}
-              {d.match === "similar_title" ? " · similar title" : ""}
+              {d.match === "similar_title" ? t("applications.duplicateSimilarTitle") : ""}
             </Text>
           </List.Item>
         ))}

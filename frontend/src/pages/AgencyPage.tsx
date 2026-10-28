@@ -33,6 +33,7 @@ import { EditNameModal } from "../components/EditNameModal";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
+import { useT } from "../i18n";
 
 export function AgencyPage() {
   const { agencyId } = useParams({ from: "/agencies/$agencyId" });
@@ -44,8 +45,9 @@ export function AgencyPage() {
   const router = useRouter();
   const [editingName, setEditingName] = useState(false);
   const updateAgency = useUpdateAgency();
+  const t = useT();
 
-  if (isError) return <Alert color="red">Couldn't load this agency.</Alert>;
+  if (isError) return <Alert color="red">{t("people.loadFailedAgency")}</Alert>;
   if (isLoading || !data) return <Loader />;
   const { agency, recruiters, applications } = data;
 
@@ -53,7 +55,7 @@ export function AgencyPage() {
     <Stack maw={1200}>
       <Anchor component={Link} to="/recruiters" size="sm">
         <Group gap={4}>
-          <IconArrowLeft size={14} /> All recruiters
+          <IconArrowLeft size={14} /> {t("people.allRecruiters")}
         </Group>
       </Anchor>
       <Group justify="space-between" wrap="wrap">
@@ -74,13 +76,13 @@ export function AgencyPage() {
             leftSection={<IconPencil size={14} />}
             onClick={() => setEditingName(true)}
           >
-            Edit
+            {t("shared.edit")}
           </Button>
           <DeleteButton
             kind="agency"
             id={agency.id}
             name={agency.name}
-            confirm={`Delete ${agency.name}? Its recruiters and the roles it sent stay, without an agency.`}
+            confirm={t("people.deleteAgencyConfirm", { name: agency.name })}
             onDeleted={() => router.history.push("/recruiters")}
           />
         </Group>
@@ -88,7 +90,7 @@ export function AgencyPage() {
           <EditNameModal
             opened
             onClose={() => setEditingName(false)}
-            title={`Edit ${agency.name}`}
+            title={t("people.editNamed", { name: agency.name })}
             name={agency.name}
             website={agency.website}
             saving={updateAgency.isPending}
@@ -102,11 +104,11 @@ export function AgencyPage() {
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Card withBorder>
             <Title order={4} mb="sm">
-              Roles through {agency.name}
+              {t("people.rolesThrough", { name: agency.name })}
             </Title>
             {!applications.length ? (
               <Text size="sm" c="dimmed">
-                Nothing yet.
+                {t("people.nothingYet")}
               </Text>
             ) : (
               <Table highlightOnHover>
@@ -138,7 +140,7 @@ export function AgencyPage() {
                           <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
                           {a.archived && (
                             <Badge size="sm" variant="outline" color="gray">
-                              Archived
+                              {t("people.archived")}
                             </Badge>
                           )}
                         </Group>
@@ -159,14 +161,14 @@ export function AgencyPage() {
           <Stack>
             <TodosCard entityType="agency" entityId={agency.id} />
             <Group justify="space-between">
-              <Title order={4}>Recruiters</Title>
+              <Title order={4}>{t("people.recruiters")}</Title>
               <Button
                 size="xs"
                 variant="light"
                 leftSection={<IconPlus size={14} />}
                 onClick={() => setEditing(null)}
               >
-                Add recruiter
+                {t("people.addRecruiter")}
               </Button>
             </Group>
             {recruiters.map((c) => (
@@ -174,7 +176,7 @@ export function AgencyPage() {
             ))}
             {!recruiters.length && (
               <Text size="sm" c="dimmed">
-                No recruiters yet.
+                {t("people.noRecruitersYet")}
               </Text>
             )}
             <NotesCard entity={`agency:${agency.id}`} />

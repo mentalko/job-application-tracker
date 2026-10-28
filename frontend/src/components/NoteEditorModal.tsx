@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useSaveNote, type Note } from "../api/noteHooks";
+import { t, useT } from "../i18n";
 import { Markdown } from "./Markdown";
 
 interface Values {
@@ -19,18 +20,24 @@ function useLinkOptions() {
   const { data: contacts } = useContacts();
   return [
     {
-      group: "Applications",
+      group: t("library.groupApplications"),
       items: (apps ?? []).map((a) => ({
         value: `application:${a.id}`,
         label: `${a.company_name} · ${a.role_title}`,
       })),
     },
     {
-      group: "Companies",
+      group: t("library.groupCompanies"),
       items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
     },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+    {
+      group: t("library.groupAgencies"),
+      items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })),
+    },
+    {
+      group: t("library.groupPeople"),
+      items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })),
+    },
   ].filter((g) => g.items.length);
 }
 
@@ -49,11 +56,12 @@ export function NoteEditorModal({
   note: Note | null;
   defaultLinks?: string[];
 }) {
+  const t = useT();
   const save = useSaveNote();
   const options = useLinkOptions();
   const form = useForm<Values>({
     initialValues: { title: note?.title ?? "", body: note?.body ?? "", links: note?.links ?? defaultLinks },
-    validate: { title: (v) => (v.trim() ? null : "Give it a title") },
+    validate: { title: (v) => (v.trim() ? null : t("library.titleRequired")) },
   });
   // Keep links the pickers don't know about (e.g. a role or interview), so saving never drops them.
   const known = new Set(options.flatMap((g) => g.items.map((i) => i.value)));
@@ -72,24 +80,29 @@ export function NoteEditorModal({
   );
 
   return (
-    <Modal opened={opened} onClose={onClose} title={note ? "Edit note" : "New note"} size="xl">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={note ? t("library.editNote") : t("library.newNote")}
+      size="xl"
+    >
       <form onSubmit={submit}>
         <Stack>
           <TextInput
-            label="Title"
-            placeholder="Call with Alex about the Contoso role"
+            label={t("library.titleLabel")}
+            placeholder={t("library.titlePlaceholder")}
             data-autofocus
             {...form.getInputProps("title")}
           />
           <Tabs defaultValue="write" keepMounted={false}>
             <Tabs.List>
-              <Tabs.Tab value="write">Write</Tabs.Tab>
-              <Tabs.Tab value="preview">Preview</Tabs.Tab>
+              <Tabs.Tab value="write">{t("library.tabWrite")}</Tabs.Tab>
+              <Tabs.Tab value="preview">{t("library.tabPreview")}</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="write" pt="xs">
               <Textarea
-                aria-label="Note"
-                placeholder={"Markdown works: **bold**, - lists, [links](https://example.com), | tables |"}
+                aria-label={t("library.noteAria")}
+                placeholder={t("library.bodyPlaceholder")}
                 autosize
                 minRows={8}
                 maxRows={24}
@@ -102,15 +115,15 @@ export function NoteEditorModal({
                 <Markdown>{form.values.body}</Markdown>
               ) : (
                 <Text size="sm" c="dimmed">
-                  Nothing to preview yet.
+                  {t("library.nothingToPreview")}
                 </Text>
               )}
             </Tabs.Panel>
           </Tabs>
           <MultiSelect
-            label="Attached to"
-            description="Leave empty for a general note"
-            placeholder="Applications, companies, people…"
+            label={t("library.attachedTo")}
+            description={t("library.attachedToHint")}
+            placeholder={t("library.attachedToPlaceholder")}
             searchable
             clearable
             data={options}
@@ -119,10 +132,10 @@ export function NoteEditorModal({
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("library.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {note ? "Save" : "Add note"}
+              {note ? t("library.save") : t("library.addNote")}
             </Button>
           </Group>
         </Stack>

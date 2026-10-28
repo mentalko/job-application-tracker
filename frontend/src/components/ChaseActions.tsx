@@ -5,18 +5,19 @@ import dayjs from "dayjs";
 
 import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, useUpdateApplication, useWorkflow } from "../api/hooks";
+import { useT, type Key } from "../i18n";
 
 const inDays = (n: number) => dayjs().add(n, "day").format("YYYY-MM-DD");
 
-const FOLLOW_UP = [
-  { label: "Tomorrow", days: 1 },
-  { label: "In 3 days", days: 3 },
-  { label: "Next week", days: 7 },
+const FOLLOW_UP: { labelKey: Key; days: number }[] = [
+  { labelKey: "applications.followUpTomorrow", days: 1 },
+  { labelKey: "applications.followUpIn3Days", days: 3 },
+  { labelKey: "applications.followUpNextWeek", days: 7 },
 ];
-const SNOOZE = [
-  { label: "3 days", days: 3 },
-  { label: "1 week", days: 7 },
-  { label: "2 weeks", days: 14 },
+const SNOOZE: { labelKey: Key; days: number }[] = [
+  { labelKey: "applications.snooze3Days", days: 3 },
+  { labelKey: "applications.snooze1Week", days: 7 },
+  { labelKey: "applications.snooze2Weeks", days: 14 },
 ];
 
 /**
@@ -24,6 +25,7 @@ const SNOOZE = [
  * mark it Ghosted. Every move is on the timeline and can be undone from the application.
  */
 export function ChaseActions({ row }: { row: ApplicationRow }) {
+  const t = useT();
   const update = useUpdateApplication();
   const move = useMoveApplication();
   const { data: workflow } = useWorkflow();
@@ -46,57 +48,67 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
     <Group gap={2} wrap="nowrap">
       <Menu position="bottom-end" withinPortal>
         <Menu.Target>
-          <Tooltip label="Follow up on…">
+          <Tooltip label={t("applications.followUpTooltip")}>
             <ActionIcon
               variant="subtle"
               color="blue"
               loading={update.isPending}
               disabled={busy}
-              aria-label={`Follow up on ${row.company_name}`}
+              aria-label={t("applications.followUpAria", { name: row.company_name })}
             >
               <IconBellRinging size={16} />
             </ActionIcon>
           </Tooltip>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Label>Remind me to follow up</Menu.Label>
+          <Menu.Label>{t("applications.remindFollowUp")}</Menu.Label>
           {FOLLOW_UP.map((o) => (
             <Menu.Item
               key={o.days}
-              onClick={() => set({ follow_up_on: inDays(o.days) }, `follow up ${o.label.toLowerCase()}`)}
+              onClick={() =>
+                set(
+                  { follow_up_on: inDays(o.days) },
+                  t("applications.toastFollowUp", { when: t(o.labelKey).toLowerCase() }),
+                )
+              }
             >
-              {o.label}
+              {t(o.labelKey)}
             </Menu.Item>
           ))}
         </Menu.Dropdown>
       </Menu>
       <Menu position="bottom-end" withinPortal>
         <Menu.Target>
-          <Tooltip label="Snooze">
+          <Tooltip label={t("applications.snoozeTooltip")}>
             <ActionIcon
               variant="subtle"
               color="gray"
               disabled={busy}
-              aria-label={`Snooze ${row.company_name}`}
+              aria-label={t("applications.snoozeAria", { name: row.company_name })}
             >
               <IconZzz size={16} />
             </ActionIcon>
           </Tooltip>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Label>Snooze for</Menu.Label>
+          <Menu.Label>{t("applications.snoozeFor")}</Menu.Label>
           {SNOOZE.map((o) => (
             <Menu.Item
               key={o.days}
-              onClick={() => set({ snoozed_until: inDays(o.days) }, `snoozed for ${o.label}`)}
+              onClick={() =>
+                set(
+                  { snoozed_until: inDays(o.days) },
+                  t("applications.toastSnoozed", { when: t(o.labelKey) }),
+                )
+              }
             >
-              {o.label}
+              {t(o.labelKey)}
             </Menu.Item>
           ))}
         </Menu.Dropdown>
       </Menu>
       {ghosted && canGhost && (
-        <Tooltip label={`Mark as ${ghosted.name}`}>
+        <Tooltip label={t("applications.markAsTooltip", { stage: ghosted.name })}>
           <Button
             size="compact-xs"
             variant="subtle"
@@ -104,11 +116,11 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
             leftSection={<IconGhost2 size={14} />}
             loading={move.isPending}
             disabled={busy}
-            aria-label={`Mark ${row.company_name} as ${ghosted.name}`}
+            aria-label={t("applications.markStageAria", { company: row.company_name, stage: ghosted.name })}
             onClick={() => {
               if (
                 !window.confirm(
-                  `Mark ${row.company_name} as ${ghosted.name}? (You can undo it from the application.)`,
+                  t("applications.markStageConfirm", { company: row.company_name, stage: ghosted.name }),
                 )
               )
                 return;
@@ -116,7 +128,12 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
                 { id: row.id, to_stage: ghosted.id, stageName: ghosted.name, note: "No reply" },
                 {
                   onSuccess: () =>
-                    notifications.show({ message: `${row.company_name} marked ${ghosted.name}` }),
+                    notifications.show({
+                      message: t("applications.markedStage", {
+                        company: row.company_name,
+                        stage: ghosted.name,
+                      }),
+                    }),
                 },
               );
             }}

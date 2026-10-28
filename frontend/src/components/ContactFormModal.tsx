@@ -9,6 +9,7 @@ import { useCreateCompany } from "../api/detailHooks";
 import { useCreateAgency, useSaveContact } from "../api/peopleHooks";
 import { useAgencies, useCompanies } from "../api/hooks";
 import { CreatableSelect } from "./CreatableSelect";
+import { useT, type Key } from "../i18n";
 
 type Kind = Schemas["ContactDetailIn"]["kind"];
 
@@ -28,12 +29,12 @@ interface Values {
   details: DetailRow[];
 }
 
-const KINDS: { value: Kind; label: string }[] = [
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
-  { value: "linkedin", label: "LinkedIn" },
-  { value: "url", label: "Link" },
-  { value: "other", label: "Other" },
+const KINDS: { value: Kind; labelKey: Key }[] = [
+  { value: "email", labelKey: "people.kindEmail" },
+  { value: "phone", labelKey: "people.kindPhone" },
+  { value: "linkedin", labelKey: "people.kindLinkedin" },
+  { value: "url", labelKey: "people.kindUrl" },
+  { value: "other", labelKey: "people.kindOther" },
 ];
 
 function fromContact(
@@ -78,18 +79,19 @@ export function ContactFormModal({
   const save = useSaveContact();
   const createAgency = useCreateAgency();
   const createCompany = useCreateCompany();
+  const t = useT();
   const form = useForm<Values>({
     initialValues: fromContact(contact, defaultAgencyId, defaultCompanyId),
     validate: {
-      name: (v) => (v.trim() ? null : "Who is it?"),
+      name: (v) => (v.trim() ? null : t("people.whoIsIt")),
       details: {
         value: (v, values, path) => {
           const index = Number(path.split(".")[1]);
           const kind = values.details[index]?.kind;
           if (!v.trim()) return null; // empty rows are dropped
-          if (kind === "email" && !/^\S+@\S+\.\S+$/.test(v)) return "That doesn't look like an email address";
+          if (kind === "email" && !/^\S+@\S+\.\S+$/.test(v)) return t("people.badEmail");
           if ((kind === "linkedin" || kind === "url") && !/^https?:\/\//.test(v))
-            return "Links start with https://";
+            return t("people.linksStartHttps");
           return null;
         },
       },
@@ -132,20 +134,24 @@ export function ContactFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={contact ? `Edit ${contact.name}` : "New person"}
+      title={contact ? t("people.editNamed", { name: contact.name }) : t("people.newPerson")}
       size="lg"
     >
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-start">
-            <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-            <TextInput label="Job title" placeholder="Senior Consultant" {...form.getInputProps("title")} />
+            <TextInput label={t("people.nameLabel")} data-autofocus {...form.getInputProps("name")} />
+            <TextInput
+              label={t("people.jobTitle")}
+              placeholder={t("people.jobTitlePlaceholder")}
+              {...form.getInputProps("title")}
+            />
           </Group>
           <Group grow align="flex-start">
             <CreatableSelect
-              label="Agency"
-              description="For agency recruiters"
-              placeholder="None (type to add one)"
+              label={t("people.agencyLabel")}
+              description={t("people.agencyDesc")}
+              placeholder={t("people.noneTypeToAdd")}
               clearable
               items={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
               value={form.values.agencyId}
@@ -154,9 +160,9 @@ export function ContactFormModal({
               creating={createAgency.isPending}
             />
             <CreatableSelect
-              label="Company"
-              description="Where they work, if not at an agency"
-              placeholder="None (type to add one)"
+              label={t("people.companyLabel")}
+              description={t("people.companyDesc")}
+              placeholder={t("people.noneTypeToAdd")}
               clearable
               items={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
               value={form.values.companyId}
@@ -166,34 +172,34 @@ export function ContactFormModal({
             />
           </Group>
           <Text size="sm" fw={500}>
-            Contact details
+            {t("people.contactDetails")}
           </Text>
           {form.values.details.map((row, index) => (
             <Group key={row.key} align="flex-start" wrap="nowrap">
               <Select
-                data={KINDS}
+                data={KINDS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
                 allowDeselect={false}
                 w={130}
-                aria-label="Kind"
+                aria-label={t("people.kindAria")}
                 {...form.getInputProps(`details.${index}.kind`)}
               />
               <TextInput
-                placeholder="Value"
+                placeholder={t("people.value")}
                 style={{ flex: 1 }}
-                aria-label="Value"
+                aria-label={t("people.value")}
                 {...form.getInputProps(`details.${index}.value`)}
               />
               <TextInput
-                placeholder="Label (work, mobile…)"
+                placeholder={t("people.detailLabelPlaceholder")}
                 w={170}
-                aria-label="Label"
+                aria-label={t("people.detailLabelAria")}
                 {...form.getInputProps(`details.${index}.label`)}
               />
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 mt={6}
-                aria-label="Remove detail"
+                aria-label={t("people.removeDetail")}
                 onClick={() => form.removeListItem("details", index)}
               >
                 <IconTrash size={16} />
@@ -208,14 +214,14 @@ export function ContactFormModal({
             }
             w="fit-content"
           >
-            Add a detail
+            {t("people.addDetail")}
           </Button>
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {contact ? "Save" : "Add person"}
+              {contact ? t("people.save") : t("people.addPerson")}
             </Button>
           </Group>
         </Stack>

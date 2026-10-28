@@ -29,23 +29,30 @@ import {
   type TimelineFilters,
   type TimelineItem,
 } from "../api/timelineHooks";
+import { t, useT, type Key } from "../i18n";
 
-const PERIODS = [
-  { value: "30", label: "Last 30 days" },
-  { value: "90", label: "Last 3 months" },
-  { value: "365", label: "Last year" },
-  { value: "all", label: "All time" },
+const PERIODS: { value: string; labelKey: Key }[] = [
+  { value: "30", labelKey: "insights.range30" },
+  { value: "90", labelKey: "insights.last3Months" },
+  { value: "365", labelKey: "insights.lastYear" },
+  { value: "all", labelKey: "insights.rangeAll" },
 ];
 
 // A role's row runs from the pitch (and the call it came from) through its application to the
 // outcome, or to passing on it; a person's row has their calls and everything they're part of.
 type LaneBy = "role" | "person" | "company" | "agency";
-const LANE_BY: { value: LaneBy; label: string }[] = [
-  { value: "role", label: "Role" },
-  { value: "person", label: "Person" },
-  { value: "company", label: "Company" },
-  { value: "agency", label: "Agency" },
+const LANE_BY: { value: LaneBy; labelKey: Key }[] = [
+  { value: "role", labelKey: "insights.role" },
+  { value: "person", labelKey: "insights.person" },
+  { value: "company", labelKey: "insights.company" },
+  { value: "agency", labelKey: "insights.agency" },
 ];
+// In Russian "linked to a role" needs the instrumental case, so each lane kind gets its own word.
+const LANE_LINKED: Record<Exclude<LaneBy, "agency">, Key> = {
+  role: "insights.linkedRole",
+  person: "insights.linkedPerson",
+  company: "insights.linkedCompany",
+};
 
 // Companies, agencies and people being added is bookkeeping: off unless you ask for it.
 const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
@@ -57,26 +64,28 @@ export const dayOf = (item: TimelineItem) =>
 /** Is it still ahead of `now`? (Compare instants, not strings: the formats differ.) */
 const isAhead = (item: TimelineItem, now: string) => new Date(item.at).getTime() > new Date(now).getTime();
 
-const timeOf = (item: TimelineItem) => (item.all_day ? "All day" : dayjs(item.at).format("HH:mm"));
+const timeOf = (item: TimelineItem, allDay: string) =>
+  item.all_day ? allDay : dayjs(item.at).format("HH:mm");
 
 function dayHeading(day: string): string {
   const d = dayjs(day);
   const today = dayjs().startOf("day");
   const diff = d.diff(today, "day");
   const label = d.format(d.year() === today.year() ? "ddd D MMM" : "ddd D MMM YYYY");
-  if (diff === 0) return `Today · ${label}`;
-  if (diff === -1) return `Yesterday · ${label}`;
-  if (diff === 1) return `Tomorrow · ${label}`;
+  if (diff === 0) return t("insights.dayToday", { date: label });
+  if (diff === -1) return t("insights.dayYesterday", { date: label });
+  if (diff === 1) return t("insights.dayTomorrow", { date: label });
   return label;
 }
 
 /** What it's about: company and role, agency, people, each a link to its page. */
 export function ItemContext({ item }: { item: TimelineItem }) {
+  const t = useT();
   const parts = [];
   if (item.application_id) {
     parts.push(
       <Anchor key="app" component={Link} to={`/applications/${item.application_id}`} size="xs">
-        {item.role_title} at {item.company_name}
+        {t("insights.roleAt", { role: item.role_title ?? "", company: item.company_name ?? "" })}
       </Anchor>,
     );
   } else if (item.company_id) {
@@ -95,7 +104,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
   if (item.agency_id) {
     parts.push(
       <Anchor key="ag" component={Link} to={`/agencies/${item.agency_id}`} size="xs">
-        via {item.agency_name}
+        {t("insights.viaNamed", { name: item.agency_name ?? "" })}
       </Anchor>,
     );
   }
@@ -121,7 +130,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
       ))}
       {item.archived && (
         <Badge size="xs" variant="outline" color="gray">
-          Archived
+          {t("insights.archived")}
         </Badge>
       )}
     </Group>
@@ -129,13 +138,14 @@ export function ItemContext({ item }: { item: TimelineItem }) {
 }
 
 export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?: boolean }) {
+  const t = useT();
   const cat = categoryOf(item.category);
   return (
     <Group gap="sm" wrap="nowrap" align="flex-start" py={6}>
       <Text size="xs" c="dimmed" w={showDate ? 92 : 52} style={{ flexShrink: 0 }} pt={2}>
         {showDate
-          ? `${dayjs(dayOf(item)).format("D MMM")} ${item.all_day ? "" : timeOf(item)}`
-          : timeOf(item)}
+          ? `${dayjs(dayOf(item)).format("D MMM")} ${item.all_day ? "" : timeOf(item, t("insights.allDay"))}`
+          : timeOf(item, t("insights.allDay"))}
       </Text>
       <Badge size="sm" variant="light" color={cat.color} w={112} style={{ flexShrink: 0 }}>
         {cat.one}
@@ -156,6 +166,7 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
 }
 
 function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
+  const t = useT();
   const ahead = items.filter((i) => isAhead(i, now)).reverse(); // soonest first
   const past = items.filter((i) => !isAhead(i, now));
   const days = new Map<string, TimelineItem[]>();
@@ -168,7 +179,7 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
       {ahead.length > 0 && (
         <Card withBorder padding="md">
           <Title order={3} size="h5" mb={4}>
-            Coming up
+            {t("insights.comingUp")}
           </Title>
           {ahead.map((item) => (
             <TimelineRow key={item.id} item={item} showDate />
@@ -241,6 +252,7 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
 const LANE_LIMIT = 30;
 
 function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; since?: string }) {
+  const t = useT();
   const [by, setBy] = useState<LaneBy>("role");
   const [all, setAll] = useState(false);
   const router = useRouter();
@@ -256,13 +268,13 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   const short = span < 62 * 86_400_000;
   const ticks: dayjs.Dayjs[] = [];
   for (
-    let t = dayjs(start)
+    let tick = dayjs(start)
       .startOf(short ? "week" : "month")
       .add(1, short ? "week" : "month");
-    t.valueOf() < end;
-    t = t.add(1, short ? "week" : "month")
+    tick.valueOf() < end;
+    tick = tick.add(1, short ? "week" : "month")
   ) {
-    ticks.push(t);
+    ticks.push(tick);
   }
   const shown = all ? lanes : lanes.slice(0, LANE_LIMIT);
   const label = 220;
@@ -270,18 +282,20 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   return (
     <Stack gap="sm">
       <Group gap="xs">
-        <Text size="sm">One row per</Text>
+        <Text size="sm">{t("insights.oneRowPer")}</Text>
         <SegmentedControl
           size="xs"
           value={by}
           onChange={(v) => setBy(v as LaneBy)}
-          data={LANE_BY}
-          aria-label="One row per"
+          data={LANE_BY.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
+          aria-label={t("insights.oneRowPer")}
         />
       </Group>
       {lanes.length === 0 ? (
         <Text c="dimmed" size="sm">
-          Nothing here is linked to {by === "agency" ? "an agency" : `a ${by}`}.
+          {t("insights.lanesNothingLinked", {
+            what: by === "agency" ? t("insights.linkedAgency") : t(LANE_LINKED[by]),
+          })}
         </Text>
       ) : (
         <Card withBorder padding="sm" style={{ overflowX: "auto" }}>
@@ -289,18 +303,18 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
             <Box style={{ display: "flex" }}>
               <Box w={label} style={{ flexShrink: 0 }} />
               <Box style={{ position: "relative", flex: 1, height: 18 }}>
-                {ticks.map((t) => (
+                {ticks.map((tick) => (
                   <Text
-                    key={t.valueOf()}
+                    key={tick.valueOf()}
                     size="xs"
                     c="dimmed"
                     style={{
                       position: "absolute",
-                      left: `${pct(t.toISOString())}%`,
+                      left: `${pct(tick.toISOString())}%`,
                       transform: "translateX(-50%)",
                     }}
                   >
-                    {t.format(short ? "D MMM" : "MMM YYYY")}
+                    {tick.format(short ? "D MMM" : "MMM YYYY")}
                   </Text>
                 ))}
               </Box>
@@ -354,13 +368,17 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                     >
                       {lane.items.map((item) => {
                         const cat = categoryOf(item.category);
-                        const when = `${dayjs(dayOf(item)).format("D MMM YYYY")}${item.all_day ? "" : ` ${timeOf(item)}`}`;
+                        const when = `${dayjs(dayOf(item)).format("D MMM YYYY")}${item.all_day ? "" : ` ${timeOf(item, t("insights.allDay"))}`}`;
                         return (
                           <li key={item.id}>
-                            <Tooltip label={`${when} · ${item.title}`} withArrow>
+                            <Tooltip label={t("insights.laneTooltip", { when, title: item.title })} withArrow>
                               <Box
                                 component="button"
-                                aria-label={`${when} · ${cat.one}: ${item.title}`}
+                                aria-label={t("insights.laneAria", {
+                                  when,
+                                  kind: cat.one,
+                                  title: item.title,
+                                })}
                                 onClick={() => router.history.push(hrefOf(item))}
                                 style={{
                                   position: "absolute",
@@ -393,7 +411,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
       )}
       {lanes.length > LANE_LIMIT && (
         <Button variant="subtle" size="xs" onClick={() => setAll(!all)} style={{ alignSelf: "flex-start" }}>
-          {all ? `Show the ${LANE_LIMIT} most recent` : `Show all ${lanes.length} rows`}
+          {all ? t("insights.showRecent", { n: LANE_LIMIT }) : t("insights.showAllRows", { n: lanes.length })}
         </Button>
       )}
       <Group gap="md">
@@ -410,7 +428,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
           </Group>
         ))}
         <Text size="xs" c="dimmed">
-          Hollow dots are ahead; the dashed line is now.
+          {t("insights.lanesLegend")}
         </Text>
       </Group>
     </Stack>
@@ -445,6 +463,7 @@ function useTimelineSearch() {
 }
 
 export function TimelinePage() {
+  const t = useT();
   const { view, period, about: asked, set } = useTimelineSearch();
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const { data: companies } = useCompanies();
@@ -453,11 +472,17 @@ export function TimelinePage() {
 
   const aboutOptions = [
     {
-      group: "Companies",
+      group: t("shared.groupCompanies"),
       items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
     },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+    {
+      group: t("shared.groupAgencies"),
+      items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })),
+    },
+    {
+      group: t("shared.groupPeople"),
+      items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })),
+    },
   ].filter((g) => g.items.length);
   // Someone who's gone (deleted, or merged into someone else) filters nothing, rather than
   // filtering everything away under an empty box.
@@ -487,35 +512,34 @@ export function TimelinePage() {
     <Stack>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Timeline</Title>
+          <Title order={2}>{t("insights.timeline")}</Title>
           <Text c="dimmed" size="sm">
-            Everything that happened: calls, roles pitched, applications, interviews and offers. Lanes show
-            one row per role, from the pitch to the outcome.
+            {t("insights.timelineSubtitle")}
           </Text>
         </div>
         <SegmentedControl
           value={view}
           onChange={(v) => set({ about, view: v })}
           data={[
-            { value: "list", label: "List" },
-            { value: "lanes", label: "Lanes" },
+            { value: "list", label: t("insights.viewList") },
+            { value: "lanes", label: t("insights.viewLanes") },
           ]}
-          aria-label="View"
+          aria-label={t("insights.view")}
         />
       </Group>
 
       <Group gap="sm" align="flex-end">
         <Select
-          label="Period"
-          data={PERIODS}
+          label={t("insights.period")}
+          data={PERIODS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           value={period}
           onChange={(v) => set({ about, period: v ?? "90" })}
           allowDeselect={false}
           w={170}
         />
         <Select
-          label="About"
-          placeholder="Everyone and everything"
+          label={t("insights.about")}
+          placeholder={t("insights.aboutPlaceholder")}
           data={aboutOptions}
           value={about}
           onChange={(v) => set({ about: v })}
@@ -528,7 +552,7 @@ export function TimelinePage() {
       <Stack gap={4}>
         <Group gap="xs">
           <Text size="sm" fw={500} id="timeline-show">
-            Show
+            {t("insights.show")}
           </Text>
           <Button
             size="compact-xs"
@@ -536,7 +560,7 @@ export function TimelinePage() {
             onClick={() => setCategories(CATEGORIES.map((c) => c.value))}
             disabled={categories.length === CATEGORIES.length}
           >
-            Everything
+            {t("insights.showAllKinds")}
           </Button>
           <Button
             size="compact-xs"
@@ -547,7 +571,7 @@ export function TimelinePage() {
               DEFAULT_CATEGORIES.every((c) => categories.includes(c))
             }
           >
-            Usual
+            {t("insights.showUsual")}
           </Button>
           <Button
             size="compact-xs"
@@ -555,7 +579,7 @@ export function TimelinePage() {
             onClick={() => setCategories([])}
             disabled={nothingTicked}
           >
-            None
+            {t("insights.showNone")}
           </Button>
         </Group>
         <Chip.Group multiple value={categories} onChange={setCategories}>
@@ -571,18 +595,18 @@ export function TimelinePage() {
 
       {nothingTicked ? (
         <Text c="dimmed" size="sm" py="xl" ta="center">
-          Tick at least one kind of thing to show.
+          {t("insights.tickOneKind")}
         </Text>
       ) : isLoading ? (
         <Loader />
       ) : items.length === 0 ? (
         <Stack align="center" gap="xs" py="xl">
           <IconTimeline size={32} stroke={1.4} />
-          <Text fw={600}>Nothing here yet</Text>
+          <Text fw={600}>{t("insights.nothingHereYet")}</Text>
           <Text c="dimmed" size="sm">
             {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
-              ? "Try a longer period, tick more kinds, or clear a filter."
-              : "Add an application, or log a call with someone, and it shows up here."}
+              ? t("insights.emptyFiltered")
+              : t("insights.emptyPlain")}
           </Text>
         </Stack>
       ) : view === "list" ? (

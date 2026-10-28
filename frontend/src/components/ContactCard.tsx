@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { FavouriteMark, GhostMark } from "./GhostMark";
 import type { Contact } from "../api/client";
 import { DeleteButton } from "./DeleteButton";
+import { useT } from "../i18n";
 
 const ICONS = {
   email: IconMail,
@@ -25,6 +26,7 @@ export function contactHref(kind: string, value: string): string | undefined {
 
 /** A person with every way to reach them. Links open your mail client, dialler or browser. */
 export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: () => void }) {
+  const t = useT();
   return (
     <Card withBorder padding="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
@@ -74,14 +76,19 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
           })}
           {!contact.details.length && (
             <Text size="xs" c="dimmed">
-              No contact details yet.
+              {t("people.noDetailsYet")}
             </Text>
           )}
         </Stack>
         {onEdit && (
           <Group gap={2} wrap="nowrap" style={{ flexShrink: 0 }}>
-            <Tooltip label="Edit">
-              <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={`Edit ${contact.name}`}>
+            <Tooltip label={t("shared.edit")}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={onEdit}
+                aria-label={t("people.editNamed", { name: contact.name })}
+              >
                 <IconPencil size={16} />
               </ActionIcon>
             </Tooltip>
@@ -90,7 +97,7 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
               kind="contact"
               id={contact.id}
               name={contact.name}
-              confirm={`Delete ${contact.name}? They come off the applications and interviews they're on, and their calls are deleted; the applications themselves stay.`}
+              confirm={t("people.deleteContactConfirm", { name: contact.name })}
             />
           </Group>
         )}

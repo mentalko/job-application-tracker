@@ -37,6 +37,7 @@ import { useTimeline } from "../api/timelineHooks";
 import { type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { useTodos, type Todo } from "../api/todoHooks";
+import { useT } from "../i18n";
 import {
   ApplicationWaiting,
   daysWaiting,
@@ -82,10 +83,11 @@ function useFollowedUp() {
 }
 
 function FollowedUpButton({ row }: { row: ApplicationRow }) {
+  const t = useT();
   const done = useFollowedUp();
   return (
     <Button size="compact-xs" variant="light" loading={done.isPending} onClick={() => done.mutate(row)}>
-      Done
+      {t("today.done")}
     </Button>
   );
 }
@@ -146,6 +148,7 @@ function AppLine({
   onOpen: (id: string) => void;
   action?: ReactNode;
 }) {
+  const t = useT();
   const { data: workflow } = useWorkflow();
   const { data: contacts } = useContacts();
   const stages = stageLookup(workflow);
@@ -157,7 +160,7 @@ function AppLine({
         <UnstyledButton
           onClick={() => onOpen(row.id)}
           style={{ display: "block", minWidth: 0 }}
-          aria-label={`Open ${row.company_name}`}
+          aria-label={t("today.openAria", { name: row.company_name })}
         >
           <Text fw={600} size="sm" truncate="end">
             {row.company_name}
@@ -224,6 +227,7 @@ function Row({
 }
 
 function InterviewLine({ interview, action }: { interview: Interview; action?: ReactNode }) {
+  const t = useT();
   const when = interview.starts_at ?? interview.deadline_at;
   return (
     <Row
@@ -239,7 +243,9 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
       }
       status={
         <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-          {when ? `${interview.starts_at ? "" : "Due "}${formatDateTime(when)}` : "Not booked yet"}
+          {when
+            ? `${interview.starts_at ? "" : t("today.due")}${formatDateTime(when)}`
+            : t("today.notBookedYet")}
         </Text>
       }
       actions={action}
@@ -248,6 +254,7 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
 }
 
 function OfferLine({ offer, today }: { offer: Offer; today: string }) {
+  const t = useT();
   const overdue = offer.respond_by! < today;
   return (
     <Group justify="space-between" wrap="nowrap" align="flex-start">
@@ -260,7 +267,7 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
         </Anchor>
       </div>
       <Text size="xs" c={overdue ? "red" : "orange"} ta="right" style={{ whiteSpace: "nowrap" }}>
-        {overdue ? "Reply was due" : "Reply by"} {formatDate(offer.respond_by)}
+        {overdue ? t("today.replyWasDue") : t("today.replyBy")} {formatDate(offer.respond_by)}
       </Text>
     </Group>
   );
@@ -309,15 +316,16 @@ function PersonWaitingLine({ person }: { person: Contact }) {
 /** Your own to-dos, always shown (it's where you add one), with what each is about. Ticked-off
  * ones are under "Done recently", so one ticked by mistake (or about nothing) can come back. */
 function TodosSection({ todos }: { todos: Todo[] }) {
+  const t = useT();
   const [showDone, setShowDone] = useState(false);
   const { data: done } = useTodos({ status: "done" }, showDone);
   return (
-    <Stack gap="xs" role="group" aria-label="To-dos">
-      <SectionLabel title="To-dos" count={todos.length} hint="Your own reminders; tick them off when done" />
+    <Stack gap="xs" role="group" aria-label={t("today.todos")}>
+      <SectionLabel title={t("today.todos")} count={todos.length} hint={t("today.todosHint")} />
       {todos.length > 0 && (
         <div className={classes.rows}>
-          {todos.map((t) => (
-            <TodoLine key={t.id} todo={t} />
+          {todos.map((t2) => (
+            <TodoLine key={t2.id} todo={t2} />
           ))}
         </div>
       )}
@@ -330,18 +338,18 @@ function TodosSection({ todos }: { todos: Todo[] }) {
         style={{ alignSelf: "flex-start" }}
         onClick={() => setShowDone((v) => !v)}
       >
-        {showDone ? "Hide done" : "Done recently"}
+        {showDone ? t("today.hideDone") : t("today.doneRecently")}
       </Anchor>
       {showDone &&
         (done?.length ? (
           <div className={classes.rows}>
-            {done.slice(0, 10).map((t) => (
-              <TodoLine key={t.id} todo={t} />
+            {done.slice(0, 10).map((t2) => (
+              <TodoLine key={t2.id} todo={t2} />
             ))}
           </div>
         ) : (
           <Text size="xs" c="dimmed">
-            Nothing ticked off yet.
+            {t("today.nothingTicked")}
           </Text>
         ))}
     </Stack>
@@ -364,13 +372,19 @@ function Bucket({
   empty: ReactNode;
   children: ReactNode;
 }) {
+  const t = useT();
   return (
     <Stack gap="sm" id={id} style={{ scrollMarginTop: 72 }}>
       <Group justify="space-between" align="baseline" gap="xs">
         <Group gap="xs">
           <Title order={3}>{title}</Title>
           {count > 0 && (
-            <Badge variant="filled" size="lg" circle={count < 10} aria-label={`${count} in ${title}`}>
+            <Badge
+              variant="filled"
+              size="lg"
+              circle={count < 10}
+              aria-label={t("today.countIn", { n: count, title })}
+            >
               {count}
             </Badge>
           )}
@@ -389,14 +403,13 @@ function Bucket({
   );
 }
 
-const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
-
 /**
  * The home page: what's yours to do now, what's coming up and who you're waiting on, under a
  * strip of numbers and the pipeline (PRD FR18, US5). It replaced the separate Overview and Next
  * actions pages, which overlapped.
  */
 export function TodayPage() {
+  const t = useT();
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
   const { data: rows, isPending: appsPending, isError: appsFailed } = useApplications({});
@@ -482,16 +495,16 @@ export function TodayPage() {
     !past.length &&
     !todos.length;
   const sofar = [
-    rolesToDecide.length ? `${plural(rolesToDecide.length, "role")} to decide on` : null,
-    meetings.length ? `${plural(meetings.length, "call")} coming up` : null,
-    contacts?.length ? `${contacts.length === 1 ? "1 person" : `${contacts.length} people`} added` : null,
+    rolesToDecide.length ? t("today.sofarRoles", { n: rolesToDecide.length }) : null,
+    meetings.length ? t("today.sofarCalls", { n: meetings.length }) : null,
+    contacts?.length ? t("today.sofarPeople", { n: contacts.length }) : null,
   ].filter(Boolean);
 
   return (
     <Stack maw={1600}>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Today</Title>
+          <Title order={2}>{t("today.title")}</Title>
           <Text c="dimmed" size="sm">
             {dayjs(today).format("dddd D MMMM")}
           </Text>
@@ -502,15 +515,15 @@ export function TodayPage() {
         <Loader />
       ) : !data ? (
         <Text c="red" size="sm">
-          Couldn't load what's next. Is the tracker still running?
+          {t("today.loadError")}
         </Text>
       ) : blank ? (
         <Card withBorder padding="lg">
           <Title order={3} size="h4" mb="xs">
-            Getting started
+            {t("today.gettingStarted")}
           </Title>
           <Text size="sm" c="dimmed" mb="md">
-            No applications yet. Start with the first one: you only need a company and a role.
+            {t("today.gettingStartedBody")}
           </Text>
           <HowItWorks />
           <Group mt="md">
@@ -524,13 +537,11 @@ export function TodayPage() {
               <Group justify="space-between" wrap="wrap" gap="sm">
                 <div>
                   <Title order={3} size="h5">
-                    No applications yet
+                    {t("today.noApplicationsYet")}
                   </Title>
                   <Text size="sm" c="dimmed">
-                    {sofar.length ? `So far: ${sofar.join(", ")}. ` : ""}
-                    {rolesToDecide.length
-                      ? "Apply for one of the roles and it becomes an application."
-                      : "Add one when you go for a role: it only needs a company and a title."}
+                    {sofar.length ? t("today.sofar", { items: sofar.join(", ") }) : ""}
+                    {rolesToDecide.length ? t("today.applyToBecome") : t("today.addWhenYouGo")}
                   </Text>
                 </div>
                 <NewApplicationButton />
@@ -542,19 +553,20 @@ export function TodayPage() {
             <Card withBorder padding="sm">
               <Group gap="lg" wrap="wrap" mb={pipeline.length ? 8 : 0}>
                 <Anchor component={Link} to="/applications" size="sm" c="var(--mantine-color-text)">
-                  <b>{active.length}</b> active
+                  <b>{active.length}</b> {t("today.active")}
                 </Anchor>
                 <Anchor component={Link} to="/interviews" size="sm" c="var(--mantine-color-text)">
-                  <b>{booked.length}</b> {booked.length === 1 ? "interview" : "interviews"} in the next two
-                  weeks
+                  <b>{booked.length}</b> {t("today.interviews", { n: booked.length })}
+                  {t("today.inTwoWeeks")}
                 </Anchor>
                 <Anchor component={Link} to="/offers" size="sm" c="var(--mantine-color-text)">
-                  <b>{offers.length}</b> {offers.length === 1 ? "offer" : "offers"} to answer
+                  <b>{offers.length}</b> {t("today.offers", { n: offers.length })}
+                  {t("today.toAnswer")}
                 </Anchor>
               </Group>
               {pipeline.length > 0 && (
                 <>
-                  <Progress.Root size={16} aria-label="Active applications by stage">
+                  <Progress.Root size={16} aria-label={t("today.byStage")}>
                     {pipeline.map(({ stage, count }) => (
                       <Tooltip key={stage.id} label={`${stage.name}: ${count}`}>
                         <Progress.Section value={(count / active.length) * 100} color={stage.color}>
@@ -583,25 +595,25 @@ export function TodayPage() {
             <Grid.Col span={{ base: 12, lg: 7 }}>
               <Bucket
                 id="your-move"
-                title="Your move"
-                hint="Things to do now"
+                title={t("today.yourMove")}
+                hint={t("today.yourMoveHint")}
                 count={yourMove}
                 empty={
                   <Group gap="sm" wrap="nowrap">
                     <IconConfetti size={28} stroke={1.4} />
                     <div>
-                      <Text fw={600}>All caught up</Text>
+                      <Text fw={600}>{t("today.allCaughtUp")}</Text>
                       <Text size="sm" c="dimmed">
-                        Nothing needs you right now. Replies, follow-ups and your to-dos show up here.
+                        {t("today.allCaughtUpBody")}
                       </Text>
                     </div>
                   </Group>
                 }
               >
                 <Section
-                  title="Replies to read"
+                  title={t("today.repliesToRead")}
                   count={toRead.length + toReadPeople.length}
-                  hint="They've replied; oldest first"
+                  hint={t("today.repliesToReadHint")}
                 >
                   {toRead.map((r) => (
                     <AppLine
@@ -629,18 +641,18 @@ export function TodayPage() {
                   ))}
                 </Section>
                 <Section
-                  title="Offers to answer"
+                  title={t("today.offersToAnswer")}
                   count={offers.length}
-                  hint="Reply due in the next two weeks"
+                  hint={t("today.offersToAnswerHint")}
                 >
                   {offers.map((o) => (
                     <OfferLine key={o.id} offer={o} today={data.today} />
                   ))}
                 </Section>
                 <Section
-                  title="How did it go?"
+                  title={t("today.howDidItGo")}
                   count={data.awaiting_outcome.length + meetingsToClose.length}
-                  hint="Their time has passed"
+                  hint={t("today.howDidItGoHint")}
                 >
                   {data.awaiting_outcome.map((i) => (
                     <InterviewLine key={i.id} interview={i} action={<InterviewOutcome interview={i} />} />
@@ -659,16 +671,16 @@ export function TodayPage() {
                 </Section>
                 <TodosSection todos={todosNow} />
                 <Section
-                  title="Follow up"
+                  title={t("today.followUp")}
                   count={data.follow_ups.length}
-                  hint="Follow-up date is today or earlier"
+                  hint={t("today.followUpHint")}
                 >
                   {data.follow_ups.map((r) => (
                     <AppLine
                       key={r.id}
                       row={r}
                       onOpen={setOpenId}
-                      detail={`due ${formatDate(r.follow_up_on)}`}
+                      detail={t("today.dueDate", { date: formatDate(r.follow_up_on) })}
                       action={
                         <Group gap={4} wrap="nowrap">
                           <FollowedUpButton row={r} />
@@ -679,9 +691,9 @@ export function TodayPage() {
                   ))}
                 </Section>
                 <Section
-                  title="Roles to decide"
+                  title={t("today.rolesToDecide")}
                   count={rolesToDecide.length}
-                  hint="Apply, mark interested, or pass on each"
+                  hint={t("today.rolesToDecideHint")}
                 >
                   {rolesToDecide.map((r) => (
                     <RoleLine key={r.id} role={r} />
@@ -694,12 +706,12 @@ export function TodayPage() {
               <Stack gap="xl">
                 <Bucket
                   id="coming-up"
-                  title="Coming up"
-                  hint="Interviews, calls and to-dos by date; nothing to do yet"
+                  title={t("today.comingUp")}
+                  hint={t("today.comingUpHint")}
                   count={comingUp.length}
                   empty={
                     <Text size="sm" c="dimmed">
-                      No interviews, calls or dated to-dos ahead.
+                      {t("today.comingUpEmpty")}
                     </Text>
                   }
                 >
@@ -708,19 +720,19 @@ export function TodayPage() {
 
                 <Bucket
                   id="waiting-on-them"
-                  title="Waiting on them"
-                  hint="Red means time to chase"
+                  title={t("today.waitingOnThem")}
+                  hint={t("today.waitingOnThemHint")}
                   count={waitingOn}
                   empty={
                     <Text size="sm" c="dimmed">
-                      You're not waiting on anyone.
+                      {t("today.waitingOnThemEmpty")}
                     </Text>
                   }
                 >
                   <Section
-                    title="Waiting to hear back"
+                    title={t("today.waitingToHearBack")}
                     count={waiting.length + waitingPeople.length}
-                    hint="You replied; red means time to chase"
+                    hint={t("today.waitingToHearBackHint")}
                   >
                     {waiting.map((r) => (
                       <AppLine
@@ -730,7 +742,7 @@ export function TodayPage() {
                         detail={
                           <Text span size="xs" c={overdue(r) ? "red" : "dimmed"}>
                             {waitingLabel(r.awaiting_reply_since!)}
-                            {overdue(r) ? " · time to chase" : ""}
+                            {overdue(r) ? t("today.timeToChase") : ""}
                           </Text>
                         }
                         action={
@@ -751,9 +763,9 @@ export function TodayPage() {
                     ))}
                   </Section>
                   <Section
-                    title="Gone quiet"
+                    title={t("today.goneQuiet")}
                     count={data.stale.length}
-                    hint="No activity for longer than their stage allows"
+                    hint={t("today.goneQuietHint")}
                   >
                     {data.stale.map((r) => (
                       <AppLine
@@ -772,22 +784,22 @@ export function TodayPage() {
 
           <Accordion variant="contained" multiple>
             <Accordion.Item value="recent">
-              <Accordion.Control>Recent activity</Accordion.Control>
+              <Accordion.Control>{t("today.recentActivity")}</Accordion.Control>
               <Accordion.Panel>
                 {past.length === 0 ? (
                   <Text size="sm" c="dimmed">
-                    Nothing in the last two weeks.
+                    {t("today.nothingRecent")}
                   </Text>
                 ) : (
                   past.map((item) => <TimelineRow key={item.id} item={item} showDate />)
                 )}
                 <Anchor component={Link} to="/timeline" size="sm" mt="xs" display="inline-block">
-                  Full timeline
+                  {t("today.fullTimeline")}
                 </Anchor>
               </Accordion.Panel>
             </Accordion.Item>
             <Accordion.Item value="how">
-              <Accordion.Control>How it works</Accordion.Control>
+              <Accordion.Control>{t("shell.howItWorks")}</Accordion.Control>
               <Accordion.Panel>
                 <HowItWorks />
               </Accordion.Panel>

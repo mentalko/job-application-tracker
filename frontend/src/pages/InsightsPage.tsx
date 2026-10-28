@@ -3,6 +3,7 @@ import { IconChartSankey } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
+import { useT, type Key } from "../i18n";
 import { ConversationsSection } from "../components/Conversations";
 import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
@@ -12,17 +13,17 @@ import { WholePicture } from "../components/WholePicture";
 
 type Range = "all" | "90" | "30";
 
-const RANGES: { value: Range; label: string }[] = [
-  { value: "all", label: "All time" },
-  { value: "90", label: "Last 90 days" },
-  { value: "30", label: "Last 30 days" },
+const RANGES: { value: Range; labelKey: Key }[] = [
+  { value: "all", labelKey: "insights.rangeAll" },
+  { value: "90", labelKey: "insights.range90" },
+  { value: "30", labelKey: "insights.range30" },
 ];
 
-const ROUTES = [
-  { value: "any", label: "Any route" },
-  { value: "direct", label: "Direct" },
-  { value: "agency", label: "Via an agency" },
-  { value: "referral", label: "Referral" },
+const ROUTES: { value: string; labelKey: Key }[] = [
+  { value: "any", labelKey: "insights.routeAny" },
+  { value: "direct", labelKey: "insights.routeDirect" },
+  { value: "agency", labelKey: "insights.routeAgency" },
+  { value: "referral", labelKey: "insights.routeReferral" },
 ];
 
 function sinceFor(range: Range) {
@@ -39,6 +40,7 @@ type Tab = "whole" | "applications" | "conversations" | "documents";
  * cover letters (version against version), then weekly activity.
  */
 export function InsightsPage() {
+  const t = useT();
   // `since` is fixed when the range is picked, so the query key doesn't change on every render.
   const [range, setRange] = useState<{ range: Range; since?: string }>({ range: "all" });
   const [route, setRoute] = useState("any");
@@ -55,22 +57,22 @@ export function InsightsPage() {
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconChartSankey size={26} stroke={1.6} />
-          <Title order={2}>Insights</Title>
+          <Title order={2}>{t("insights.title")}</Title>
         </Group>
         <SegmentedControl
-          aria-label="Date range"
+          aria-label={t("insights.dateRange")}
           size="xs"
-          data={RANGES}
+          data={RANGES.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           value={range.range}
           onChange={(value) => setRange({ range: value as Range, since: sinceFor(value as Range) })}
         />
       </Group>
       <Tabs value={tab} onChange={(v) => setTab((v as Tab) ?? "whole")} keepMounted={false}>
         <Tabs.List mb="md">
-          <Tabs.Tab value="whole">The whole picture</Tabs.Tab>
-          <Tabs.Tab value="applications">Applications</Tabs.Tab>
-          <Tabs.Tab value="conversations">Recruiter conversations</Tabs.Tab>
-          <Tabs.Tab value="documents">CVs and cover letters</Tabs.Tab>
+          <Tabs.Tab value="whole">{t("insights.wholePicture")}</Tabs.Tab>
+          <Tabs.Tab value="applications">{t("insights.applications")}</Tabs.Tab>
+          <Tabs.Tab value="conversations">{t("insights.tabConversations")}</Tabs.Tab>
+          <Tabs.Tab value="documents">{t("insights.tabDocuments")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="whole">
           <WholePicture since={range.since} />
@@ -80,18 +82,18 @@ export function InsightsPage() {
             <Card withBorder>
               <Group justify="space-between" mb="md" wrap="wrap">
                 <div>
-                  <Title order={4}>Where applications go</Title>
+                  <Title order={4}>{t("insights.whereApplicationsGo")}</Title>
                   <Text size="sm" c="dimmed">
-                    {flow ? `${flow.applications} application${flow.applications === 1 ? "" : "s"}` : "…"} by
-                    the date they were added. Moves back to an earlier stage count as staying at the furthest
-                    one reached.
+                    {t("insights.flowBlurb", {
+                      count: flow ? t("insights.countApplications", { n: flow.applications }) : "…",
+                    })}
                   </Text>
                 </div>
                 <Select
-                  aria-label="Route"
+                  aria-label={t("insights.route")}
                   size="xs"
                   w={150}
-                  data={ROUTES}
+                  data={ROUTES.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
                   value={route}
                   onChange={(value) => setRoute(value ?? "any")}
                   allowDeselect={false}
@@ -100,18 +102,16 @@ export function InsightsPage() {
               {isLoading ? (
                 <Loader />
               ) : isError || !flow ? (
-                <Text c="red">Couldn't load the flow.</Text>
+                <Text c="red">{t("insights.flowError")}</Text>
               ) : !flow.links.length ? (
                 <Text size="sm" c="dimmed">
-                  {flow.applications
-                    ? "No application has moved on from its first stage yet. Come back once things get going."
-                    : "No applications match these filters."}
+                  {flow.applications ? t("insights.flowEmptyNone") : t("insights.flowEmptyFilters")}
                 </Text>
               ) : (
                 <SankeyChart flow={flow} />
               )}
             </Card>
-            {statsError && <Text c="red">Couldn't load the stats.</Text>}
+            {statsError && <Text c="red">{t("insights.statsError")}</Text>}
             {stats && stats.applications > 0 && (
               <>
                 <StageTable stats={stats} />

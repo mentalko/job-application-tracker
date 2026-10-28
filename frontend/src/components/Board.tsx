@@ -33,6 +33,7 @@ import {
   type Column,
 } from "../utils/board";
 import { ago } from "../utils/time";
+import { t, useT } from "../i18n";
 import { RoundBadge } from "./Interviews";
 
 // Space picks a card up and drops it; Enter is left free to open the card.
@@ -40,25 +41,31 @@ const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
 
 /** Screen-reader messages in words (company, stage names) rather than ids. */
 function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
-  const label = (id: UniqueIdentifier) => rows.find((r) => r.id === id)?.company_name ?? "Application";
+  const label = (id: UniqueIdentifier) =>
+    rows.find((r) => r.id === id)?.company_name ?? t("applications.applicationFallback");
   // The column's own title, so round columns can be told apart ("Interviewing · Round 2").
   const stage = (id: UniqueIdentifier | undefined) => (id ? (titles.get(String(id)) ?? String(id)) : "");
   return {
-    onDragStart: ({ active }) => `Picked up ${label(active.id)}. Use arrow keys to move, Space to drop.`,
+    onDragStart: ({ active }) => t("applications.dragPickedUp", { name: label(active.id) }),
     onDragOver: ({ active, over }) =>
-      over ? `${label(active.id)} is over ${stage(over.id)}.` : `${label(active.id)} isn't over a stage.`,
+      over
+        ? t("applications.dragOver", { name: label(active.id), stage: stage(over.id) })
+        : t("applications.dragNotOver", { name: label(active.id) }),
     onDragEnd: ({ active, over }) =>
-      over ? `${label(active.id)} dropped on ${stage(over.id)}.` : `${label(active.id)} dropped.`,
-    onDragCancel: ({ active }) => `Cancelled. ${label(active.id)} stays where it was.`,
+      over
+        ? t("applications.dragDroppedOn", { name: label(active.id), stage: stage(over.id) })
+        : t("applications.dragDropped", { name: label(active.id) }),
+    onDragCancel: ({ active }) => t("applications.dragCancelled", { name: label(active.id) }),
   };
 }
 
 function CardBody({ row }: { row: ApplicationRow }) {
+  const t = useT();
   const via =
     row.route === "agency"
       ? row.recruiter_name || row.agency_name
       : row.route === "referral"
-        ? "Referral"
+        ? t("applications.routeReferral")
         : null;
   return (
     <>
@@ -75,7 +82,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
       )}
       {row.reply_to_read_since && (
         <Badge mt={6} size="xs" variant="light" color="orange">
-          Reply to read
+          {t("applications.replyToRead")}
         </Badge>
       )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
@@ -94,6 +101,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
 }
 
 function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: string) => void }) {
+  const t = useT();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: row.id, data: { row } });
   return (
     <Card
@@ -106,7 +114,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
         cursor: "grab",
         borderLeft: row.stale ? "3px solid var(--mantine-color-red-6)" : undefined,
       }}
-      aria-label={`${row.company_name}: ${row.role_title}`}
+      aria-label={t("applications.cardAria", { company: row.company_name, role: row.role_title })}
       {...attributes}
       {...listeners}
       onClick={() => onOpen(row.id)}
@@ -134,6 +142,7 @@ function StageColumn({
   dropState: "idle" | "suggested" | "allowed" | "blocked";
   onOpen: (id: string) => void;
 }) {
+  const t = useT();
   const { setNodeRef, isOver } = useDroppable({ id: columnKey(column) });
   const closed = column.stage.kind !== "active";
   // Usual next stages stand out; any other stage still takes the drop (unless the workflow
@@ -153,7 +162,7 @@ function StageColumn({
       radius="md"
       bg="var(--mantine-color-default-hover)"
       style={{ border, opacity: dropState === "blocked" ? 0.45 : 1, transition: "opacity 120ms" }}
-      aria-label={`${columnTitle(column)} column`}
+      aria-label={t("applications.columnAria", { title: columnTitle(column) })}
     >
       <Group justify="space-between" mb="xs" wrap="nowrap">
         <Badge color={column.stage.color} variant={closed ? "outline" : "light"} radius="sm">
@@ -181,6 +190,7 @@ export function Board({
   rows: ApplicationRow[];
   onOpen: (id: string) => void;
 }) {
+  const t = useT();
   const [active, setActive] = useState<ApplicationRow | null>(null);
   const [showClosed, setShowClosed] = useState(false);
   // Remembered: a column per interview round, or one per stage.
@@ -219,17 +229,16 @@ export function Board({
     if (to === row.stage && over !== to) {
       notifications.show({
         color: "orange",
-        title: "Rounds go in order",
-        message:
-          "A card's round comes from its interviews: add or finish a round on the application to move it along.",
+        title: t("applications.roundsOrderTitle"),
+        message: t("applications.roundsOrderMessage"),
       });
       return;
     }
     if (isRoundColumn(over)) {
       notifications.show({
         color: "orange",
-        title: "Rounds go in order",
-        message: `Drop it on ${names.get(to) ?? to} · No round yet; it moves along as you add its interview rounds.`,
+        title: t("applications.roundsOrderTitle"),
+        message: t("applications.roundOrderHint", { stage: names.get(to) ?? to }),
       });
       return;
     }
@@ -237,14 +246,19 @@ export function Board({
     if (!canDrop(workflow, row.stage, to)) {
       notifications.show({
         color: "orange",
-        title: "That move isn't allowed",
-        message: `${names.get(row.stage) ?? row.stage} can't go to ${names.get(to) ?? to}.`,
+        title: t("applications.moveNotAllowedTitle"),
+        message: t("applications.moveNotAllowed", {
+          from: names.get(row.stage) ?? row.stage,
+          to: names.get(to) ?? to,
+        }),
       });
       return;
     }
     move.mutate({ id: row.id, to_stage: to, stageName: names.get(to) });
     if (workflow.stages.find((s) => s.id === to)?.kind !== "active") {
-      notifications.show({ message: `${row.company_name} moved to ${names.get(to) ?? to}` });
+      notifications.show({
+        message: t("applications.movedTo", { company: row.company_name, stage: names.get(to) ?? to }),
+      });
     }
   };
 
@@ -252,13 +266,13 @@ export function Board({
     <Stack gap="xs">
       <Group gap="lg">
         <Switch
-          label="Show closed stages"
+          label={t("applications.showClosedStages")}
           checked={showClosed}
           onChange={(e) => setShowClosed(e.currentTarget.checked)}
           size="xs"
         />
         <Switch
-          label="A column per interview round"
+          label={t("applications.columnPerRound")}
           checked={byRound}
           onChange={(e) => setByRound(e.currentTarget.checked)}
           size="xs"

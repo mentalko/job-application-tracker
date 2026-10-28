@@ -37,6 +37,7 @@ import { MeetingDidntHappen } from "./OutcomeNotes";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { useRoleSummaries } from "../api/roleHooks";
 import { formatDateTime } from "../utils/time";
+import { t, useT, type Key } from "../i18n";
 
 type Status = "scheduled" | "done" | "cancelled";
 
@@ -55,7 +56,7 @@ interface Values {
 
 const PICKER = "YYYY-MM-DD HH:mm:ss";
 const blank = (s: string) => s.trim() || null;
-const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://");
+const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : t("plans.linkInvalid"));
 
 /** Next whole hour, as a sensible default time for a call you're booking. */
 const nextHour = () => dayjs().add(1, "hour").startOf("hour").format(PICKER);
@@ -99,11 +100,12 @@ export function MeetingFormModal({
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
   const save = useSaveMeeting();
+  const t = useT();
   const form = useForm<Values>({
     initialValues: fromMeeting(meeting, contactId, status),
     validate: {
-      contactId: (v) => (v ? null : "Who is it with?"),
-      startsAt: (v) => (v ? null : "When is it?"),
+      contactId: (v) => (v ? null : t("plans.whoRequired")),
+      startsAt: (v) => (v ? null : t("plans.whenRequired")),
       meetingUrl: isLink,
     },
   });
@@ -125,35 +127,43 @@ export function MeetingFormModal({
     save.mutate(meeting ? { id: meeting.id, body } : { body }, { onSuccess: onClose });
   });
 
-  const title = meeting ? (status === "done" ? "How did it go?" : `Edit ${meeting.label}`) : "Book a call";
+  const title = meeting
+    ? status === "done"
+      ? t("plans.howDidItGo")
+      : t("plans.editNamed", { name: meeting.label })
+    : t("plans.bookACall");
   return (
     <Modal opened={opened} onClose={onClose} title={title} size="lg">
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-start">
             <Select
-              label="With"
-              placeholder="Pick a person"
+              label={t("plans.withLabel")}
+              placeholder={t("plans.pickPerson")}
               searchable
               data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
               disabled={!!contactId && !meeting}
               {...form.getInputProps("contactId")}
             />
             <TextInput
-              label="About"
-              placeholder="Market catch-up, roles at Contoso…"
+              label={t("plans.aboutLabel")}
+              placeholder={t("plans.aboutPlaceholder")}
               {...form.getInputProps("title")}
             />
           </Group>
           <Group grow align="flex-start">
-            <DateTimePicker label="When" valueFormat="D MMM YYYY HH:mm" {...form.getInputProps("startsAt")} />
+            <DateTimePicker
+              label={t("plans.when")}
+              valueFormat="D MMM YYYY HH:mm"
+              {...form.getInputProps("startsAt")}
+            />
             <div>
               <Text size="sm" fw={500} mb={4}>
-                How
+                {t("plans.howLabel")}
               </Text>
               <SegmentedControl
                 fullWidth
-                aria-label="How"
+                aria-label={t("plans.howLabel")}
                 data={MEETING_KINDS}
                 {...form.getInputProps("kind")}
               />
@@ -161,35 +171,35 @@ export function MeetingFormModal({
           </Group>
           <div>
             <Text size="sm" fw={500} mb={4}>
-              Status
+              {t("plans.statusLabel")}
             </Text>
             <SegmentedControl
-              aria-label="Status"
+              aria-label={t("plans.statusLabel")}
               data={[
-                { value: "scheduled", label: "Booked" },
-                { value: "done", label: "Happened" },
-                { value: "cancelled", label: "Didn't happen" },
+                { value: "scheduled", label: t("plans.statusBooked") },
+                { value: "done", label: t("plans.happened") },
+                { value: "cancelled", label: t("plans.didntHappen") },
               ]}
               {...form.getInputProps("status")}
             />
           </div>
           {form.values.kind === "in_person" ? (
             <TextInput
-              label="Where"
-              placeholder="Coffee shop, their office…"
+              label={t("plans.where")}
+              placeholder={t("plans.wherePlaceholder")}
               {...form.getInputProps("location")}
             />
           ) : (
             <TextInput
-              label={form.values.kind === "video" ? "Meeting link" : "Link (optional)"}
+              label={form.values.kind === "video" ? t("plans.meetingLink") : t("plans.linkOptional")}
               placeholder="https://…"
               {...form.getInputProps("meetingUrl")}
             />
           )}
           <Select
-            label="About an application (optional)"
-            description="If it's about one role you've applied for: it then shows with that application on the Timeline."
-            placeholder="Not about one application"
+            label={t("plans.aboutApplication")}
+            description={t("plans.aboutApplicationHint")}
+            placeholder={t("plans.notAboutOne")}
             searchable
             clearable
             data={(apps ?? []).map((a) => ({ value: a.id, label: `${a.company_name} · ${a.role_title}` }))}
@@ -197,8 +207,8 @@ export function MeetingFormModal({
           />
           {!done && (
             <Textarea
-              label="Agenda"
-              description="What to ask, what to tell them. Markdown works."
+              label={t("plans.agenda")}
+              description={t("plans.agendaHint")}
               autosize
               minRows={2}
               {...form.getInputProps("agenda")}
@@ -206,8 +216,8 @@ export function MeetingFormModal({
           )}
           {done && (
             <Textarea
-              label="How did it go?"
-              description="What you talked about and next steps. Add the roles they mentioned from the call on their page, to apply or pass on each. Markdown works."
+              label={t("plans.howDidItGo")}
+              description={t("plans.notesHint")}
               autosize
               minRows={3}
               data-autofocus
@@ -216,10 +226,10 @@ export function MeetingFormModal({
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {meeting ? "Save" : done ? "Log call" : "Book call"}
+              {meeting ? t("plans.save") : done ? t("plans.logCall") : t("plans.bookCall")}
             </Button>
           </Group>
         </Stack>
@@ -228,10 +238,10 @@ export function MeetingFormModal({
   );
 }
 
-const STATUS_BADGE: Record<string, { label: string; color: string }> = {
-  scheduled: { label: "Booked", color: "blue" },
-  done: { label: "Happened", color: "teal" },
-  cancelled: { label: "Didn't happen", color: "gray" },
+const STATUS_BADGE: Record<string, { key: Key; color: string }> = {
+  scheduled: { key: "plans.statusBooked", color: "blue" },
+  done: { key: "plans.happened", color: "teal" },
+  cancelled: { key: "plans.didntHappen", color: "gray" },
 };
 
 /** One call: what, when, who with; `action` sits on the right. */
@@ -244,6 +254,7 @@ export function MeetingLine({
   action?: ReactNode;
   showWho?: boolean;
 }) {
+  const t = useT();
   const where = meeting.agency_name ?? meeting.company_name;
   // The date stays on one line beside the title; buttons get a line of their own underneath.
   return (
@@ -267,7 +278,7 @@ export function MeetingLine({
             )}
             {meeting.meeting_url && meeting.status === "scheduled" && (
               <Anchor href={meeting.meeting_url} target="_blank" rel="noreferrer" size="xs">
-                Join link
+                {t("plans.joinLink")}
               </Anchor>
             )}
           </Group>
@@ -287,6 +298,7 @@ export function MeetingLine({
 
 /** "Happened" (opens the form to say how it went) and "Didn't happen", for a call whose time has passed. */
 export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
+  const t = useT();
   const [closing, setClosing] = useState(false);
   return (
     <Group gap={4} wrap="nowrap">
@@ -294,10 +306,10 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
         size="compact-xs"
         variant="light"
         color="teal"
-        aria-label={`Happened: ${meeting.label}`}
+        aria-label={t("plans.happenedAria", { name: meeting.label })}
         onClick={() => setClosing(true)}
       >
-        Happened
+        {t("plans.happened")}
       </Button>
       <MeetingDidntHappen meeting={meeting} />
       {closing && (
@@ -315,17 +327,18 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
 
 function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void }) {
   const del = useDeleteMeeting();
+  const t = useT();
   return (
     <Menu position="bottom-end" withinPortal>
       <Menu.Target>
-        <ActionIcon variant="subtle" color="gray" aria-label={`More for ${meeting.label}`}>
+        <ActionIcon variant="subtle" color="gray" aria-label={t("plans.moreFor", { name: meeting.label })}>
           <IconDots size={16} />
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item onClick={onEdit}>Edit</Menu.Item>
+        <Menu.Item onClick={onEdit}>{t("shared.edit")}</Menu.Item>
         <Menu.Item color="red" onClick={() => del.mutate(meeting.id)}>
-          Delete
+          {t("shared.delete")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>
@@ -334,6 +347,7 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
 
 /** A person's calls and meetings: booked ones first, then what happened, with notes. */
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
+  const t = useT();
   const { data: meetings } = useMeetings({ contact_id: contactId });
   const [editing, setEditing] = useState<Meeting | "new" | null>(null);
   const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
@@ -347,19 +361,19 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
   return (
     <Card withBorder>
       <Group justify="space-between" mb="sm">
-        <Title order={4}>Calls and meetings</Title>
+        <Title order={4}>{t("plans.callsTitle")}</Title>
         <Button
           size="xs"
           variant="light"
           leftSection={<IconPhone size={14} />}
           onClick={() => setEditing("new")}
         >
-          Book a call
+          {t("plans.bookACall")}
         </Button>
       </Group>
       {all.length === 0 ? (
         <Text size="sm" c="dimmed">
-          No calls with {name} yet. Book one, or log one you've had.
+          {t("plans.noCalls", { name })}
         </Text>
       ) : (
         <Stack gap="sm">
@@ -395,7 +409,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                 action={
                   <Group gap={4} wrap="nowrap">
                     <Badge size="xs" variant="light" color={STATUS_BADGE[m.status]?.color}>
-                      {STATUS_BADGE[m.status]?.label ?? m.status}
+                      {STATUS_BADGE[m.status] ? t(STATUS_BADGE[m.status]!.key) : m.status}
                     </Badge>
                     <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
                   </Group>
@@ -424,7 +438,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                     onClick={() => setAddingRoles(m.id)}
                     style={{ alignSelf: "flex-start" }}
                   >
-                    Add roles from this call
+                    {t("plans.addRolesFromCall")}
                   </Button>
                 </Stack>
               )}

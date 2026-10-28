@@ -2,40 +2,41 @@ import { Badge, Box, Card, Group, Loader, Progress, Stack, Table, Text, Title, T
 import dayjs from "dayjs";
 
 import { useActivity, type Stats, type Week } from "../api/insightHooks";
+import { t, useT, type Key } from "../i18n";
 
-const ROUTE_LABELS: Record<string, string> = {
-  direct: "Direct",
-  agency: "Via an agency",
-  referral: "Referral",
+const ROUTE_KEYS: Record<string, Key> = {
+  direct: "insights.routeDirect",
+  agency: "insights.routeAgency",
+  referral: "insights.routeReferral",
 };
 
 const percent = (x: number) => `${Math.round(100 * x)}%`;
 
 function days(d: number | null | undefined) {
   if (d == null) return "—";
-  if (d < 1) return "under a day";
-  return `${d % 1 === 0 ? d : d.toFixed(1)} day${d === 1 ? "" : "s"}`;
+  if (d < 1) return t("insights.underADay");
+  return t("insights.medianDays", { n: d, days: d % 1 === 0 ? d : d.toFixed(1) });
 }
 
 /** Per stage: how many got there, how many went on, and how long they usually stayed. */
 export function StageTable({ stats }: { stats: Stats }) {
+  const t = useT();
   const rows = stats.stages.filter((s) => s.reached > 0);
   return (
     <Card withBorder>
-      <Title order={4}>Stage by stage</Title>
+      <Title order={4}>{t("insights.stageByStage")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        "Moved on" means reaching a later stage that isn't a closed one. Time in stage counts every finished
-        stay, including ones before a move back.
+        {t("insights.movedOnNote")}
       </Text>
       <Table.ScrollContainer minWidth={560}>
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Stage</Table.Th>
-              <Table.Th>Reached</Table.Th>
-              <Table.Th>Moved on</Table.Th>
-              <Table.Th w={180}>Conversion</Table.Th>
-              <Table.Th>Median time in stage</Table.Th>
+              <Table.Th>{t("insights.colStage")}</Table.Th>
+              <Table.Th>{t("insights.colReached")}</Table.Th>
+              <Table.Th>{t("insights.colMovedOn")}</Table.Th>
+              <Table.Th w={180}>{t("insights.colConversion")}</Table.Th>
+              <Table.Th>{t("insights.colMedianTime")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -64,7 +65,7 @@ export function StageTable({ stats }: { stats: Stats }) {
                   <Text size="sm">{days(s.median_days)}</Text>
                   {s.stays > 0 && (
                     <Text size="xs" c="dimmed">
-                      from {s.stays} stay{s.stays === 1 ? "" : "s"}
+                      {t("insights.fromStays", { n: s.stays })}
                     </Text>
                   )}
                 </Table.Td>
@@ -79,25 +80,26 @@ export function StageTable({ stats }: { stats: Stats }) {
 
 /** Direct vs recruiter vs referral: what share of each route got to each stage. */
 export function RouteTable({ stats }: { stats: Stats }) {
+  const t = useT();
   // Stages past the first that aren't closed: the ones that mean progress.
   const stages = stats.stages.filter((s) => s.kind !== "closed" && s.kind !== "unknown").slice(1);
   return (
     <Card withBorder>
-      <Title order={4}>Direct vs recruiter</Title>
+      <Title order={4}>{t("insights.directVsRecruiter")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        The share of each route's applications that got at least as far as each stage.
+        {t("insights.routeShareNote")}
       </Text>
       {stats.routes.length < 2 ? (
         <Text size="sm" c="dimmed">
-          Every application so far came the same way. Nothing to compare yet.
+          {t("insights.routeNothingYet")}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={480}>
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Route</Table.Th>
-                <Table.Th>Applications</Table.Th>
+                <Table.Th>{t("insights.route")}</Table.Th>
+                <Table.Th>{t("insights.applications")}</Table.Th>
                 {stages.map((s) => (
                   <Table.Th key={s.id}>{s.name}</Table.Th>
                 ))}
@@ -106,7 +108,7 @@ export function RouteTable({ stats }: { stats: Stats }) {
             <Table.Tbody>
               {stats.routes.map((r) => (
                 <Table.Tr key={r.route}>
-                  <Table.Td>{ROUTE_LABELS[r.route] ?? r.route}</Table.Td>
+                  <Table.Td>{ROUTE_KEYS[r.route] ? t(ROUTE_KEYS[r.route]!) : r.route}</Table.Td>
                   <Table.Td>{r.applications}</Table.Td>
                   {stages.map((s) => {
                     const n = r.reached[s.id] ?? 0;
@@ -133,24 +135,24 @@ export function RouteTable({ stats }: { stats: Stats }) {
 
 const SERIES: {
   key: keyof Omit<Week, "start">;
-  label: string;
-  count: (n: number) => string;
+  labelKey: Key;
+  countKey: Key;
   color: string;
 }[] = [
-  { key: "added", label: "Added", count: (n) => `${n} added`, color: "gray" },
-  { key: "applied", label: "Applied", count: (n) => `${n} applied`, color: "blue" },
-  { key: "moves", label: "Stage moves", count: (n) => `${n} stage move${n === 1 ? "" : "s"}`, color: "teal" },
+  { key: "added", labelKey: "insights.seriesAdded", countKey: "insights.countAdded", color: "gray" },
+  { key: "applied", labelKey: "insights.seriesApplied", countKey: "insights.countApplied", color: "blue" },
+  { key: "moves", labelKey: "insights.seriesMoves", countKey: "insights.countMoves", color: "teal" },
   {
     key: "interviews",
-    label: "Interviews",
-    count: (n) => `${n} interview${n === 1 ? "" : "s"}`,
+    labelKey: "insights.seriesInterviews",
+    countKey: "insights.countInterviews",
     color: "violet",
   },
-  { key: "calls", label: "Calls", count: (n) => `${n} call${n === 1 ? "" : "s"}`, color: "orange" },
+  { key: "calls", labelKey: "insights.seriesCalls", countKey: "insights.countCalls", color: "orange" },
   {
     key: "pitched",
-    label: "Roles pitched",
-    count: (n) => `${n} role${n === 1 ? "" : "s"} pitched`,
+    labelKey: "insights.seriesPitched",
+    countKey: "insights.countPitched",
     color: "grape",
   },
 ];
@@ -166,6 +168,7 @@ export function activityStart(now = dayjs()) {
 
 /** Twelve weeks of activity as grouped bars. */
 export function WeeklyActivity() {
+  const t = useT();
   const start = activityStart();
   // The server works out local midnights itself, so weeks with a clock change come out right.
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -174,12 +177,12 @@ export function WeeklyActivity() {
   return (
     <Card withBorder>
       <Group justify="space-between" mb="sm" wrap="wrap">
-        <Title order={4}>Weekly activity</Title>
+        <Title order={4}>{t("insights.weeklyActivity")}</Title>
         <Group gap="md">
           {SERIES.map((s) => (
             <Group key={s.key} gap={6}>
               <Box w={10} h={10} bg={`${s.color}.6`} style={{ borderRadius: 2 }} />
-              <Text size="xs">{s.label}</Text>
+              <Text size="xs">{t(s.labelKey)}</Text>
             </Group>
           ))}
         </Group>
@@ -194,10 +197,13 @@ export function WeeklyActivity() {
             wrap="nowrap"
             h={BAR_HEIGHT}
             role="list"
-            aria-label="Weekly activity"
+            aria-label={t("insights.weeklyActivity")}
           >
             {weeks.map((w) => {
-              const label = `Week of ${dayjs(w.start).format("D MMM")}: ${SERIES.map((s) => s.count(w[s.key])).join(", ")}`;
+              const label = t("insights.weekOf", {
+                date: dayjs(w.start).format("D MMM"),
+                counts: SERIES.map((s) => t(s.countKey, { n: w[s.key] })).join(", "),
+              });
               return (
                 <Tooltip key={w.start} label={label} withinPortal>
                   <Group

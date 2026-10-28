@@ -1,13 +1,16 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 
+import { useT } from "../i18n";
+
 export function NotFound() {
+  const t = useT();
   return (
     <Stack align="flex-start">
-      <Title order={2}>Page not found</Title>
-      <Text c="dimmed">There's nothing at this address.</Text>
+      <Title order={2}>{t("insights.notFoundTitle")}</Title>
+      <Text c="dimmed">{t("insights.notFoundText")}</Text>
       <Button component={Link} to="/" variant="light">
-        Back to Today
+        {t("insights.backToToday")}
       </Button>
     </Stack>
   );

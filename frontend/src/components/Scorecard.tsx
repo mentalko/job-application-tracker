@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PersonName } from "./GhostMark";
 import { useScorecard, type Score } from "../api/insightHooks";
 import { ago } from "../utils/time";
+import { t, useT, type Key } from "../i18n";
 
 type View = "recruiters" | "agencies";
 
@@ -12,8 +13,8 @@ const percent = (n: number, of: number) => (of ? `${Math.round((100 * n) / of)}%
 
 function firstUpdate(days: number | null | undefined) {
   if (days == null) return "—";
-  if (days < 1) return "same day";
-  return `${days % 1 === 0 ? days : days.toFixed(1)} day${days === 1 ? "" : "s"}`;
+  if (days < 1) return t("plans.sameDay");
+  return t("plans.firstUpdateDays", { n: days, display: days % 1 === 0 ? days : days.toFixed(1) });
 }
 
 function lastContact(iso: string | null | undefined) {
@@ -24,19 +25,20 @@ function lastContact(iso: string | null | undefined) {
 }
 
 function Outcomes({ s }: { s: Score }) {
-  const parts: [number, string, string][] = [
-    [s.active, "active", "blue"],
-    [s.success, "accepted", "green"],
-    [s.ghosted, "ghosted", "dark"],
-    [s.closed, "closed", "red"],
+  const t = useT();
+  const parts: [number, Key, string][] = [
+    [s.active, "plans.outcomeActive", "blue"],
+    [s.success, "plans.outcomeAccepted", "green"],
+    [s.ghosted, "plans.outcomeGhosted", "dark"],
+    [s.closed, "plans.outcomeClosed", "red"],
   ];
   return (
     <Group gap={4}>
       {parts
         .filter(([n]) => n > 0)
-        .map(([n, label, color]) => (
-          <Badge key={label} size="sm" variant="light" color={color}>
-            {n} {label}
+        .map(([n, key, color]) => (
+          <Badge key={key} size="sm" variant="light" color={color}>
+            {t(key, { n })}
           </Badge>
         ))}
     </Group>
@@ -45,6 +47,7 @@ function Outcomes({ s }: { s: Score }) {
 
 /** Recruiter and agency scorecard (PRD FR20): who sends roles that go somewhere. */
 export function ScorecardCard({ since }: { since?: string }) {
+  const t = useT();
   const [view, setView] = useState<View>("recruiters");
   const { data, isLoading, isError } = useScorecard(since);
   const rows = data?.[view] ?? [];
@@ -52,42 +55,43 @@ export function ScorecardCard({ since }: { since?: string }) {
     <Card withBorder>
       <Group justify="space-between" wrap="wrap" mb="sm">
         <div>
-          <Title order={4}>Recruiter scorecard</Title>
+          <Title order={4}>{t("plans.scorecardTitle")}</Title>
           <Text size="sm" c="dimmed">
-            For the roles each one put you forward for. First update is the median time from adding an
-            application to the first call, email, message or stage move.
+            {t("plans.scorecardHint")}
           </Text>
         </div>
         <SegmentedControl
-          aria-label="Scorecard by"
+          aria-label={t("plans.scorecardByAria")}
           size="xs"
           value={view}
           onChange={(v) => setView(v as View)}
           data={[
-            { value: "recruiters", label: "Recruiters" },
-            { value: "agencies", label: "Agencies" },
+            { value: "recruiters", label: t("plans.recruiters") },
+            { value: "agencies", label: t("plans.agencies") },
           ]}
         />
       </Group>
       {isLoading ? (
         <Loader />
       ) : isError ? (
-        <Text c="red">Couldn't load the scorecard.</Text>
+        <Text c="red">{t("plans.scorecardError")}</Text>
       ) : !rows.length ? (
         <Text size="sm" c="dimmed">
-          No roles from {view} in this period. Add a recruiter or agency to an application to see it here.
+          {t("plans.scorecardEmpty", {
+            who: t(view === "recruiters" ? "plans.wordRecruiters" : "plans.wordAgencies"),
+          })}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={640}>
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{view === "recruiters" ? "Recruiter" : "Agency"}</Table.Th>
-                <Table.Th>Roles</Table.Th>
-                <Table.Th>Interviewed</Table.Th>
-                <Table.Th>Where they are now</Table.Th>
-                <Table.Th>First update</Table.Th>
-                <Table.Th>Last contact</Table.Th>
+                <Table.Th>{view === "recruiters" ? t("plans.colRecruiter") : t("plans.colAgency")}</Table.Th>
+                <Table.Th>{t("plans.roles")}</Table.Th>
+                <Table.Th>{t("plans.colInterviewed")}</Table.Th>
+                <Table.Th>{t("plans.colWhereNow")}</Table.Th>
+                <Table.Th>{t("plans.colFirstUpdate")}</Table.Th>
+                <Table.Th>{t("plans.colLastContact")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>

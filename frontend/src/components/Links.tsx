@@ -34,6 +34,7 @@ import {
   type EntityType,
   type LinkItem,
 } from "../api/linkHooks";
+import { useT } from "../i18n";
 
 const ICONS: Record<string, typeof IconLink> = {
   google_doc: IconFileText,
@@ -57,6 +58,7 @@ function LinkRow({ link }: { link: LinkItem }) {
   const [title, setTitle] = useState(link.title ?? "");
   const update = useUpdateLink();
   const remove = useDeleteLink();
+  const t = useT();
   const Icon = ICONS[link.kind] ?? IconLink;
   const label = link.title || host(link.url);
   const save = () => {
@@ -77,8 +79,8 @@ function LinkRow({ link }: { link: LinkItem }) {
               if (e.key === "Enter") save();
               if (e.key === "Escape") setEditing(false);
             }}
-            aria-label="Link title"
-            placeholder="Leave empty for a default"
+            aria-label={t("people.linkTitleAria")}
+            placeholder={t("people.linkTitlePlaceholder")}
             style={{ flex: 1 }}
             onBlur={save}
             autoFocus
@@ -110,17 +112,22 @@ function LinkRow({ link }: { link: LinkItem }) {
               color="teal"
               onClick={save}
               loading={update.isPending}
-              aria-label="Save title"
+              aria-label={t("people.saveTitleAria")}
             >
               <IconCheck size={16} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="gray" onClick={() => setEditing(false)} aria-label="Cancel">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => setEditing(false)}
+              aria-label={t("shared.cancel")}
+            >
               <IconX size={16} />
             </ActionIcon>
           </>
         ) : (
           <>
-            <Tooltip label="Rename">
+            <Tooltip label={t("people.renameTooltip")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
@@ -128,18 +135,18 @@ function LinkRow({ link }: { link: LinkItem }) {
                   setTitle(link.title ?? "");
                   setEditing(true);
                 }}
-                aria-label={`Rename ${label}`}
+                aria-label={t("people.renameAria", { name: label })}
               >
                 <IconPencil size={16} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Remove">
+            <Tooltip label={t("people.removeTooltip")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 loading={remove.isPending}
                 onClick={() => remove.mutate(link.id)}
-                aria-label={`Remove ${label}`}
+                aria-label={t("people.removeAria", { name: label })}
               >
                 <IconTrash size={16} />
               </ActionIcon>
@@ -155,10 +162,11 @@ function LinkRow({ link }: { link: LinkItem }) {
 export function LinksCard({ entityType, entityId }: { entityType: EntityType; entityId: string }) {
   const { data: links } = useLinks(entityType, entityId);
   const add = useAddLink();
+  const t = useT();
   const form = useForm({
     initialValues: { url: "", title: "" },
     validate: {
-      url: (v) => (/^https?:\/\/\S+$/.test(v.trim()) ? null : "Paste a link starting with https://"),
+      url: (v) => (/^https?:\/\/\S+$/.test(v.trim()) ? null : t("people.linkValidationError")),
     },
   });
   const submit = form.onSubmit((v) =>
@@ -171,33 +179,33 @@ export function LinksCard({ entityType, entityId }: { entityType: EntityType; en
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>Links</Title>
+        <Title order={4}>{t("people.linksTitle")}</Title>
         {(links ?? []).map((link) => (
           <LinkRow key={link.id} link={link} />
         ))}
         {links && !links.length && (
           <Text size="sm" c="dimmed">
-            Job ads, Google Docs, repos: anything with a URL.
+            {t("people.linksEmpty")}
           </Text>
         )}
         <form onSubmit={submit}>
           <Group align="flex-start" gap="xs" wrap="nowrap">
             <TextInput
               size="xs"
-              placeholder="https://docs.google.com/…"
-              aria-label="Link URL"
+              placeholder={t("people.linkUrlPlaceholder")}
+              aria-label={t("people.linkUrlAria")}
               style={{ flex: 2 }}
               {...form.getInputProps("url")}
             />
             <TextInput
               size="xs"
-              placeholder="Title (optional)"
-              aria-label="Link title (optional)"
+              placeholder={t("people.linkTitleOptional")}
+              aria-label={t("people.linkTitleOptionalAria")}
               style={{ flex: 1 }}
               {...form.getInputProps("title")}
             />
             <Button size="xs" type="submit" variant="light" loading={add.isPending}>
-              Add
+              {t("shared.add")}
             </Button>
           </Group>
         </form>

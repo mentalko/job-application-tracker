@@ -43,7 +43,7 @@ describe("app shell", () => {
     // Every page is built now; the placeholder stays for pages added to NAV ahead of their task.
     render(
       <MantineProvider>
-        <Placeholder item={{ ...NAV[0]!, label: "Offers", task: "offers" }} />
+        <Placeholder item={{ ...NAV[0]!, label: "Offers", labelKey: "nav.label.offers", task: "offers" }} />
       </MantineProvider>,
     );
     expect(screen.getByRole("heading", { name: "Offers" })).toBeInTheDocument();

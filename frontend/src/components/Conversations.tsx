@@ -22,6 +22,7 @@ import {
   type ConversationPerson,
   type Conversations,
 } from "../api/insightHooks";
+import { t, useT } from "../i18n";
 import { PersonName } from "./GhostMark";
 import { formatDate } from "../utils/time";
 import { SankeyChart } from "./SankeyChart";
@@ -32,8 +33,8 @@ const percent = (rate: number | null | undefined) => (rate == null ? "—" : `${
 
 function days(n: number | null | undefined) {
   if (n == null) return "—";
-  if (n < 1) return "same day";
-  return `${n % 1 === 0 ? n : n.toFixed(1)} day${n === 1 ? "" : "s"}`;
+  if (n < 1) return t("library.sameDay");
+  return t("library.nDays", { n, num: n % 1 === 0 ? n : n.toFixed(1) });
 }
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
@@ -55,20 +56,21 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
 }
 
 /** Where applied roles went, as small badges. */
-function Outcomes({ t }: { t: Tally }) {
+function Outcomes({ t: tally }: { t: Tally }) {
+  const t = useT();
   const parts: [number, string, string][] = [
-    [t.in_progress, "in progress", "cyan"],
-    [t.offers, "offer", "green"],
-    [t.closed, "closed", "red"],
-    [t.ghosted, "ghosted", "dark"],
+    [tally.in_progress, t("library.outcomeInProgress", { n: tally.in_progress }), "cyan"],
+    [tally.offers, t("library.outcomeOffer", { n: tally.offers }), "green"],
+    [tally.closed, t("library.outcomeClosed", { n: tally.closed }), "red"],
+    [tally.ghosted, t("library.outcomeGhosted", { n: tally.ghosted }), "dark"],
   ];
   const shown = parts.filter(([n]) => n > 0);
   if (!shown.length) return <Text size="sm">—</Text>;
   return (
     <Group gap={4}>
-      {shown.map(([n, label, color]) => (
+      {shown.map(([, label, color]) => (
         <Badge key={label} size="sm" variant="light" color={color}>
-          {n} {label}
+          {label}
         </Badge>
       ))}
     </Group>
@@ -78,50 +80,48 @@ function Outcomes({ t }: { t: Tally }) {
 type View = "people" | "agencies";
 
 function WhoTable({ data }: { data: Conversations }) {
+  const t = useT();
   const [view, setView] = useState<View>("people");
   const rows: (ConversationPerson | ConversationAgency)[] = view === "people" ? data.people : data.agencies;
   return (
     <Card withBorder>
       <Group justify="space-between" wrap="wrap" mb="sm">
         <div>
-          <Title order={4}>Who you talk to</Title>
+          <Title order={4}>{t("library.whoYouTalkTo")}</Title>
           <Text size="sm" c="dimmed">
-            Calls held and the roles each one pitched: how many you applied for, passed on or are still
-            deciding about, and where the applications went. Apply rate is of the roles you've decided on.
+            {t("library.whoYouTalkToHint")}
           </Text>
         </div>
         <SegmentedControl
-          aria-label="Conversations by"
+          aria-label={t("library.conversationsBy")}
           size="xs"
           value={view}
           onChange={(v) => setView(v as View)}
           data={[
-            { value: "people", label: "People" },
-            { value: "agencies", label: "Agencies" },
+            { value: "people", label: t("library.people") },
+            { value: "agencies", label: t("library.agencies") },
           ]}
         />
       </Group>
       {!rows.length ? (
         <Text size="sm" c="dimmed">
-          {view === "people"
-            ? "No calls or pitched roles in this period. Log a call on someone's page, or add the roles they mention."
-            : "No one from an agency in this period."}
+          {view === "people" ? t("library.noCallsEmpty") : t("library.noAgenciesEmpty")}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={760}>
           <Table striped highlightOnHover verticalSpacing="xs">
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{view === "people" ? "Person" : "Agency"}</Table.Th>
-                <Table.Th ta="right">Calls</Table.Th>
-                <Table.Th>Last call</Table.Th>
-                <Table.Th ta="right">Pitched</Table.Th>
-                <Table.Th ta="right">Applied</Table.Th>
-                <Table.Th ta="right">Passed</Table.Th>
-                <Table.Th ta="right">Deciding</Table.Th>
-                <Table.Th ta="right">Apply rate</Table.Th>
-                <Table.Th ta="right">Interviews</Table.Th>
-                <Table.Th>Applications</Table.Th>
+                <Table.Th>{view === "people" ? t("library.colPerson") : t("library.colAgency")}</Table.Th>
+                <Table.Th ta="right">{t("library.colCalls")}</Table.Th>
+                <Table.Th>{t("library.colLastCall")}</Table.Th>
+                <Table.Th ta="right">{t("library.colPitched")}</Table.Th>
+                <Table.Th ta="right">{t("library.colApplied")}</Table.Th>
+                <Table.Th ta="right">{t("library.colPassed")}</Table.Th>
+                <Table.Th ta="right">{t("library.colDeciding")}</Table.Th>
+                <Table.Th ta="right">{t("library.colApplyRate")}</Table.Th>
+                <Table.Th ta="right">{t("library.colInterviews")}</Table.Th>
+                <Table.Th>{t("library.colApplications")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -134,7 +134,7 @@ function WhoTable({ data }: { data: Conversations }) {
                           {r.name}
                         </Anchor>
                         <Text size="xs" c="dimmed">
-                          {r.people} {r.people === 1 ? "person" : "people"}
+                          {t("library.nPeople", { n: r.people })}
                         </Text>
                       </>
                     ) : (
@@ -149,12 +149,14 @@ function WhoTable({ data }: { data: Conversations }) {
                               variant="light"
                               color={r.closed_as === "ghosted" ? "dark" : "gray"}
                             >
-                              {r.closed_as === "ghosted" ? "Ghosted" : "Not interested"}
+                              {r.closed_as === "ghosted"
+                                ? t("library.ghostedBadge")
+                                : t("library.notInterested")}
                             </Badge>
                           )}
                         </Group>
                         <Text size="xs" c="dimmed">
-                          {r.agency_name ?? r.company_name ?? "Independent"}
+                          {r.agency_name ?? r.company_name ?? t("library.independent")}
                         </Text>
                       </>
                     )}
@@ -185,12 +187,13 @@ function WhoTable({ data }: { data: Conversations }) {
 }
 
 function PassReasons({ data }: { data: Conversations }) {
+  const t = useT();
   if (!data.pass_reasons.length) return null;
   return (
     <Card withBorder>
-      <Title order={4}>Why you passed</Title>
+      <Title order={4}>{t("library.whyYouPassed")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        The reasons you gave for passing on pitched roles, newest first.
+        {t("library.whyYouPassedHint")}
       </Text>
       <Stack gap="xs">
         {data.pass_reasons.map((r) => (
@@ -201,7 +204,7 @@ function PassReasons({ data }: { data: Conversations }) {
               </Anchor>
               <Text size="sm" c="dimmed">
                 {r.company_name}
-                {r.person_name ? ` · from ${r.person_name}` : ""}
+                {r.person_name ? t("library.fromPerson", { name: r.person_name }) : ""}
                 {r.decided_on ? ` · ${formatDate(r.decided_on)}` : ""}
               </Text>
             </Group>
@@ -220,43 +223,52 @@ function PassReasons({ data }: { data: Conversations }) {
  * they pitched, which you applied for or passed on, and how the applications went.
  */
 export function ConversationsSection({ since }: { since?: string }) {
+  const t = useT();
   const { data, isLoading, isError } = useConversations(since);
   if (isLoading) return <Loader />;
-  if (isError || !data) return <Text c="red">Couldn't load recruiter conversations.</Text>;
-  const t = data.total;
+  if (isError || !data) return <Text c="red">{t("library.conversationsLoadError")}</Text>;
+  const total = data.total;
   return (
     <Stack>
       <Card withBorder>
-        <Title order={4}>Recruiter conversations</Title>
+        <Title order={4}>{t("library.conversationsTitle")}</Title>
         <Text size="sm" c="dimmed" mb="md">
-          A lot happens before an application: calls with people, and the roles they pitch. Calls count by
-          when they happen, roles by when you added them.
+          {t("library.conversationsHint")}
         </Text>
         <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="sm">
           <Stat
-            label="Calls held"
-            value={t.calls_held}
-            hint={t.calls_booked ? `${t.calls_booked} booked ahead` : undefined}
+            label={t("library.statCallsHeld")}
+            value={total.calls_held}
+            hint={total.calls_booked ? t("library.bookedAhead", { n: total.calls_booked }) : undefined}
           />
-          <Stat label="People" value={data.people_talked_to} hint="talked to or pitched by" />
-          <Stat label="Roles pitched" value={t.pitched} />
-          <Stat label="Applied" value={t.applied} hint={`${percent(t.apply_rate)} of roles decided`} />
-          <Stat label="Passed" value={t.passed} />
-          <Stat label="Still deciding" value={t.deciding} />
-          <Stat label="Interviews" value={t.interviewed} hint="pitched roles that got one" />
-          <Stat label="Offers" value={t.offers} hint="from pitched roles" />
-          <Stat label="Time to decide" value={days(t.median_decide_days)} hint="median, to apply or pass" />
-          <Stat label="Ghosted" value={t.ghosted} hint="applications from pitches" />
+          <Stat label={t("library.people")} value={data.people_talked_to} hint={t("library.hintTalked")} />
+          <Stat label={t("library.statRolesPitched")} value={total.pitched} />
+          <Stat
+            label={t("library.colApplied")}
+            value={total.applied}
+            hint={t("library.pctOfRolesDecided", { pct: percent(total.apply_rate) })}
+          />
+          <Stat label={t("library.colPassed")} value={total.passed} />
+          <Stat label={t("library.statStillDeciding")} value={total.deciding} />
+          <Stat label={t("library.colInterviews")} value={total.interviewed} hint={t("library.hintGotOne")} />
+          <Stat label={t("library.statOffers")} value={total.offers} hint={t("library.hintFromPitched")} />
+          <Stat
+            label={t("library.statTimeToDecide")}
+            value={days(total.median_decide_days)}
+            hint={t("library.hintMedian")}
+          />
+          <Stat label={t("library.ghostedBadge")} value={total.ghosted} hint={t("library.hintFromPitches")} />
         </SimpleGrid>
         <Title order={5} mt="lg" mb={4}>
-          Where pitched roles go
+          {t("library.wherePitchedGo")}
         </Title>
-        {t.pitched ? (
+        {total.pitched ? (
           <SankeyChart flow={data.flow} unit="role" />
         ) : (
           <Text size="sm" c="dimmed">
-            No roles pitched in this period. On someone's page, <b>Add roles from this call</b> for each role
-            they mention.
+            {t("library.noRolesPitched")}
+            <b>{t("library.addRolesFromCall")}</b>
+            {t("library.noRolesPitchedTail")}
           </Text>
         )}
       </Card>

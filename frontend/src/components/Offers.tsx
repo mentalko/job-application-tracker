@@ -34,6 +34,7 @@ import {
 } from "../api/offerHooks";
 import { useRoles } from "../api/hooks";
 import { formatDate } from "../utils/time";
+import { t, useT } from "../i18n";
 
 type Kind = "permanent" | "contract" | "fixed_term";
 type Num = number | string;
@@ -61,6 +62,9 @@ interface Values {
 const num = (v: Num) => (v === "" || v == null ? null : Number(v));
 const blank = (s: string) => s.trim() || null;
 const day = (v: string | null) => (v ? dayjs(v).format("YYYY-MM-DD") : null);
+/** The IR35 status as a word ("outside"), not the raw enum. */
+const ir35Word = (v: NonNullable<Offer["ir35"]>) =>
+  t(v === "outside" ? "plans.ir35Outside" : v === "inside" ? "plans.ir35Inside" : "plans.ir35Unknown");
 
 function fromOffer(o: Offer | null, defaultKind: Kind): Values {
   return {
@@ -99,9 +103,10 @@ export function OfferFormModal({
   defaultKind?: Kind;
 }) {
   const save = useSaveOffer();
+  const t = useT();
   const form = useForm<Values>({
     initialValues: fromOffer(offer, defaultKind),
-    validate: { currency: (v) => (!v || /^[A-Za-z]{3}$/.test(v) ? null : "Three letters, like GBP") },
+    validate: { currency: (v) => (!v || /^[A-Za-z]{3}$/.test(v) ? null : t("plans.threeLetters")) },
   });
   const contract = form.values.employmentType === "contract";
 
@@ -130,21 +135,26 @@ export function OfferFormModal({
   });
 
   return (
-    <Modal opened={opened} onClose={onClose} title={offer ? "Edit offer" : "Add an offer"} size="lg">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={offer ? t("plans.editOffer") : t("plans.addOfferTitle")}
+      size="lg"
+    >
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-end">
             <SegmentedControl
-              aria-label="Kind"
+              aria-label={t("plans.kindAria")}
               data={[
-                { value: "permanent", label: "Permanent" },
-                { value: "contract", label: "Contract" },
-                { value: "fixed_term", label: "Fixed term" },
+                { value: "permanent", label: t("plans.employmentPermanent") },
+                { value: "contract", label: t("plans.employmentContract") },
+                { value: "fixed_term", label: t("plans.employmentFixedTerm") },
               ]}
               {...form.getInputProps("employmentType")}
             />
             <Select
-              label="Status"
+              label={t("plans.statusLabel")}
               allowDeselect={false}
               data={Object.entries(STATUS_LABELS).map(([value, s]) => ({ value, label: s.label }))}
               {...form.getInputProps("status")}
@@ -153,25 +163,25 @@ export function OfferFormModal({
           {contract ? (
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <NumberInput
-                label="Day rate"
+                label={t("plans.dayRate")}
                 min={0}
                 thousandSeparator=","
                 data-autofocus
                 {...form.getInputProps("dayRate")}
               />
               <Select
-                label="IR35"
-                placeholder="Not set"
+                label={t("plans.colIr35")}
+                placeholder={t("plans.notSet")}
                 clearable
                 data={[
-                  { value: "outside", label: "Outside" },
-                  { value: "inside", label: "Inside" },
-                  { value: "unknown", label: "Unknown" },
+                  { value: "outside", label: t("plans.ir35OutsideOpt") },
+                  { value: "inside", label: t("plans.ir35InsideOpt") },
+                  { value: "unknown", label: t("plans.ir35UnknownOpt") },
                 ]}
                 {...form.getInputProps("ir35")}
               />
               <NumberInput
-                label="Length (months)"
+                label={t("plans.lengthMonths")}
                 min={0}
                 max={120}
                 {...form.getInputProps("contractMonths")}
@@ -181,20 +191,20 @@ export function OfferFormModal({
             <>
               <SimpleGrid cols={{ base: 1, sm: 3 }}>
                 <NumberInput
-                  label="Base salary"
+                  label={t("plans.baseSalary")}
                   min={0}
                   thousandSeparator=","
                   data-autofocus
                   {...form.getInputProps("salary")}
                 />
                 <NumberInput
-                  label="Bonus (expected, a year)"
+                  label={t("plans.bonusYear")}
                   min={0}
                   thousandSeparator=","
                   {...form.getInputProps("bonus")}
                 />
                 <NumberInput
-                  label="Employer pension (%)"
+                  label={t("plans.pensionPercent")}
                   min={0}
                   max={100}
                   decimalScale={1}
@@ -203,19 +213,19 @@ export function OfferFormModal({
               </SimpleGrid>
               <SimpleGrid cols={{ base: 1, sm: 3 }}>
                 <TextInput
-                  label="Equity"
-                  placeholder="0.1% over 4 years, 1-year cliff"
+                  label={t("plans.equity")}
+                  placeholder={t("plans.equityPlaceholder")}
                   {...form.getInputProps("equity")}
                 />
                 <NumberInput
-                  label="Equity worth (a year)"
-                  description="Your estimate"
+                  label={t("plans.equityWorth")}
+                  description={t("plans.yourEstimate")}
                   min={0}
                   thousandSeparator=","
                   {...form.getInputProps("equityValue")}
                 />
                 <NumberInput
-                  label="Holiday (days)"
+                  label={t("plans.holidayDays")}
                   min={0}
                   max={366}
                   {...form.getInputProps("holidayDays")}
@@ -223,7 +233,7 @@ export function OfferFormModal({
               </SimpleGrid>
               {form.values.employmentType === "fixed_term" && (
                 <NumberInput
-                  label="Length (months)"
+                  label={t("plans.lengthMonths")}
                   min={0}
                   max={120}
                   {...form.getInputProps("contractMonths")}
@@ -232,25 +242,25 @@ export function OfferFormModal({
             </>
           )}
           <SimpleGrid cols={{ base: 1, sm: 4 }}>
-            <TextInput label="Currency" maxLength={3} {...form.getInputProps("currency")} />
-            <DateInput label="Received" clearable {...form.getInputProps("receivedOn")} />
-            <DateInput label="Reply by" clearable {...form.getInputProps("respondBy")} />
-            <DateInput label="Start date" clearable {...form.getInputProps("startOn")} />
+            <TextInput label={t("plans.currency")} maxLength={3} {...form.getInputProps("currency")} />
+            <DateInput label={t("plans.received")} clearable {...form.getInputProps("receivedOn")} />
+            <DateInput label={t("plans.replyBy")} clearable {...form.getInputProps("respondBy")} />
+            <DateInput label={t("plans.startDate")} clearable {...form.getInputProps("startOn")} />
           </SimpleGrid>
           <Textarea
-            label="Benefits"
+            label={t("plans.benefits")}
             autosize
             minRows={2}
-            placeholder="Private health, £1k learning budget…"
+            placeholder={t("plans.benefitsPlaceholder")}
             {...form.getInputProps("benefits")}
           />
-          <Textarea label="Notes" autosize minRows={2} {...form.getInputProps("notes")} />
+          <Textarea label={t("plans.notes")} autosize minRows={2} {...form.getInputProps("notes")} />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {offer ? "Save offer" : "Add offer"}
+              {offer ? t("plans.saveOffer") : t("plans.addOffer")}
             </Button>
           </Group>
         </Stack>
@@ -263,20 +273,21 @@ export function OfferFormModal({
 export function offerFacts(o: Offer): string[] {
   const facts: string[] = [];
   if (o.value_basis === "day rate") {
-    if (o.ir35) facts.push(`IR35 ${o.ir35}`);
+    if (o.ir35) facts.push(t("plans.factIr35", { status: ir35Word(o.ir35) }));
   } else {
-    if (o.bonus) facts.push(`Bonus ${money(o.bonus, o.currency)}`);
-    if (o.pension_percent != null) facts.push(`Pension ${o.pension_percent}%`);
-    if (o.equity) facts.push(`Equity: ${o.equity}`);
-    if (o.holiday_days != null) facts.push(`${o.holiday_days} days' holiday`);
+    if (o.bonus) facts.push(t("plans.factBonus", { amount: money(o.bonus, o.currency) }));
+    if (o.pension_percent != null) facts.push(t("plans.factPension", { n: o.pension_percent }));
+    if (o.equity) facts.push(t("plans.factEquity", { value: o.equity }));
+    if (o.holiday_days != null) facts.push(t("plans.daysHoliday", { n: o.holiday_days }));
   }
-  if (o.contract_months) facts.push(`${o.contract_months} months`);
-  if (o.start_on) facts.push(`Starts ${formatDate(o.start_on)}`);
+  if (o.contract_months) facts.push(t("plans.monthsCount", { n: o.contract_months }));
+  if (o.start_on) facts.push(t("plans.startsOn", { date: formatDate(o.start_on) }));
   return facts;
 }
 
 /** Offers on an application, newest first; a revised offer goes on top. */
 export function OffersCard({ applicationId, roleId }: { applicationId: string; roleId: string }) {
+  const t = useT();
   const { data: offers } = useOffers({ application_id: applicationId, latest: false });
   const { data: roles } = useRoles();
   // A new offer starts as the kind of job the role is.
@@ -288,7 +299,7 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
       <Group justify="space-between" mb="sm">
         <Group gap="xs">
           <IconCash size={20} stroke={1.6} />
-          <Title order={4}>Offer</Title>
+          <Title order={4}>{t("plans.offerTitle")}</Title>
         </Group>
         <Button
           size="xs"
@@ -296,12 +307,12 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
           leftSection={<IconPlus size={14} />}
           onClick={() => setEditing("new")}
         >
-          {offers?.length ? "Add a revised offer" : "Add offer"}
+          {offers?.length ? t("plans.addRevisedOffer") : t("plans.addOffer")}
         </Button>
       </Group>
       {!offers?.length ? (
         <Text size="sm" c="dimmed">
-          No offer yet. When one comes in, add its pay and terms to compare it with others.
+          {t("plans.offersEmpty")}
         </Text>
       ) : (
         <Stack gap="sm">
@@ -316,16 +327,18 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
                     </Badge>
                     {i > 0 && (
                       <Badge size="sm" variant="outline" color="gray">
-                        Earlier offer
+                        {t("plans.earlierOffer")}
                       </Badge>
                     )}
                   </Group>
                   {o.annual_value != null && o.value_basis === "salary" && (
-                    <Text size="sm">Worth about {money(o.annual_value, o.currency)} a year in total</Text>
+                    <Text size="sm">
+                      {t("plans.worthTotal", { amount: money(o.annual_value, o.currency) })}
+                    </Text>
                   )}
                   {o.annual_value != null && o.value_basis === "day rate" && (
                     <Text size="sm">
-                      About {money(o.annual_value, o.currency)} a year at 220 working days
+                      {t("plans.worthDayRate", { amount: money(o.annual_value, o.currency) })}
                     </Text>
                   )}
                   {offerFacts(o).length > 0 && (
@@ -335,20 +348,24 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
                   )}
                   {o.respond_by && o.status === "pending" && (
                     <Text size="xs" c="orange">
-                      Reply by {formatDate(o.respond_by)}
+                      {t("plans.replyByDate", { date: formatDate(o.respond_by) })}
                     </Text>
                   )}
                 </Stack>
                 <Group gap={4} wrap="nowrap">
-                  <ActionIcon variant="subtle" aria-label="Edit offer" onClick={() => setEditing(o)}>
+                  <ActionIcon
+                    variant="subtle"
+                    aria-label={t("plans.editOffer")}
+                    onClick={() => setEditing(o)}
+                  >
                     <IconPencil size={16} />
                   </ActionIcon>
                   <ActionIcon
                     variant="subtle"
                     color="red"
-                    aria-label="Delete offer"
+                    aria-label={t("plans.deleteOfferAria")}
                     onClick={() => {
-                      if (window.confirm("Delete this offer?")) remove.mutate(o.id);
+                      if (window.confirm(t("plans.deleteOfferConfirm"))) remove.mutate(o.id);
                     }}
                   >
                     <IconTrash size={16} />

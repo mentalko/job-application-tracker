@@ -1,6 +1,8 @@
 import { Group, Text, Tooltip } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 
+import { useT } from "../i18n";
+
 interface Health {
   status: string;
   version: string;
@@ -17,6 +19,7 @@ async function fetchHealth(): Promise<Health> {
 
 /** A small connection indicator for the navbar footer. */
 export function ApiStatus() {
+  const t = useT();
   const { data, isError, isPending } = useQuery({
     queryKey: ["health"],
     queryFn: fetchHealth,
@@ -25,13 +28,13 @@ export function ApiStatus() {
   });
 
   const [color, label, detail] = isPending
-    ? ["gray", "Connecting…", "Checking the local API"]
+    ? ["gray", t("shell.api.checking"), t("shell.api.checkingHint")]
     : isError || !data
-      ? ["red", "API offline", "Start it with `uv run jat serve`"]
+      ? [t("shell.api.offline"), t("shell.api.offlineHint")]
       : [
           data.git_repo ? "teal" : "yellow",
-          "Connected",
-          `v${data.version} · schema ${data.schema ?? "?"}${data.git_repo ? " · backups on" : " · data dir isn't a git repo"}`,
+          t("shell.api.connected"),
+          `${t("shell.api.version", { version: data.version, schema: data.schema ?? "?" })}${data.git_repo ? t("shell.api.backups") : t("shell.api.noGitRepo")}`,
         ];
 
   return (

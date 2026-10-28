@@ -5,7 +5,8 @@ import { useState } from "react";
 import type { ApplicationRow } from "../api/client";
 import { useContacts } from "../api/hooks";
 import { useDeleteInterview, useInterviews, type Interview } from "../api/interviewHooks";
-import { formatDateTime } from "../utils/time";
+import { formatDateTime, localeTag } from "../utils/time";
+import { t, useT } from "../i18n";
 import { InterviewFormModal } from "./InterviewFormModal";
 import { RescheduledBadge } from "./Reschedule";
 
@@ -15,20 +16,21 @@ type RoundLike = { status: string; starts_at: string | null; deadline_at: string
 export function roundStatus(round: RoundLike): { label: string; color: string } {
   const when = round.starts_at ?? round.deadline_at;
   if (round.status === "scheduled" && when && new Date(when) < new Date()) {
-    return { label: "Awaiting outcome", color: "orange" };
+    return { label: t("plans.awaitingOutcome"), color: "orange" };
   }
   return (
-    { done: { label: "Done", color: "teal" }, cancelled: { label: "Cancelled", color: "gray" } }[
-      round.status
-    ] ?? {
-      label: "Coming up",
+    {
+      done: { label: t("plans.done"), color: "teal" },
+      cancelled: { label: t("plans.cancelled"), color: "gray" },
+    }[round.status] ?? {
+      label: t("plans.roundComingUp"),
       color: "blue",
     }
   );
 }
 
 const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  new Date(iso).toLocaleDateString(localeTag(), { weekday: "short", day: "numeric", month: "short" });
 
 /**
  * The round an application is at ("Round 2 · System design test · Thu 2 Oct"), for cards, rows
@@ -75,6 +77,7 @@ function InterviewItem({
   names: Map<string, string>;
   onEdit: () => void;
 }) {
+  const t = useT();
   const remove = useDeleteInterview();
   const when = interview.starts_at ?? interview.deadline_at;
   const people = interview.interviewer_ids.map((id) => names.get(id)).filter(Boolean);
@@ -92,16 +95,16 @@ function InterviewItem({
           <Text size="sm" c="dimmed">
             {[
               when
-                ? `${interview.deadline_at && !interview.starts_at ? "Due " : ""}${formatDateTime(when)}`
-                : "Not booked yet",
-              people.length ? `with ${people.join(", ")}` : null,
+                ? `${interview.deadline_at && !interview.starts_at ? t("plans.duePrefix") : ""}${formatDateTime(when)}`
+                : t("plans.notBookedYet"),
+              people.length ? t("plans.withPeople", { names: people.join(", ") }) : null,
             ]
               .filter(Boolean)
               .join(" · ")}
           </Text>
           {interview.meeting_url && (
             <Anchor href={interview.meeting_url} target="_blank" rel="noreferrer" size="sm">
-              Join link
+              {t("plans.joinLink")}
             </Anchor>
           )}
           {interview.debrief && (
@@ -111,20 +114,26 @@ function InterviewItem({
           )}
         </Stack>
         <Group gap={2} wrap="nowrap">
-          <Tooltip label="Edit">
-            <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={`Edit ${interview.label}`}>
+          <Tooltip label={t("shared.edit")}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={onEdit}
+              aria-label={t("plans.editNamed", { name: interview.label })}
+            >
               <IconPencil size={16} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Delete">
+          <Tooltip label={t("shared.delete")}>
             <ActionIcon
               variant="subtle"
               color="gray"
               loading={remove.isPending}
               onClick={() => {
-                if (window.confirm(`Delete ${interview.label}?`)) remove.mutate(interview.id);
+                if (window.confirm(t("plans.deleteNamedQ", { name: interview.label })))
+                  remove.mutate(interview.id);
               }}
-              aria-label={`Delete ${interview.label}`}
+              aria-label={t("shared.deleteNamed", { name: interview.label })}
             >
               <IconTrash size={16} />
             </ActionIcon>
@@ -137,6 +146,7 @@ function InterviewItem({
 
 /** Every interview round for one application, in round order, with add and edit. */
 export function InterviewsCard({ applicationId }: { applicationId: string }) {
+  const t = useT();
   const { data: interviews } = useInterviews({ application_id: applicationId });
   const { data: contacts } = useContacts();
   const [editing, setEditing] = useState<Interview | null | undefined>(undefined); // undefined = closed, null = new
@@ -148,14 +158,14 @@ export function InterviewsCard({ applicationId }: { applicationId: string }) {
     <Card withBorder>
       <Stack gap="sm">
         <Group justify="space-between">
-          <Title order={4}>Interviews</Title>
+          <Title order={4}>{t("plans.interviews")}</Title>
           <Button
             size="xs"
             variant="light"
             leftSection={<IconPlus size={14} />}
             onClick={() => setEditing(null)}
           >
-            Add round {nextRound}
+            {t("plans.addRoundN", { n: nextRound })}
           </Button>
         </Group>
         {rounds.map((i) => (
@@ -163,8 +173,7 @@ export function InterviewsCard({ applicationId }: { applicationId: string }) {
         ))}
         {interviews && !rounds.length && (
           <Text size="sm" c="dimmed">
-            No interviews yet. Add each round as it's booked: "Round 1 · Recruiter screen", "Round 2 ·
-            Engineering manager chat"…
+            {t("plans.interviewsEmpty")}
           </Text>
         )}
       </Stack>

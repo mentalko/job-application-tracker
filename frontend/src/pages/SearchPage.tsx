@@ -21,26 +21,31 @@ import { Link, useRouterState } from "@tanstack/react-router";
 
 import { PersonMarks } from "../components/GhostMark";
 import { useSearchResults, type SearchHit } from "../api/searchHooks";
+import { useT, type Key } from "../i18n";
 
-const KINDS: Record<string, { label: string; icon: Icon }> = {
-  application: { label: "Application", icon: IconBriefcase },
-  role: { label: "Role", icon: IconTargetArrow },
-  company: { label: "Company", icon: IconBuilding },
-  agency: { label: "Agency", icon: IconBuildingSkyscraper },
-  contact: { label: "Person", icon: IconUser },
-  interview: { label: "Interview", icon: IconCalendarEvent },
-  meeting: { label: "Call", icon: IconPhone },
-  todo: { label: "To-do", icon: IconListCheck },
-  offer: { label: "Offer", icon: IconCash },
-  timeline: { label: "Timeline", icon: IconHistory },
-  note: { label: "Note", icon: IconNotes },
-  document: { label: "Document", icon: IconFileText },
-  file: { label: "File", icon: IconFile },
-  link: { label: "Link", icon: IconLink },
+const KINDS: Record<string, { labelKey: Key; icon: Icon }> = {
+  application: { labelKey: "insights.kindApplication", icon: IconBriefcase },
+  role: { labelKey: "insights.role", icon: IconTargetArrow },
+  company: { labelKey: "insights.company", icon: IconBuilding },
+  agency: { labelKey: "insights.agency", icon: IconBuildingSkyscraper },
+  contact: { labelKey: "insights.person", icon: IconUser },
+  interview: { labelKey: "insights.kindInterview", icon: IconCalendarEvent },
+  meeting: { labelKey: "insights.kindMeeting", icon: IconPhone },
+  todo: { labelKey: "insights.kindTodo", icon: IconListCheck },
+  offer: { labelKey: "insights.kindOffer", icon: IconCash },
+  timeline: { labelKey: "insights.timeline", icon: IconHistory },
+  note: { labelKey: "insights.kindNote", icon: IconNotes },
+  document: { labelKey: "insights.kindDocument", icon: IconFileText },
+  file: { labelKey: "insights.kindFile", icon: IconFile },
+  link: { labelKey: "insights.kindLink", icon: IconLink },
 };
 
 function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
-  const kind = KINDS[hit.kind] ?? { label: hit.kind, icon: IconSearch };
+  const t = useT();
+  const kind: { labelKey: Key | null; icon: Icon } = KINDS[hit.kind] ?? {
+    labelKey: null,
+    icon: IconSearch,
+  };
   // In-app paths open in the app; files and outside links in a new tab (web addresses only).
   const external = !hit.link.startsWith("/") || hit.link.startsWith("/api/");
   const safe = hit.link.startsWith("/") || /^https?:\/\//i.test(hit.link);
@@ -69,11 +74,11 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
             </Anchor>
           )}
           <Badge size="xs" variant="light" color="gray">
-            {kind.label}
+            {kind.labelKey ? t(kind.labelKey) : hit.kind}
           </Badge>
           {hit.archived && (
             <Badge size="xs" variant="outline" color="gray">
-              Archived
+              {t("insights.archived")}
             </Badge>
           )}
         </Group>
@@ -94,6 +99,7 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
 
 /** Search results for ?q=, from the header box (P6 `search`). */
 export function SearchPage() {
+  const t = useT();
   const q = useRouterState({ select: (s) => (s.location.search as { q?: string }).q ?? "" });
   const { data: hits, isFetching, isError } = useSearchResults(q);
   const words = q.split(/\s+/).filter(Boolean);
@@ -102,27 +108,25 @@ export function SearchPage() {
     <Stack maw={900}>
       <Group gap="sm">
         <IconSearch size={26} stroke={1.6} />
-        <Title order={2}>{q ? `Results for “${q}”` : "Search"}</Title>
+        <Title order={2}>{q ? t("insights.resultsFor", { q }) : t("insights.searchTitle")}</Title>
         {isFetching && <Loader size="xs" />}
       </Group>
       {!q ? (
         <Text c="dimmed" size="sm">
-          Type in the search box at the top (or press <b>/</b>) to search applications, people, notes,
-          interview debriefs, calls, offers, emails, files and links.
+          {t("insights.searchHowA")} <b>/</b>
+          {t("insights.searchHowB")}
         </Text>
       ) : isError ? (
-        <Text c="red">Search didn't work. Is the tracker running?</Text>
+        <Text c="red">{t("insights.searchError")}</Text>
       ) : !hits ? null : !hits.length ? (
         <Text c="dimmed" size="sm">
-          Nothing matches every word of “{q}”. Try fewer or shorter words.
+          {t("insights.noResults", { q })}
         </Text>
       ) : (
         <Card withBorder>
           <Stack gap="md">
             <Text size="xs" c="dimmed">
-              {hits.length === 50
-                ? "The first 50 results"
-                : `${hits.length} result${hits.length === 1 ? "" : "s"}`}
+              {hits.length === 50 ? t("insights.first50") : t("insights.countResults", { n: hits.length })}
             </Text>
             {hits.map((h) => (
               <HitRow key={`${h.kind}:${h.id}`} hit={h} words={words} />

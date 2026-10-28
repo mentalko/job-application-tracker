@@ -28,12 +28,17 @@ import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
 import { ago, formatDate } from "../utils/time";
+import { useT, type Key } from "../i18n";
 
-const WORK_MODE: Record<string, string> = { remote: "Remote", hybrid: "Hybrid", office: "In the office" };
-const EMPLOYMENT: Record<string, string> = {
-  permanent: "Permanent",
-  contract: "Contract",
-  fixed_term: "Fixed term",
+const WORK_MODE: Record<string, Key> = {
+  remote: "plans.workRemote",
+  hybrid: "plans.workHybrid",
+  office: "plans.workOfficeFull",
+};
+const EMPLOYMENT: Record<string, Key> = {
+  permanent: "plans.employmentPermanent",
+  contract: "plans.employmentContract",
+  fixed_term: "plans.employmentFixedTerm",
 };
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -51,6 +56,7 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 
 /** A role's page: what it is, where it came from, what you decided, and everything kept on it. */
 export function RolePage() {
+  const t = useT();
   const { roleId } = useParams({ from: "/roles/$roleId" });
   const { data: role, isLoading, isError } = useRoleSummary(roleId);
   const { data: rows } = useApplications({});
@@ -59,7 +65,7 @@ export function RolePage() {
   const [editing, setEditing] = useState(false);
   const router = useRouter();
 
-  if (isError) return <Alert color="red">Couldn't load this role. It may have been deleted.</Alert>;
+  if (isError) return <Alert color="red">{t("plans.roleLoadError")}</Alert>;
   if (isLoading || !role) return <Loader />;
   const status = roleBadge(role);
   const money = pay(role);
@@ -67,13 +73,15 @@ export function RolePage() {
   const terms = [
     role.employment_type ? EMPLOYMENT[role.employment_type] : null,
     role.work_mode ? WORK_MODE[role.work_mode] : null,
-  ].filter(Boolean);
+  ]
+    .filter((key): key is Key => !!key)
+    .map((key) => t(key));
 
   return (
     <Stack maw={1200}>
       <Anchor component={Link} to="/roles" size="sm">
         <Group gap={4}>
-          <IconArrowLeft size={14} /> All roles
+          <IconArrowLeft size={14} /> {t("plans.allRoles")}
         </Group>
       </Anchor>
       <Group justify="space-between" wrap="wrap" align="flex-start">
@@ -97,14 +105,14 @@ export function RolePage() {
             leftSection={<IconPencil size={14} />}
             onClick={() => setEditing(true)}
           >
-            Edit
+            {t("shared.edit")}
           </Button>
           {role.application_ids.length === 0 && (
             <DeleteButton
               kind="role"
               id={role.id}
               name={role.title}
-              confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
+              confirm={t("plans.deleteRoleConfirm", { title: role.title, company: role.company_name })}
               onDeleted={() => router.history.push("/roles")}
             />
           )}
@@ -117,12 +125,12 @@ export function RolePage() {
           <Stack>
             <Card withBorder>
               <Stack gap="xs">
-                <Title order={4}>About the role</Title>
-                {money && <Fact label="Pay">{money}</Fact>}
-                {terms.length > 0 && <Fact label="Terms">{terms.join(" · ")}</Fact>}
-                {role.location && <Fact label="Location">{role.location}</Fact>}
+                <Title order={4}>{t("plans.aboutRole")}</Title>
+                {money && <Fact label={t("plans.pay")}>{money}</Fact>}
+                {terms.length > 0 && <Fact label={t("plans.terms")}>{terms.join(" · ")}</Fact>}
+                {role.location && <Fact label={t("plans.location")}>{role.location}</Fact>}
                 {role.url && /^https?:\/\//i.test(role.url) && (
-                  <Fact label="Job ad">
+                  <Fact label={t("plans.factJobAd")}>
                     <Anchor href={role.url} target="_blank" rel="noreferrer noopener" size="sm">
                       <Group gap={4} wrap="nowrap">
                         {role.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
@@ -132,38 +140,38 @@ export function RolePage() {
                   </Fact>
                 )}
                 {role.contact_id && (
-                  <Fact label="From">
+                  <Fact label={t("plans.factFrom")}>
                     <Anchor component={Link} to={`/people/${role.contact_id}`} size="sm">
                       <PersonName id={role.contact_id} name={role.contact_name ?? ""} />
                     </Anchor>
                     {role.agency_name && role.agency_id && (
                       <>
-                        {" at "}
+                        {t("plans.at")}
                         <Anchor component={Link} to={`/agencies/${role.agency_id}`} size="sm">
                           {role.agency_name}
                         </Anchor>
                       </>
                     )}
-                    {role.meeting_label ? ` · on ${role.meeting_label}` : ""}
+                    {role.meeting_label ? t("plans.onMeeting", { label: role.meeting_label }) : ""}
                   </Fact>
                 )}
-                <Fact label="Added">{formatDate(role.created_at.slice(0, 10))}</Fact>
+                <Fact label={t("plans.factAdded")}>{formatDate(role.created_at.slice(0, 10))}</Fact>
                 {role.status === "passed" && (
-                  <Fact label="Passed">
-                    {role.decided_on ? formatDate(role.decided_on) : "Yes"}
-                    {role.decision_reason ? `: ${role.decision_reason}` : ""}
+                  <Fact label={t("plans.passed")}>
+                    {role.decided_on ? formatDate(role.decided_on) : t("plans.passedYes")}
+                    {role.decision_reason ? t("plans.reasonSuffix", { reason: role.decision_reason }) : ""}
                   </Fact>
                 )}
                 {role.description ? (
                   <div>
                     <Text size="sm" fw={600} mb={4}>
-                      What they said
+                      {t("plans.whatTheySaid")}
                     </Text>
                     <Markdown>{role.description}</Markdown>
                   </div>
                 ) : (
                   <Text size="sm" c="dimmed">
-                    Edit adds what they said about it: team, stack, why it's open.
+                    {t("plans.whatTheySaidEmpty")}
                   </Text>
                 )}
               </Stack>
@@ -171,7 +179,7 @@ export function RolePage() {
             {applications.length > 0 && (
               <Card withBorder>
                 <Title order={4} mb="sm">
-                  {applications.length === 1 ? "Your application" : "Applications"}
+                  {t("plans.yourApplications", { n: applications.length })}
                 </Title>
                 <Table verticalSpacing="xs">
                   <Table.Tbody>
@@ -184,12 +192,13 @@ export function RolePage() {
                           <Text size="xs" c="dimmed">
                             {a.recruiter_name ? (
                               <>
-                                via <PersonName id={a.recruiter_id} name={a.recruiter_name} size={12} />
+                                {t("plans.via")}{" "}
+                                <PersonName id={a.recruiter_id} name={a.recruiter_name} size={12} />
                               </>
                             ) : (
-                              "Direct"
+                              t("plans.direct")
                             )}
-                            {a.applied_on ? ` · applied ${formatDate(a.applied_on)}` : ""}
+                            {a.applied_on ? t("plans.appliedOnDate", { date: formatDate(a.applied_on) }) : ""}
                           </Text>
                         </Table.Td>
                         <Table.Td>
@@ -212,11 +221,7 @@ export function RolePage() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack>
             <TodosCard entityType="role" entityId={role.id} />
-            <AttachmentsCard
-              entityType="role"
-              entityId={role.id}
-              empty="Drop the job description here, or a brief. Files here show on the application too, once you apply."
-            />
+            <AttachmentsCard entityType="role" entityId={role.id} empty={t("plans.roleFilesEmpty")} />
             <LinksCard entityType="role" entityId={role.id} />
           </Stack>
         </Grid.Col>

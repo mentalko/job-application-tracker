@@ -38,6 +38,7 @@ import {
 } from "../api/roleHooks";
 import type { Schemas } from "../api/client";
 import { beforeApplied } from "../utils/applied";
+import { t, useT } from "../i18n";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
@@ -65,13 +66,20 @@ interface Values {
 
 const blank = (s: string) => s.trim() || null;
 const num = (v: number | string) => (v === "" || v == null ? null : Number(v));
-const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://");
+const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : t("plans.linkInvalid"));
 
 /** "£600 a day", "£80k–£95k": what it pays, if you know. */
 export function pay(role: RoleSummary): string | null {
   const k = (n: number) => (n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`);
-  if (role.day_rate)
-    return `£${role.day_rate} a day${role.ir35 && role.ir35 !== "unknown" ? `, ${role.ir35} IR35` : ""}`;
+  if (role.day_rate) {
+    const ir35 =
+      role.ir35 && role.ir35 !== "unknown"
+        ? t(role.ir35 === "outside" ? "plans.ir35Outside" : "plans.ir35Inside")
+        : null;
+    return ir35
+      ? t("plans.payDayRateIr35", { n: role.day_rate, ir35 })
+      : t("plans.payDayRate", { n: role.day_rate });
+  }
   if (role.salary_min && role.salary_max) return `${k(role.salary_min)}–${k(role.salary_max)}`;
   if (role.salary_min ?? role.salary_max) return k((role.salary_min ?? role.salary_max)!);
   return null;
@@ -102,6 +110,7 @@ export function RoleFormModal({
   const createCompany = useCreateCompany();
   const save = useSaveRole();
   const uploadTo = useUploadFilesTo();
+  const t = useT();
   const [files, setFiles] = useState<File[]>([]);
   const form = useForm<Values>({
     initialValues: {
@@ -120,8 +129,8 @@ export function RoleFormModal({
       description: role?.description ?? "",
     },
     validate: {
-      companyId: (v) => (v ? null : "Which company? Type a new name to add it."),
-      title: (v) => (v.trim() ? null : "What's the role?"),
+      companyId: (v) => (v ? null : t("plans.companyRequired")),
+      title: (v) => (v.trim() ? null : t("plans.titleRequired")),
       url: isLink,
     },
   });
@@ -177,18 +186,20 @@ export function RoleFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={role ? `Edit ${role.title}` : "Add a role to decide on"}
+      title={role ? t("plans.editNamed", { name: role.title }) : t("plans.addRoleToDecide")}
       size="lg"
     >
       <form onSubmit={submit}>
         <Stack>
           <Text size="sm" c="dimmed">
-            A role you might go for. It waits under <b>Roles</b> until you apply or pass.
+            {t("plans.roleIntroA")}
+            <b>{t("plans.roles")}</b>
+            {t("plans.roleIntroB")}
           </Text>
           <Group grow align="flex-start">
             <CreatableSelect
-              label="Company"
-              placeholder="Pick or type a new one"
+              label={t("plans.companyLabel")}
+              placeholder={t("plans.pickOrTypeNew")}
               items={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
               value={form.values.companyId}
               onChange={(v) => form.setFieldValue("companyId", v)}
@@ -197,12 +208,16 @@ export function RoleFormModal({
               error={form.errors.companyId}
               data-autofocus
             />
-            <TextInput label="Role" placeholder="Platform Engineer" {...form.getInputProps("title")} />
+            <TextInput
+              label={t("plans.roleLabel")}
+              placeholder={t("plans.platformEngineer")}
+              {...form.getInputProps("title")}
+            />
           </Group>
           <Group grow align="flex-start">
             <Select
-              label="Who told you about it"
-              placeholder="No one: you found it"
+              label={t("plans.whoToldYou")}
+              placeholder={t("plans.noOneFoundIt")}
               searchable
               clearable
               data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
@@ -213,8 +228,8 @@ export function RoleFormModal({
               }}
             />
             <Select
-              label="On which call"
-              placeholder={form.values.contactId ? "Not from a call" : "Pick who first"}
+              label={t("plans.onWhichCall")}
+              placeholder={form.values.contactId ? t("plans.notFromACall") : t("plans.pickWhoFirst")}
               clearable
               disabled={!form.values.contactId}
               data={(theirCalls ?? []).map((m) => ({
@@ -229,31 +244,33 @@ export function RoleFormModal({
             form.values.contactId &&
             form.values.contactId !== role.contact_id && (
               <Text size="xs" c="dimmed">
-                Saving also gives this role's open applications the new person where they fit how you applied
-                (through their agency, or someone at the company for a direct one), noted on their timelines;
-                others keep theirs.
+                {t("plans.contactChangeNote")}
               </Text>
             )}
-          <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("url")} />
+          <TextInput label={t("plans.jobAdLink")} placeholder="https://…" {...form.getInputProps("url")} />
           <Group grow align="flex-start">
-            <TextInput label="Location" placeholder="London" {...form.getInputProps("location")} />
+            <TextInput
+              label={t("plans.location")}
+              placeholder={t("plans.london")}
+              {...form.getInputProps("location")}
+            />
             <Select
-              label="Work mode"
+              label={t("plans.workMode")}
               clearable
               data={[
-                { value: "remote", label: "Remote" },
-                { value: "hybrid", label: "Hybrid" },
-                { value: "office", label: "Office" },
+                { value: "remote", label: t("plans.workRemote") },
+                { value: "hybrid", label: t("plans.workHybrid") },
+                { value: "office", label: t("plans.workOffice") },
               ]}
               {...form.getInputProps("workMode")}
             />
             <Select
-              label="Type"
+              label={t("plans.typeLabel")}
               clearable
               data={[
-                { value: "permanent", label: "Permanent" },
-                { value: "contract", label: "Contract" },
-                { value: "fixed_term", label: "Fixed term" },
+                { value: "permanent", label: t("plans.employmentPermanent") },
+                { value: "contract", label: t("plans.employmentContract") },
+                { value: "fixed_term", label: t("plans.employmentFixedTerm") },
               ]}
               {...form.getInputProps("employment")}
             />
@@ -261,18 +278,18 @@ export function RoleFormModal({
           {contract ? (
             <Group grow align="flex-start">
               <NumberInput
-                label="Day rate (£)"
+                label={t("plans.dayRateGbp")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("dayRate")}
               />
               <Select
-                label="IR35"
+                label={t("plans.ir35Label")}
                 clearable
                 data={[
-                  { value: "outside", label: "Outside" },
-                  { value: "inside", label: "Inside" },
-                  { value: "unknown", label: "Not sure" },
+                  { value: "outside", label: t("plans.ir35OutsideOpt") },
+                  { value: "inside", label: t("plans.ir35InsideOpt") },
+                  { value: "unknown", label: t("plans.ir35NotSure") },
                 ]}
                 {...form.getInputProps("ir35")}
               />
@@ -280,13 +297,13 @@ export function RoleFormModal({
           ) : (
             <Group grow align="flex-start">
               <NumberInput
-                label="Salary from (£)"
+                label={t("plans.salaryFrom")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("salaryMin")}
               />
               <NumberInput
-                label="Salary to (£)"
+                label={t("plans.salaryTo")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("salaryMax")}
@@ -294,17 +311,17 @@ export function RoleFormModal({
             </Group>
           )}
           <Textarea
-            label="Notes"
-            description="What they said about it: team, stack, why it's open."
+            label={t("plans.notes")}
+            description={t("plans.notesDescription")}
             autosize
             minRows={2}
             {...form.getInputProps("description")}
           />
           {!role && (
             <FileInput
-              label="Job description or other files"
-              description="Optional: PDFs, documents. Kept with the role, and on the application once you apply."
-              placeholder="Choose files"
+              label={t("plans.filesLabel")}
+              description={t("plans.filesDescription")}
+              placeholder={t("plans.chooseFiles")}
               multiple
               clearable
               value={files}
@@ -314,11 +331,11 @@ export function RoleFormModal({
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose} style={{ order: 0 }}>
-              Cancel
+              {t("shared.cancel")}
             </Button>
             {/* "Add role" first: pressing Enter submits with the first submit button. */}
             <Button type="submit" loading={save.isPending} style={{ order: 2 }}>
-              {role ? "Save" : "Add role"}
+              {role ? t("plans.save") : t("plans.addRole")}
             </Button>
             {!role && (
               <Button
@@ -328,7 +345,7 @@ export function RoleFormModal({
                 data-another="yes"
                 style={{ order: 1 }}
               >
-                Add and add another
+                {t("plans.addAndAnother")}
               </Button>
             )}
           </Group>
@@ -352,15 +369,20 @@ export function ApplyModal({
   const { data: workflow } = useWorkflow();
   const apply = useApplyForRole();
   const router = useRouter();
+  const t = useT();
   const [picked, setPicked] = useState<string | null>(null);
   const [appliedOn, setAppliedOn] = useState<string | null>(interested ? null : dayjs().format("YYYY-MM-DD"));
   const ghost =
-    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
+    (useFavourite()(role.contact_id) ? " ★" : "") +
+    (useGhosted()(role.contact_id) ? t("plans.ghostedSuffix") : "");
   const how = role.agency_id
-    ? `Through ${role.agency_name}${role.contact_name ? ` (${role.contact_name}${ghost})` : ""}`
+    ? t("plans.throughAgency", {
+        agency: role.agency_name ?? "",
+        contact: role.contact_name ? ` (${role.contact_name}${ghost})` : "",
+      })
     : role.contact_name
-      ? `Directly, with ${role.contact_name}${ghost} as your contact`
-      : "Directly";
+      ? t("plans.directWith", { who: `${role.contact_name}${ghost}` })
+      : t("plans.directly");
   const hasApplied = workflow?.stages.some((s) => s.id === "applied");
   const stage = picked ?? (!interested && hasApplied ? "applied" : (workflow?.initial ?? null));
   // The applied date follows the stage (none before Applied, today from Applied on), until you
@@ -397,35 +419,39 @@ export function ApplyModal({
     <Modal
       opened
       onClose={onClose}
-      title={`${interested ? "Interested" : "Apply"}: ${role.title} at ${role.company_name}`}
+      title={
+        interested
+          ? t("plans.interestedTitle", { title: role.title, company: role.company_name })
+          : t("plans.applyTitle", { title: role.title, company: role.company_name })
+      }
     >
       <Stack>
         <Text size="sm">{how}.</Text>
         <Group grow align="flex-start">
           <Select
-            label="Stage"
+            label={t("plans.stageLabel")}
             data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
             value={stage}
             onChange={setStage}
             allowDeselect={false}
           />
           <DateInput
-            label="Applied on"
+            label={t("plans.appliedOn")}
             clearable
             value={appliedOn}
             onChange={(v) => {
               setDateTouched(true);
               setAppliedOn(v);
             }}
-            placeholder="Not yet"
+            placeholder={t("plans.notYet")}
           />
         </Group>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("shared.cancel")}
           </Button>
           <Button onClick={submit} loading={apply.isPending}>
-            Create application
+            {t("plans.createApplication")}
           </Button>
         </Group>
       </Stack>
@@ -436,13 +462,18 @@ export function ApplyModal({
 /** Pass on a role, with an optional reason (it's kept, under Passed). */
 export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () => void }) {
   const save = useSaveRole();
+  const t = useT();
   const [reason, setReason] = useState("");
   return (
-    <Modal opened onClose={onClose} title={`Pass on ${role.title} at ${role.company_name}`}>
+    <Modal
+      opened
+      onClose={onClose}
+      title={t("plans.passTitle", { title: role.title, company: role.company_name })}
+    >
       <Stack>
         <Textarea
-          label="Why? (optional)"
-          placeholder="Office five days a week, too junior, rate too low…"
+          label={t("plans.passWhy")}
+          placeholder={t("plans.passPlaceholder")}
           autosize
           minRows={2}
           value={reason}
@@ -451,7 +482,7 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
         />
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("shared.cancel")}
           </Button>
           <Button
             color="gray"
@@ -463,7 +494,7 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
               )
             }
           >
-            Pass
+            {t("plans.pass")}
           </Button>
         </Group>
       </Stack>
@@ -476,13 +507,14 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
 export function RoleActions({ role }: { role: RoleSummary }) {
   const [open, setOpen] = useState<"apply" | "interested" | "pass" | null>(null);
   const save = useSaveRole();
+  const t = useT();
   const { data: workflow } = useWorkflow();
   // Only when your workflow starts before Applied (it does by default: Interested).
   const canBeInterested = beforeApplied(workflow, workflow?.initial ?? null);
   if (role.application_ids.length > 0)
     return (
       <Anchor component={Link} to={`/applications/${role.application_ids.at(-1)}`} size="xs">
-        Open application
+        {t("plans.openApplication")}
       </Anchor>
     );
   return (
@@ -493,9 +525,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
             size="compact-xs"
             variant="light"
             onClick={() => setOpen("apply")}
-            aria-label={`Apply: ${role.title}`}
+            aria-label={t("plans.applyAria", { name: role.title })}
           >
-            Apply
+            {t("plans.apply")}
           </Button>
           {canBeInterested && (
             <Button
@@ -503,9 +535,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
               variant="light"
               color="cyan"
               onClick={() => setOpen("interested")}
-              aria-label={`Interested: ${role.title}`}
+              aria-label={t("plans.interestedAria", { name: role.title })}
             >
-              Interested
+              {t("plans.interested")}
             </Button>
           )}
           <Button
@@ -513,9 +545,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
             variant="subtle"
             color="gray"
             onClick={() => setOpen("pass")}
-            aria-label={`Pass: ${role.title}`}
+            aria-label={t("plans.passAria", { name: role.title })}
           >
-            Pass
+            {t("plans.pass")}
           </Button>
         </>
       ) : (
@@ -525,9 +557,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
           color="gray"
           loading={save.isPending}
           onClick={() => save.mutate({ id: role.id, body: { decision: null } })}
-          aria-label={`Reconsider: ${role.title}`}
+          aria-label={t("plans.reconsiderAria", { name: role.title })}
         >
-          Reconsider
+          {t("plans.reconsider")}
         </Button>
       )}
       {open === "apply" && <ApplyModal role={role} onClose={() => setOpen(null)} />}
@@ -539,15 +571,17 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 
 /** One role: what, where, who pitched it, pay, status and what to do next. */
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
+  const t = useT();
   const ghost =
-    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
+    (useFavourite()(role.contact_id) ? " ★" : "") +
+    (useGhosted()(role.contact_id) ? t("plans.ghostedSuffix") : "");
   const status = roleBadge(role);
   const money = pay(role);
   const [editing, setEditing] = useState(false);
   const [addingTodo, setAddingTodo] = useState(false);
   // All open to-dos, one shared request, picked out per role.
   const { data: openTodos } = useTodos();
-  const todos = (openTodos ?? []).filter((t) => t.entity_type === "role" && t.entity_id === role.id);
+  const todos = (openTodos ?? []).filter((todo) => todo.entity_type === "role" && todo.entity_id === role.id);
   // Every role's files, one shared request, picked out per role.
   const { data: roleFiles } = useRoleFiles();
   const files = (roleFiles ?? []).filter((f) => f.entity_id === role.id);
@@ -575,7 +609,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
                   c="dimmed"
                   fz="xs"
                   role="img"
-                  aria-label={`${files.length} file${files.length === 1 ? "" : "s"} on ${role.title}`}
+                  aria-label={t("plans.filesOnRole", { n: files.length, title: role.title })}
                 >
                   <IconPaperclip size={12} />
                   {files.length}
@@ -589,12 +623,25 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
           <Text size="xs" c="dimmed">
             {[
               money,
-              role.work_mode,
+              role.work_mode
+                ? t(
+                    role.work_mode === "remote"
+                      ? "plans.modeRemote"
+                      : role.work_mode === "hybrid"
+                        ? "plans.modeHybrid"
+                        : "plans.modeOffice",
+                  )
+                : null,
               role.location,
               showSource && role.contact_name
-                ? `from ${role.contact_name}${ghost}${role.agency_name ? ` (${role.agency_name})` : ""}`
+                ? t("plans.fromContact", {
+                    who: `${role.contact_name}${ghost}`,
+                    via: role.agency_name ? ` (${role.agency_name})` : "",
+                  })
                 : null,
-              role.status === "passed" && role.decision_reason ? `passed: ${role.decision_reason}` : null,
+              role.status === "passed" && role.decision_reason
+                ? t("plans.passedReason", { reason: role.decision_reason })
+                : null,
             ]
               .filter(Boolean)
               .join(" · ")}
@@ -613,17 +660,17 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
               variant="subtle"
               color="gray"
               size="sm"
-              aria-label={`Edit ${role.title}`}
+              aria-label={t("plans.editNamed", { name: role.title })}
               onClick={() => setEditing(true)}
             >
               <IconPencil size={14} />
             </ActionIcon>
-            <Tooltip label="Add a to-do">
+            <Tooltip label={t("plans.addTodo")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 size="sm"
-                aria-label={`Add a to-do about ${role.title}`}
+                aria-label={t("plans.addTodoAbout", { name: role.title })}
                 onClick={() => setAddingTodo((v) => !v)}
               >
                 <IconListCheck size={14} />
@@ -636,7 +683,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
                 kind="role"
                 id={role.id}
                 name={role.title}
-                confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
+                confirm={t("plans.deleteRoleConfirm", { title: role.title, company: role.company_name })}
               />
             )}
           </Group>
@@ -644,8 +691,8 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
       </Group>
       {(todos.length > 0 || addingTodo) && (
         <Stack gap={6} pl="md">
-          {todos.map((t) => (
-            <TodoLine key={t.id} todo={t} showAbout={false} />
+          {todos.map((todo) => (
+            <TodoLine key={todo.id} todo={todo} showAbout={false} />
           ))}
           {addingTodo && (
             <AddTodo about={{ type: "role", id: role.id }} autoFocus onAdded={() => setAddingTodo(false)} />
@@ -671,6 +718,7 @@ export function RolesCard({
   showSource?: boolean;
 }) {
   const { data: roles } = useRoleSummaries(filters);
+  const t = useT();
   const [adding, setAdding] = useState(false);
   return (
     <Card withBorder>
@@ -682,7 +730,7 @@ export function RolesCard({
           leftSection={<IconPlus size={14} />}
           onClick={() => setAdding(true)}
         >
-          Add role
+          {t("plans.addRole")}
         </Button>
       </Group>
       {!roles?.length ? (

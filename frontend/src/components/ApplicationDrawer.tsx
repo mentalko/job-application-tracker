@@ -39,6 +39,7 @@ import {
   useWorkflow,
 } from "../api/hooks";
 import { ago, formatDate, formatDateTime } from "../utils/time";
+import { t, useT, type Key } from "../i18n";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
@@ -53,21 +54,39 @@ const ACTIVITY_ICONS: Record<string, typeof IconNote> = {
   stage_change: IconProgress,
 };
 
+const EVENT_TITLES: Record<string, Key> = {
+  call: "applications.eventCall",
+  email: "applications.eventEmail",
+  message: "applications.eventMessage",
+  note: "applications.eventNote",
+};
+
+const LOG_BUTTONS: Record<"call" | "email" | "message" | "note", Key> = {
+  call: "applications.logCall",
+  email: "applications.logEmail",
+  message: "applications.logMessage",
+  note: "applications.logNote",
+};
+
 function newestFirst(events: ApiEvent[]): ApiEvent[] {
   return [...events].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
 }
 
 function eventTitle(event: ApiEvent, names: Map<string, string>): string {
   if (event.kind === "stage_change") {
-    const to = names.get(event.to_stage ?? "") ?? event.to_stage;
-    if (!event.from_stage) return `Added as ${to}`;
+    const to = String(names.get(event.to_stage ?? "") ?? event.to_stage);
+    if (!event.from_stage) return t("applications.eventAddedAs", { stage: to });
     const undo = (event.data as { undo_of?: string } | undefined)?.undo_of;
-    return undo ? `Undone: back to ${to}` : `${names.get(event.from_stage) ?? event.from_stage} → ${to}`;
+    return undo
+      ? t("applications.eventUndone", { stage: to })
+      : t("applications.eventMove", { from: String(names.get(event.from_stage) ?? event.from_stage), to });
   }
-  return event.kind.charAt(0).toUpperCase() + event.kind.slice(1);
+  const key = EVENT_TITLES[event.kind];
+  return key ? t(key) : event.kind.charAt(0).toUpperCase() + event.kind.slice(1);
 }
 
 function LogActivity({ id }: { id: string }) {
+  const t = useT();
   const [kind, setKind] = useState<"call" | "email" | "message" | "note">("call");
   const [summary, setSummary] = useState("");
   const log = useLogActivity();
@@ -78,14 +97,14 @@ function LogActivity({ id }: { id: string }) {
         value={kind}
         onChange={(v) => setKind(v as typeof kind)}
         data={[
-          { value: "call", label: "Call" },
-          { value: "email", label: "Email" },
-          { value: "message", label: "Message" },
-          { value: "note", label: "Note" },
+          { value: "call", label: t("applications.eventCall") },
+          { value: "email", label: t("applications.eventEmail") },
+          { value: "message", label: t("applications.eventMessage") },
+          { value: "note", label: t("applications.eventNote") },
         ]}
       />
       <Textarea
-        placeholder="What happened?"
+        placeholder={t("applications.whatHappened")}
         autosize
         minRows={2}
         value={summary}
@@ -103,7 +122,7 @@ function LogActivity({ id }: { id: string }) {
             )
           }
         >
-          Log {kind}
+          {t(LOG_BUTTONS[kind])}
         </Button>
       </Group>
     </Stack>
@@ -112,6 +131,7 @@ function LogActivity({ id }: { id: string }) {
 
 /** Title, company, badges, move/undo and key facts. Used by the drawer and the full page. */
 export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
+  const t = useT();
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
@@ -141,17 +161,17 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
         <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
         {app.stale && (
           <Badge color="red" variant="light">
-            Needs chasing
+            {t("applications.needsChasingBadge")}
           </Badge>
         )}
-        {app.archived && <Badge variant="outline">Archived</Badge>}
-        {app.tags.map((t) => (
-          <Badge key={t} variant="dot" color="gray">
-            {t}
+        {app.archived && <Badge variant="outline">{t("applications.archived")}</Badge>}
+        {app.tags.map((tag) => (
+          <Badge key={tag} variant="dot" color="gray">
+            {tag}
           </Badge>
         ))}
       </Group>
-      <DuplicateWarning duplicates={app.duplicates} title="Also applied for this job" />
+      <DuplicateWarning duplicates={app.duplicates} title={t("applications.alsoApplied")} />
 
       <Group gap="xs">
         <Menu shadow="md" position="bottom-start">
@@ -162,16 +182,16 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
               disabled={!app.allowed_next.length}
               loading={move.isPending}
             >
-              Move to…
+              {t("applications.moveTo")}
             </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            {usual.length > 0 && others.length > 0 && <Menu.Label>Usual next</Menu.Label>}
+            {usual.length > 0 && others.length > 0 && <Menu.Label>{t("applications.usualNext")}</Menu.Label>}
             {usual.map(moveItem)}
             {usual.length > 0 && others.length > 0 && (
               <>
                 <Menu.Divider />
-                <Menu.Label>Other stages</Menu.Label>
+                <Menu.Label>{t("applications.otherStages")}</Menu.Label>
               </>
             )}
             {others.map(moveItem)}
@@ -185,7 +205,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
           loading={undo.isPending}
           onClick={() => undo.mutate(app.id)}
         >
-          Undo last move
+          {t("applications.undoLastMove")}
         </Button>
         {app.stage_kind === "active" && (
           <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} toRead={app.reply_to_read_since} />
@@ -193,17 +213,17 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </Group>
       <Stack gap={4}>
         <Text size="sm">
-          <b>Route:</b> <RouteLine app={app} />
+          <b>{t("applications.factRoute")}</b> <RouteLine app={app} />
         </Text>
         <Text size="sm">
-          <b>Applied on:</b> {formatDate(app.applied_on)}
+          <b>{t("applications.factAppliedOn")}</b> {formatDate(app.applied_on)}
         </Text>
         <Text size="sm">
-          <b>Last activity:</b> {ago(app.days_since_activity)}
+          <b>{t("applications.factLastActivity")}</b> {ago(app.days_since_activity)}
         </Text>
         {app.follow_up_on && (
           <Text size="sm">
-            <b>Follow up on:</b> {formatDate(app.follow_up_on)}
+            <b>{t("applications.factFollowUpOn")}</b> {formatDate(app.follow_up_on)}
           </Text>
         )}
       </Stack>
@@ -237,9 +257,10 @@ export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
 }
 
 export function ApplicationLoadError({ error }: { error: unknown }) {
+  const t = useT();
   return (
-    <Alert color="red" title="Couldn't load this application">
-      {error instanceof Error ? error.message : "Something went wrong."}
+    <Alert color="red" title={t("applications.loadError")}>
+      {error instanceof Error ? error.message : t("applications.somethingWentWrong")}
     </Alert>
   );
 }
@@ -247,9 +268,10 @@ export function ApplicationLoadError({ error }: { error: unknown }) {
 export { LogActivity };
 
 export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const t = useT();
   const { data: app, isLoading, isError, error } = useApplication(id);
   return (
-    <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title="Application">
+    <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title={t("applications.drawerTitle")}>
       {isError ? (
         <ApplicationLoadError error={error} />
       ) : isLoading || !app ? (
@@ -266,11 +288,11 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
             rightSection={<IconExternalLink size={14} />}
             onClick={onClose}
           >
-            Open full page
+            {t("applications.openFullPage")}
           </Button>
-          <Divider label="Log activity" labelPosition="left" />
+          <Divider label={t("applications.logActivityTitle")} labelPosition="left" />
           <LogActivity key={app.id} id={app.id} />
-          <Divider label="Timeline" labelPosition="left" />
+          <Divider label={t("applications.timelineTitle")} labelPosition="left" />
           <ApplicationTimeline app={app} />
         </Stack>
       )}
@@ -280,6 +302,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
 
 /** How the application came about, with the recruiter, agency and company linked to their pages. */
 function RouteLine({ app }: { app: ApplicationDetail }) {
+  const t = useT();
   // A name with no id (shouldn't happen) still shows, just not as a link.
   const person = app.recruiter_name && (
     <>
@@ -303,20 +326,23 @@ function RouteLine({ app }: { app: ApplicationDetail }) {
       app.agency_name
     ));
   if (app.route === "agency") {
-    if (!person && !agency) return <>Through an agency</>;
+    if (!person && !agency) return <>{t("applications.throughAgency")}</>;
     return (
       <>
-        Through {person}
-        {person && agency && " at "}
+        {t("applications.routeThrough")}
+        {person}
+        {person && agency && t("applications.routeAt")}
         {agency}
       </>
     );
   }
-  if (app.route === "referral") return <>Referral</>;
-  if (!person) return <>Applied directly</>;
+  if (app.route === "referral") return <>{t("applications.routeReferral")}</>;
+  if (!person) return <>{t("applications.appliedDirectly")}</>;
   return (
     <>
-      Directly, via {person} at{" "}
+      {t("applications.directVia")}
+      {person}
+      {t("applications.routeAt")}
       <Anchor component={Link} to={`/companies/${app.company_id}`} inherit>
         {app.company_name}
       </Anchor>

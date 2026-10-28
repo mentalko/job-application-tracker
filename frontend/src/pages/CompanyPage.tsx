@@ -33,15 +33,17 @@ import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
+import { useT } from "../i18n";
 
 function Description({ company }: { company: Schemas["CompanyOut"] }) {
   const update = useUpdateCompany();
+  const t = useT();
   const [text, setText] = useState(company.description ?? "");
   return (
     <Stack gap="xs">
       <Textarea
-        label="About"
-        placeholder="What they do, tech stack, size, anything worth remembering…"
+        label={t("people.aboutLabel")}
+        placeholder={t("people.aboutPlaceholder")}
         autosize
         minRows={3}
         value={text}
@@ -54,7 +56,7 @@ function Description({ company }: { company: Schemas["CompanyOut"] }) {
           loading={update.isPending}
           onClick={() => update.mutate({ id: company.id, body: { description: text || null } })}
         >
-          Save
+          {t("people.save")}
         </Button>
       </Group>
     </Stack>
@@ -71,8 +73,9 @@ export function CompanyPage() {
   const [editingName, setEditingName] = useState(false);
   const update = useUpdateCompany();
   const router = useRouter();
+  const t = useT();
 
-  if (isError) return <Alert color="red">Couldn't load this company.</Alert>;
+  if (isError) return <Alert color="red">{t("people.loadFailedCompany")}</Alert>;
   if (isLoading || !data) return <Loader />;
   const { company, applications, contacts } = data;
 
@@ -80,7 +83,7 @@ export function CompanyPage() {
     <Stack maw={1200}>
       <Anchor component={Link} to="/companies" size="sm">
         <Group gap={4}>
-          <IconArrowLeft size={14} /> All companies
+          <IconArrowLeft size={14} /> {t("people.allCompanies")}
         </Group>
       </Anchor>
       <Group justify="space-between" wrap="wrap">
@@ -101,7 +104,7 @@ export function CompanyPage() {
             leftSection={<IconPencil size={14} />}
             onClick={() => setEditingName(true)}
           >
-            Edit
+            {t("shared.edit")}
           </Button>
           <DeleteButton
             kind="company"
@@ -109,10 +112,10 @@ export function CompanyPage() {
             name={company.name}
             blocked={
               applications.length
-                ? `${company.name} still has ${applications.length === 1 ? "an application. Delete it first, or archive it instead." : `${applications.length} applications. Delete them first, or archive them instead.`}`
+                ? t("people.companyBlocked", { name: company.name, n: applications.length })
                 : null
             }
-            confirm={`Delete ${company.name} and its roles? Its people stay, without a company.`}
+            confirm={t("people.deleteCompanyConfirm", { name: company.name })}
             onDeleted={() => router.history.push("/companies")}
           />
         </Group>
@@ -120,7 +123,7 @@ export function CompanyPage() {
           <EditNameModal
             opened
             onClose={() => setEditingName(false)}
-            title={`Edit ${company.name}`}
+            title={t("people.editNamed", { name: company.name })}
             name={company.name}
             website={company.website}
             saving={update.isPending}
@@ -135,11 +138,11 @@ export function CompanyPage() {
           <Stack>
             <Card withBorder>
               <Title order={4} mb="sm">
-                Applications
+                {t("people.applications")}
               </Title>
               {!applications.length ? (
                 <Text size="sm" c="dimmed">
-                  No applications here yet.
+                  {t("people.noApplicationsHere")}
                 </Text>
               ) : (
                 <Table highlightOnHover>
@@ -161,8 +164,8 @@ export function CompanyPage() {
                             {a.route === "agency"
                               ? [a.recruiter_name, a.agency_name].filter(Boolean).join(" · ")
                               : a.route === "referral"
-                                ? "Referral"
-                                : "Direct"}
+                                ? t("people.routeReferral")
+                                : t("people.routeDirect")}
                           </Text>
                         </Table.Td>
                         <Table.Td>
@@ -170,7 +173,7 @@ export function CompanyPage() {
                             <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
                             {a.archived && (
                               <Badge size="sm" variant="outline" color="gray">
-                                Archived
+                                {t("people.archived")}
                               </Badge>
                             )}
                           </Group>
@@ -198,21 +201,21 @@ export function CompanyPage() {
           <Stack>
             <TodosCard entityType="company" entityId={company.id} />
             <RolesCard
-              title="Roles"
+              title={t("people.roles")}
               filters={{ company_id: company.id }}
               start={{ companyId: company.id }}
-              empty="No roles yet. Add one you might go for, then apply or pass."
+              empty={t("people.rolesEmpty")}
             />
             <Card withBorder>
               <Group justify="space-between" mb="sm">
-                <Title order={4}>People</Title>
+                <Title order={4}>{t("people.people")}</Title>
                 <Button
                   size="xs"
                   variant="light"
                   leftSection={<IconPlus size={14} />}
                   onClick={() => setAddingPerson(true)}
                 >
-                  Add person
+                  {t("people.addPerson")}
                 </Button>
               </Group>
               <Stack gap={6}>
@@ -228,8 +231,7 @@ export function CompanyPage() {
                 ))}
                 {!contacts.length && (
                   <Text size="sm" c="dimmed">
-                    No one yet. Add the people you talk to here: in-house recruiters, hiring managers,
-                    interviewers.
+                    {t("people.companyPeopleEmpty")}
                   </Text>
                 )}
               </Stack>

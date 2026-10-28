@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useUpdateApplication } from "../api/hooks";
 import { useSetPersonReply } from "../api/peopleHooks";
+import { t, useT } from "../i18n";
 
 /** Whole days since `since` (a YYYY-MM-DD in your time zone). */
 export function daysWaiting(since: string): number {
@@ -13,15 +14,23 @@ export function daysWaiting(since: string): number {
 
 export function waitingLabel(since: string): string {
   const days = daysWaiting(since);
-  return days === 0 ? "Waiting since today" : `Waiting ${days} day${days === 1 ? "" : "s"}`;
+  return days === 0 ? t("shared.waitingSinceToday") : t("shared.waitingDays", { n: days });
 }
 
 /** "Replied today", "Replied 3 days ago": how long a reply has sat unread. */
 export function repliedLabel(since: string): string {
   const days = daysWaiting(since);
-  if (days === 0) return "Replied today";
-  if (days === 1) return "Replied yesterday";
-  return `Replied ${days} days ago`;
+  if (days === 0) return t("shared.repliedToday");
+  if (days === 1) return t("shared.repliedYesterday");
+  return t("shared.repliedDaysAgo", { n: days });
+}
+
+/** The same without the "Replied" prefix, for the "Reply to read · …" badge. */
+function repliedShort(since: string): string {
+  const days = daysWaiting(since);
+  if (days === 0) return t("time.today");
+  if (days === 1) return t("time.yesterday");
+  return t("time.daysAgo", { n: days });
 }
 
 const today = () => dayjs().format("YYYY-MM-DD");
@@ -52,6 +61,7 @@ function ReplyButtons({
   who?: string;
 }) {
   const size = compact ? "compact-xs" : "xs";
+  const t = useT();
   const [pressed, setPressed] = useState<"waiting" | "read" | null>(null);
   const change = (which: "waiting" | "read", body: ReplyChange) => {
     setPressed(which);
@@ -66,10 +76,10 @@ function ReplyButtons({
       leftSection={<IconMailExclamation size={14} />}
       loading={spinning("read")}
       onClick={() => change("read", { reply_to_read_since: today() })}
-      aria-label={who ? `They've replied: ${who}` : undefined}
-      title="Their reply needs reading: it goes to the top of Today"
+      aria-label={who ? t("shared.theyRepliedAria", { who }) : undefined}
+      title={t("shared.theyRepliedTitle")}
     >
-      They've replied
+      {t("shared.theyReplied")}
     </Button>
   );
   if (toRead) {
@@ -77,7 +87,7 @@ function ReplyButtons({
       <Group gap={6} wrap="nowrap">
         {!compact && (
           <Badge color="orange" variant="light" leftSection={<IconMailExclamation size={12} />}>
-            Reply to read · {repliedLabel(toRead).replace("Replied ", "")}
+            {t("shared.replyToReadBadge", { when: repliedShort(toRead) })}
           </Badge>
         )}
         <Button
@@ -87,9 +97,9 @@ function ReplyButtons({
           leftSection={<IconMailOpened size={14} />}
           loading={spinning("read")}
           onClick={() => change("read", { reply_to_read_since: null })}
-          aria-label={who ? `Read it: ${who}` : undefined}
+          aria-label={who ? t("shared.readItAria", { who }) : undefined}
         >
-          Read it
+          {t("shared.readIt")}
         </Button>
       </Group>
     );
@@ -105,7 +115,7 @@ function ReplyButtons({
           loading={spinning("waiting")}
           onClick={() => change("waiting", { awaiting_reply_since: today() })}
         >
-          I've replied, waiting
+          {t("shared.iveRepliedWaiting")}
         </Button>
         {theyReplied}
       </Group>
@@ -125,9 +135,9 @@ function ReplyButtons({
         leftSection={<IconMessageCheck size={14} />}
         loading={spinning("waiting")}
         onClick={() => change("waiting", { awaiting_reply_since: null })}
-        aria-label={who ? `Heard back from ${who}` : undefined}
+        aria-label={who ? t("shared.heardBackAria", { who }) : undefined}
       >
-        Heard back
+        {t("shared.heardBack")}
       </Button>
       {theyReplied}
     </Group>

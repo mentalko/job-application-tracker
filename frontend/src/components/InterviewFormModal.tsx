@@ -23,6 +23,7 @@ import {
   type Interview,
   type InterviewKind,
 } from "../api/interviewHooks";
+import { t, useT } from "../i18n";
 
 type Status = "scheduled" | "done" | "cancelled";
 type Format = "video" | "phone" | "onsite" | "take_home";
@@ -49,7 +50,7 @@ const PICKER = "YYYY-MM-DD HH:mm:ss";
 const toPicker = (iso: string | null | undefined) => (iso ? dayjs(iso).format(PICKER) : null);
 const toIso = (local: string | null) => (local ? dayjs(local).toISOString() : null);
 const blank = (s: string) => s.trim() || null;
-const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://");
+const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : t("plans.linkInvalid"));
 
 function fromInterview(interview: Interview | null, nextRound: number): Values {
   return {
@@ -92,10 +93,11 @@ export function InterviewFormModal({
   const { data: titles } = useInterviewTitles();
   const { data: contacts } = useContacts();
   const save = useSaveInterview();
+  const t = useT();
   const form = useForm<Values>({
     initialValues: fromInterview(interview, nextRound),
     validate: {
-      round: (v) => (Number(v) >= 1 && Number(v) <= 99 ? null : "Rounds go from 1 to 99"),
+      round: (v) => (Number(v) >= 1 && Number(v) <= 99 ? null : t("plans.roundRange")),
       meetingUrl: isLink,
       taskRepoUrl: isLink,
     },
@@ -127,16 +129,16 @@ export function InterviewFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={interview ? `Edit ${interview.label}` : "Add an interview round"}
+      title={interview ? t("plans.editNamed", { name: interview.label }) : t("plans.addInterviewRound")}
       size="lg"
     >
       <form onSubmit={submit}>
         <Stack>
           <Group align="flex-start" wrap="nowrap">
-            <NumberInput label="Round" min={1} max={99} w={90} {...form.getInputProps("round")} />
+            <NumberInput label={t("plans.round")} min={1} max={99} w={90} {...form.getInputProps("round")} />
             <Autocomplete
-              label="What is it?"
-              placeholder="Engineering manager chat, System design test…"
+              label={t("plans.whatIsIt")}
+              placeholder={t("plans.whatIsItPlaceholder")}
               data={titles ?? []}
               style={{ flex: 1 }}
               data-autofocus
@@ -144,52 +146,65 @@ export function InterviewFormModal({
             />
           </Group>
           <Group grow align="flex-start">
-            <Select label="Type" data={KIND_OPTIONS} allowDeselect={false} {...form.getInputProps("kind")} />
             <Select
-              label="Format"
-              placeholder="Not set"
+              label={t("plans.typeLabel")}
+              data={KIND_OPTIONS}
+              allowDeselect={false}
+              {...form.getInputProps("kind")}
+            />
+            <Select
+              label={t("plans.format")}
+              placeholder={t("plans.notSet")}
               clearable
               data={[
-                { value: "video", label: "Video call" },
-                { value: "phone", label: "Phone" },
-                { value: "onsite", label: "In person" },
-                { value: "take_home", label: "Take-home" },
+                { value: "video", label: t("plans.videoCall") },
+                { value: "phone", label: t("plans.phone") },
+                { value: "onsite", label: t("plans.inPerson") },
+                { value: "take_home", label: t("plans.takeHome") },
               ]}
               {...form.getInputProps("format")}
             />
           </Group>
           <SegmentedControl
-            aria-label="Status"
+            aria-label={t("plans.statusLabel")}
             data={[
-              { value: "scheduled", label: "Coming up" },
-              { value: "done", label: "Done" },
-              { value: "cancelled", label: "Cancelled" },
+              { value: "scheduled", label: t("plans.roundComingUp") },
+              { value: "done", label: t("plans.done") },
+              { value: "cancelled", label: t("plans.cancelled") },
             ]}
             {...form.getInputProps("status")}
           />
           <Group grow align="flex-start">
             <DateTimePicker
-              label="When"
-              placeholder="Not booked yet"
+              label={t("plans.when")}
+              placeholder={t("plans.notBookedYet")}
               clearable
               {...form.getInputProps("startsAt")}
             />
             {isTask && (
               <DateTimePicker
-                label="Due"
-                placeholder="No deadline"
+                label={t("plans.due")}
+                placeholder={t("plans.noDeadline")}
                 clearable
                 {...form.getInputProps("deadlineAt")}
               />
             )}
           </Group>
           <Group grow align="flex-start">
-            <TextInput label="Meeting link" placeholder="https://…" {...form.getInputProps("meetingUrl")} />
-            <TextInput label="Location" placeholder="Office, floor 3" {...form.getInputProps("location")} />
+            <TextInput
+              label={t("plans.meetingLink")}
+              placeholder="https://…"
+              {...form.getInputProps("meetingUrl")}
+            />
+            <TextInput
+              label={t("plans.location")}
+              placeholder={t("plans.officeFloor")}
+              {...form.getInputProps("location")}
+            />
           </Group>
           <MultiSelect
-            label="Interviewers"
-            placeholder="Pick people"
+            label={t("plans.interviewers")}
+            placeholder={t("plans.pickPeople")}
             searchable
             data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
             {...form.getInputProps("interviewerIds")}
@@ -197,39 +212,44 @@ export function InterviewFormModal({
           {isTask && (
             <>
               <Textarea
-                label="Task instructions"
+                label={t("plans.taskInstructions")}
                 autosize
                 minRows={2}
                 {...form.getInputProps("taskInstructions")}
               />
               <TextInput
-                label="Repo or platform link"
+                label={t("plans.repoLink")}
                 placeholder="https://…"
                 {...form.getInputProps("taskRepoUrl")}
               />
             </>
           )}
           <Textarea
-            label="Prep"
-            placeholder="What to read up on"
+            label={t("plans.prep")}
+            placeholder={t("plans.prepPlaceholder")}
             autosize
             minRows={2}
             {...form.getInputProps("prep")}
           />
           <Textarea
-            label="Debrief"
-            placeholder="How it went"
+            label={t("plans.debrief")}
+            placeholder={t("plans.debriefPlaceholder")}
             autosize
             minRows={2}
             {...form.getInputProps("debrief")}
           />
-          <Textarea label="Questions asked" autosize minRows={2} {...form.getInputProps("questions")} />
+          <Textarea
+            label={t("plans.questionsAsked")}
+            autosize
+            minRows={2}
+            {...form.getInputProps("questions")}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("shared.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {interview ? "Save" : "Add round"}
+              {interview ? t("plans.save") : t("plans.addRound")}
             </Button>
           </Group>
         </Stack>

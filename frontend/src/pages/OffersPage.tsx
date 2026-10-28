@@ -18,6 +18,7 @@ import { useState } from "react";
 
 import { headline, money, STATUS_LABELS, useOffers, type Offer } from "../api/offerHooks";
 import { formatDate } from "../utils/time";
+import { t, useT, type Key } from "../i18n";
 
 const dash = (
   <Text span c="dimmed">
@@ -25,27 +26,30 @@ const dash = (
   </Text>
 );
 
-const ROWS: { label: string; cell: (o: Offer) => ReactNode }[] = [
+const ir35Word = (v: NonNullable<Offer["ir35"]>) =>
+  v === "outside" ? "plans.ir35Outside" : v === "inside" ? "plans.ir35Inside" : "plans.ir35Unknown";
+
+const ROWS: { label: Key; cell: (o: Offer) => ReactNode }[] = [
   {
-    label: "Status",
+    label: "plans.statusLabel",
     cell: (o) => (
       <Badge size="sm" variant="light" color={STATUS_LABELS[o.status].color}>
         {STATUS_LABELS[o.status].label}
       </Badge>
     ),
   },
-  { label: "Pay", cell: (o) => headline(o) },
-  { label: "Bonus", cell: (o) => (o.bonus ? money(o.bonus, o.currency) : dash) },
-  { label: "Employer pension", cell: (o) => (o.pension_percent != null ? `${o.pension_percent}%` : dash) },
+  { label: "plans.pay", cell: (o) => headline(o) },
+  { label: "plans.colBonus", cell: (o) => (o.bonus ? money(o.bonus, o.currency) : dash) },
+  { label: "plans.colPension", cell: (o) => (o.pension_percent != null ? `${o.pension_percent}%` : dash) },
   {
-    label: "Equity",
+    label: "plans.colEquity",
     cell: (o) =>
       o.equity || o.equity_value ? (
         <>
           {o.equity}
           {o.equity_value ? (
             <Text size="xs" c="dimmed">
-              about {money(o.equity_value, o.currency)} a year
+              {t("plans.aboutAYear", { amount: money(o.equity_value, o.currency) })}
             </Text>
           ) : null}
         </>
@@ -53,27 +57,34 @@ const ROWS: { label: string; cell: (o: Offer) => ReactNode }[] = [
         dash
       ),
   },
-  { label: "Holiday", cell: (o) => (o.holiday_days != null ? `${o.holiday_days} days` : dash) },
   {
-    label: "IR35",
+    label: "plans.colHoliday",
+    cell: (o) => (o.holiday_days != null ? t("plans.daysCount", { n: o.holiday_days }) : dash),
+  },
+  {
+    label: "plans.colIr35",
     cell: (o) =>
       o.ir35 ? (
         <Text span tt="capitalize">
-          {o.ir35}
+          {t(ir35Word(o.ir35))}
         </Text>
       ) : (
         dash
       ),
   },
-  { label: "Length", cell: (o) => (o.contract_months ? `${o.contract_months} months` : dash) },
-  { label: "Benefits", cell: (o) => o.benefits ?? dash },
-  { label: "Start date", cell: (o) => (o.start_on ? formatDate(o.start_on) : dash) },
-  { label: "Reply by", cell: (o) => (o.respond_by ? formatDate(o.respond_by) : dash) },
-  { label: "Notes", cell: (o) => o.notes ?? dash },
+  {
+    label: "plans.colLength",
+    cell: (o) => (o.contract_months ? t("plans.monthsCount", { n: o.contract_months }) : dash),
+  },
+  { label: "plans.benefits", cell: (o) => o.benefits ?? dash },
+  { label: "plans.startDate", cell: (o) => (o.start_on ? formatDate(o.start_on) : dash) },
+  { label: "plans.replyBy", cell: (o) => (o.respond_by ? formatDate(o.respond_by) : dash) },
+  { label: "plans.notes", cell: (o) => o.notes ?? dash },
 ];
 
 /** Offers side by side (P6): each application's newest offer, worth-a-year first. */
 export function OffersPage() {
+  const t = useT();
   const [showClosed, setShowClosed] = useState(false);
   const { data, isLoading } = useOffers({});
   const offers = (data ?? [])
@@ -90,10 +101,10 @@ export function OffersPage() {
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconCash size={26} stroke={1.6} />
-          <Title order={2}>Offers</Title>
+          <Title order={2}>{t("plans.offers")}</Title>
         </Group>
         <Switch
-          label="Show declined and withdrawn"
+          label={t("plans.showClosed")}
           checked={showClosed}
           onChange={(e) => setShowClosed(e.currentTarget.checked)}
         />
@@ -103,23 +114,20 @@ export function OffersPage() {
       ) : !offers.length ? (
         <Card withBorder>
           <Text c="dimmed" size="sm">
-            {data?.length
-              ? "No offers being considered. Switch on the toggle to see declined and withdrawn ones."
-              : "No offers yet. Add one from an application's page when it comes in."}
+            {data?.length ? t("plans.noneConsidered") : t("plans.noneYetOffers")}
           </Text>
         </Card>
       ) : (
         <Card withBorder>
           <Text size="sm" c="dimmed" mb="sm">
-            Worth a year is base salary plus expected bonus, your estimate of the equity and the employer's
-            pension; a day rate counts 220 working days. A revised offer replaces the one before it.
+            {t("plans.worthExplainer")}
           </Text>
           <Table.ScrollContainer minWidth={240 + 220 * offers.length}>
             <Table withColumnBorders verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th w={160}>
-                    <VisuallyHidden>Detail</VisuallyHidden>
+                    <VisuallyHidden>{t("plans.detailHidden")}</VisuallyHidden>
                   </Table.Th>
                   {offers.map((o) => (
                     <Table.Th key={o.id}>
@@ -135,14 +143,14 @@ export function OffersPage() {
               </Table.Thead>
               <Table.Tbody>
                 <Table.Tr>
-                  <Table.Th scope="row">Worth a year</Table.Th>
+                  <Table.Th scope="row">{t("plans.worthAYear")}</Table.Th>
                   {offers.map((o) => (
                     <Table.Td key={o.id}>
                       <Group gap={6} wrap="nowrap">
                         <Text fw={700}>{money(o.annual_value, o.currency)}</Text>
                         {best?.id === o.id && offers.length > 1 && (
                           <Badge size="sm" color="green" leftSection={<IconTrophy size={12} />}>
-                            Highest
+                            {t("plans.highest")}
                           </Badge>
                         )}
                       </Group>
@@ -151,7 +159,7 @@ export function OffersPage() {
                 </Table.Tr>
                 {ROWS.map((row) => (
                   <Table.Tr key={row.label}>
-                    <Table.Th scope="row">{row.label}</Table.Th>
+                    <Table.Th scope="row">{t(row.label)}</Table.Th>
                     {offers.map((o) => (
                       <Table.Td key={o.id}>
                         <Text size="sm" component="div">

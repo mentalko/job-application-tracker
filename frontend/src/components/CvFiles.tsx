@@ -17,6 +17,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { useAdoptCvFile, useCvFiles, useDocuments, type CvFile } from "../api/documentHooks";
+import { t, useT } from "../i18n";
 
 const NOT_A_CV = "jat.notACv";
 
@@ -30,19 +31,21 @@ function readDismissed(): Set<string> {
 
 const kb = (size: number) =>
   size < 1024
-    ? `${size} B`
+    ? t("library.sizeB", { n: size })
     : size < 1024 * 1024
-      ? `${Math.round(size / 1024)} KB`
-      : `${(size / 1048576).toFixed(1)} MB`;
+      ? t("library.sizeKb", { n: Math.round(size / 1024) })
+      : t("library.sizeMb", { n: (size / 1048576).toFixed(1) });
 const stem = (name: string) => name.replace(/\.[^.]+$/, "").slice(0, 100);
 
 /** Make a file a version: of an existing document, or a new one. */
 const HREF = { application: "/applications", role: "/roles", contact: "/people" } as const;
-const SOURCE_PREFIX = { application: "", role: "On role ", contact: "Sent to " } as const;
+const sourcePrefix = (kind: string): string =>
+  kind === "role" ? t("library.prefixRole") : kind === "contact" ? t("library.prefixContact") : "";
 
 /** Make a file a version (of an existing CV or a new one), or record the version it already is,
  * on the applications you tick. */
 function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
+  const t = useT();
   const { data: documents } = useDocuments();
   const adopt = useAdoptCvFile();
   const cvs = (documents ?? []).filter((d) => d.kind === "cv");
@@ -77,11 +80,11 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
             },
       {
         onSuccess: (r) => {
-          const apps = `${r.recorded} application${r.recorded === 1 ? "" : "s"}`;
+          const apps = t("library.nApplications", { n: r.recorded });
           notifications.show({
             message: recordOnly
-              ? `Recorded as sent with ${apps}.`
-              : `${label.trim()} is a version now, recorded as sent with ${apps}.`,
+              ? t("library.recordedSentToast", { apps })
+              : t("library.madeVersionToast", { label: label.trim(), apps }),
           });
           onClose();
         },
@@ -93,18 +96,18 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
       onClose={onClose}
       title={
         recordOnly
-          ? `Record ${file.version!.document_name} · ${file.version!.label} as sent`
-          : `Make ${file.name} a CV version`
+          ? t("library.recordAsSentTitle", { name: file.version!.document_name, label: file.version!.label })
+          : t("library.makeVersionTitle", { name: file.name })
       }
     >
       <Stack>
         {!recordOnly && (
           <>
             <Select
-              label="Add it to"
+              label={t("library.addTo")}
               data={[
                 ...cvs.map((d) => ({ value: d.id, label: d.name })),
-                { value: "new", label: "A new CV…" },
+                { value: "new", label: t("library.aNewCv") },
               ]}
               value={documentId}
               onChange={setDocumentId}
@@ -112,14 +115,14 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
             />
             {isNew && (
               <TextInput
-                label="Name of the new CV"
+                label={t("library.newCvName")}
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
               />
             )}
             <TextInput
-              label="Version"
-              description="What sets it apart, e.g. v3 (fintech)"
+              label={t("library.versionLabel")}
+              description={t("library.versionHint")}
               value={label}
               onChange={(e) => setLabel(e.currentTarget.value)}
             />
@@ -127,8 +130,8 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
         )}
         {missing.length ? (
           <Checkbox.Group
-            label="Sent with"
-            description="The applications it went out with. Untick any that got a different CV."
+            label={t("library.sentWith")}
+            description={t("library.sentWithHint")}
             value={ticked}
             onChange={setTicked}
           >
@@ -140,19 +143,18 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
           </Checkbox.Group>
         ) : (
           <Text size="sm" c="dimmed">
-            No applications without a CV yet. Make it a version anyway: it comes back when there are some to
-            record it on.
+            {t("library.noAppsForCvModal")}
           </Text>
         )}
         <Text size="xs" c="dimmed">
-          The file stays where you attached it too.
+          {t("library.fileStays")}
         </Text>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("library.cancel")}
           </Button>
           <Button onClick={save} disabled={!ready} loading={adopt.isPending}>
-            {recordOnly ? "Record as sent" : "Make it a version"}
+            {recordOnly ? t("library.recordAsSent") : t("library.makeVersion")}
           </Button>
         </Group>
       </Stack>
@@ -161,6 +163,7 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
 }
 
 function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void }) {
+  const t = useT();
   const [adopting, setAdopting] = useState(false);
   const missing = file.applications.filter((a) => !a.has_it);
   // Applications it's attached to are already in the list of where it counts.
@@ -176,7 +179,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
         </Text>
         {file.version && (
           <Text size="xs" c="dimmed">
-            This is {file.version.document_name} · {file.version.label}.
+            {t("library.thisIsVersion", { name: file.version.document_name, label: file.version.label })}
           </Text>
         )}
         {elsewhere.length > 0 && (
@@ -184,7 +187,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
             {elsewhere.map((x, i) => (
               <span key={`${x.kind}:${x.id}`}>
                 {i ? " · " : ""}
-                {SOURCE_PREFIX[x.kind]}
+                {sourcePrefix(x.kind)}
                 <Anchor component={Link} to={`${HREF[x.kind]}/${x.id}`} size="xs">
                   {x.name}
                 </Anchor>
@@ -194,8 +197,10 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
         )}
         <Text size="xs" c="dimmed">
           {missing.length
-            ? `${file.version ? "Not yet recorded on" : "For"} ${missing.length} application${missing.length === 1 ? "" : "s"}: `
-            : "No applications without a CV yet."}
+            ? file.version
+              ? t("library.notRecordedOn", { n: missing.length })
+              : t("library.forApplications", { n: missing.length })
+            : t("library.noAppsForCv")}
           {missing.map((a, i) => (
             <span key={a.id}>
               {i ? ", " : ""}
@@ -208,16 +213,16 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
       </div>
       <Group gap="xs">
         <Button size="compact-sm" variant="light" onClick={() => setAdopting(true)}>
-          {file.version ? "Record as sent" : "Make it a version"}
+          {file.version ? t("library.recordAsSent") : t("library.makeVersion")}
         </Button>
         <Button
           size="compact-sm"
           variant="subtle"
           color="gray"
           onClick={onDismiss}
-          aria-label={`${file.name} is not a CV`}
+          aria-label={t("library.notCvAria", { name: file.name })}
         >
-          Not a CV
+          {t("library.notACv")}
         </Button>
       </Group>
       {adopting && <AdoptModal file={file} onClose={() => setAdopting(false)} />}
@@ -227,6 +232,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
 
 /** The CV files you've attached that aren't recorded as versions yet; nothing when there are none. */
 export function CvFilesCard() {
+  const t = useT();
   const { data: files } = useCvFiles();
   const [dismissed, setDismissed] = useState(readDismissed);
   const shown = (files ?? []).filter((f) => !dismissed.has(f.sha256));
@@ -247,12 +253,10 @@ export function CvFilesCard() {
     <Card withBorder>
       <Group gap="xs" mb={4}>
         <IconFileCv size={18} />
-        <Title order={4}>CV files you've attached</Title>
+        <Title order={4}>{t("library.cvFilesTitle")}</Title>
       </Group>
       <Text size="sm" c="dimmed" mb="md">
-        Files that look like a CV (named like one, or the same file in several places) attached to
-        applications, roles or people, like a CV you sent a recruiter. Make each a version so Insights can
-        compare how they do; the same file counts as the same version.
+        {t("library.cvFilesHint")}
       </Text>
       <Stack gap="sm">
         {shown.map((f) => (
@@ -260,7 +264,7 @@ export function CvFilesCard() {
         ))}
         {hidden > 0 && (
           <Anchor component="button" type="button" size="xs" c="dimmed" ta="left" onClick={showHidden}>
-            Show {hidden} you said {hidden === 1 ? "isn't a CV" : "aren't CVs"}
+            {t("library.showHidden", { n: hidden })}
           </Anchor>
         )}
       </Stack>

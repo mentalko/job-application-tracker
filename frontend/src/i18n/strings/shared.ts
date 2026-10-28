@@ -1,0 +1,111 @@
+/** UI strings of components shared across pages: to-dos, reply buttons, delete, creatable select. */
+
+const en = {
+  "shared.cancel": "Cancel",
+  "shared.delete": "Delete",
+  "shared.deleteNamed": "Delete {name}",
+  "shared.edit": "Edit",
+  "shared.add": "Add",
+  "shared.addNewNamed": '+ Add "{name}"',
+
+  "shared.dueOverdue": "Overdue · {date}",
+  "shared.dueToday": "Today",
+  "shared.dueTomorrow": "Tomorrow",
+  "shared.dueBy": "By {date}",
+  "shared.noDate": "No date",
+  "shared.dueAria": "Due",
+  "shared.dueOptional": "By (optional)",
+  "shared.dueOptionalAria": "Due (optional)",
+
+  "shared.todosTitle": "To-dos",
+  "shared.todosEmpty":
+    "Nothing to do here. Add a reminder in your own words; it shows on Today until you tick it off.",
+  "shared.todoWhatInput": "What needs doing",
+  "shared.saveTodo": "Save to-do",
+  "shared.editTodo": "Edit to-do: {text}",
+  "shared.deleteTodo": "Delete to-do: {text}",
+  "shared.todoPlaceholder": "Reply to their message, look into the company…",
+  "shared.newTodoAria": "New to-do",
+  "shared.aboutOptional": "About (optional)",
+  "shared.aboutAria": "About",
+  "shared.nothingFound": "Nothing by that name",
+  "shared.groupApplications": "Applications",
+  "shared.groupRolesToDecide": "Roles to decide",
+  "shared.groupPeople": "People",
+  "shared.groupCompanies": "Companies",
+  "shared.groupAgencies": "Agencies",
+
+  "shared.waitingSinceToday": "Waiting since today",
+  "shared.waitingDays": "Waiting {n} day|Waiting {n} days",
+  "shared.repliedToday": "Replied today",
+  "shared.repliedYesterday": "Replied yesterday",
+  "shared.repliedDaysAgo": "Replied {n} day ago|Replied {n} days ago",
+  "shared.replyToReadBadge": "Reply to read · {when}",
+  "shared.theyReplied": "They've replied",
+  "shared.theyRepliedAria": "They've replied: {who}",
+  "shared.theyRepliedTitle": "Their reply needs reading: it goes to the top of Today",
+  "shared.readIt": "Read it",
+  "shared.readItAria": "Read it: {who}",
+  "shared.iveRepliedWaiting": "I've replied, waiting",
+  "shared.heardBack": "Heard back",
+  "shared.heardBackAria": "Heard back from {who}",
+
+  "shared.habitLate":
+    "· waiting {n} working day longer than usual|· waiting {n} working days longer than usual",
+} as const;
+
+const ru: Record<keyof typeof en, string> = {
+  "shared.cancel": "Отмена",
+  "shared.delete": "Удалить",
+  "shared.deleteNamed": "Удалить {name}",
+  "shared.edit": "Изменить",
+  "shared.add": "Добавить",
+  "shared.addNewNamed": "+ Добавить «{name}»",
+
+  "shared.dueOverdue": "Просрочено · {date}",
+  "shared.dueToday": "Сегодня",
+  "shared.dueTomorrow": "Завтра",
+  "shared.dueBy": "До {date}",
+  "shared.noDate": "Без даты",
+  "shared.dueAria": "Срок",
+  "shared.dueOptional": "Срок (необязательно)",
+  "shared.dueOptionalAria": "Срок (необязательно)",
+
+  "shared.todosTitle": "Задачи",
+  "shared.todosEmpty":
+    "Здесь ничего не нужно делать. Добавьте напоминание своими словами; оно будет на странице «Сегодня», пока не отметите его.",
+  "shared.todoWhatInput": "Что нужно сделать",
+  "shared.saveTodo": "Сохранить задачу",
+  "shared.editTodo": "Изменить задачу: {text}",
+  "shared.deleteTodo": "Удалить задачу: {text}",
+  "shared.todoPlaceholder": "Ответить на их сообщение, изучить компанию…",
+  "shared.newTodoAria": "Новая задача",
+  "shared.aboutOptional": "О чём (необязательно)",
+  "shared.aboutAria": "О чём",
+  "shared.nothingFound": "Ничего не найдено по этому имени",
+  "shared.groupApplications": "Заявки",
+  "shared.groupRolesToDecide": "Роли на решение",
+  "shared.groupPeople": "Люди",
+  "shared.groupCompanies": "Компании",
+  "shared.groupAgencies": "Агентства",
+
+  "shared.waitingSinceToday": "Ждём с сегодняшнего дня",
+  "shared.waitingDays": "Ждём {n} день|Ждём {n} дня|Ждём {n} дней",
+  "shared.repliedToday": "Ответили сегодня",
+  "shared.repliedYesterday": "Ответили вчера",
+  "shared.repliedDaysAgo": "Ответили {n} день назад|Ответили {n} дня назад|Ответили {n} дней назад",
+  "shared.replyToReadBadge": "Ответ на прочтение · {when}",
+  "shared.theyReplied": "Они ответили",
+  "shared.theyRepliedAria": "Они ответили: {who}",
+  "shared.theyRepliedTitle": "Их ответ нужно прочитать: он попадёт вверх страницы «Сегодня»",
+  "shared.readIt": "Прочитано",
+  "shared.readItAria": "Прочитано: {who}",
+  "shared.iveRepliedWaiting": "Ответил, жду",
+  "shared.heardBack": "Дождались ответа",
+  "shared.heardBackAria": "Дождались ответа от {who}",
+
+  "shared.habitLate":
+    "· ждём {n} рабочий день дольше обычного|· ждём {n} рабочих дня дольше обычного|· ждём {n} рабочих дней дольше обычного",
+};
+
+export { en, ru };

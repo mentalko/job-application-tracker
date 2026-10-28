@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Contact } from "../api/client";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import { useMergeContact } from "../api/peopleHooks";
+import { t, useT } from "../i18n";
 
 /** An email address or LinkedIn profile, written the way the server compares them. */
 function identities(c: Contact): Set<string> {
@@ -30,8 +31,11 @@ export function likelyDuplicates(person: Contact, everyone: Contact[]): { contac
     if (other.id === person.id) continue;
     const shared = [...identities(other)].find((k) => mine.has(k));
     if (shared)
-      out.push({ contact: other, why: shared.startsWith("email") ? "same email" : "same LinkedIn" });
-    else if (sameName(person, other)) out.push({ contact: other, why: "same name" });
+      out.push({
+        contact: other,
+        why: shared.startsWith("email") ? t("people.duplicateWhyEmail") : t("people.duplicateWhyLinkedin"),
+      });
+    else if (sameName(person, other)) out.push({ contact: other, why: t("people.duplicateWhyName") });
   }
   return out;
 }
@@ -59,6 +63,7 @@ function MergeModal({
   const { data: contacts } = useContacts();
   const merge = useMergeContact();
   const where = useWhere();
+  const t = useT();
   const [fromId, setFromId] = useState<string | null>(initial);
   const everyone = contacts ?? [];
   const likely = likelyDuplicates(person, everyone);
@@ -69,13 +74,13 @@ function MergeModal({
     ...(likely.length
       ? [
           {
-            group: "Looks like the same person",
+            group: t("people.groupLikelyDuplicates"),
             items: likely.map((l) => ({ value: l.contact.id, label: label(l.contact, l.why) })),
           },
         ]
       : []),
     {
-      group: "Everyone else",
+      group: t("people.groupEveryoneElse"),
       items: everyone
         .filter((c) => c.id !== person.id && !likelyIds.has(c.id))
         .map((c) => ({ value: c.id, label: label(c) })),
@@ -84,50 +89,49 @@ function MergeModal({
   const other = everyone.find((c) => c.id === fromId);
 
   return (
-    <Modal opened={opened} onClose={onClose} title={`Merge someone into ${person.name}`} size="lg">
+    <Modal opened={opened} onClose={onClose} title={t("people.mergeTitle", { name: person.name })} size="lg">
       <Stack>
         <Text size="sm">
-          Two records of the same person? Pick the other one: everything on it moves to <b>{person.name}</b>,
-          and then it's deleted.
+          {t("people.mergeIntroA")}
+          <b>{person.name}</b>
+          {t("people.mergeIntroB")}
         </Text>
         {data.length ? (
           <Select
-            label="The other record"
-            placeholder="Choose a person"
+            label={t("people.mergeOtherLabel")}
+            placeholder={t("people.choosePerson")}
             searchable
             data={data}
             value={fromId}
             onChange={setFromId}
-            nothingFoundMessage="No one by that name"
+            nothingFoundMessage={t("people.noOneByThatName")}
           />
         ) : (
           <Text size="sm" c="dimmed">
-            There's no one else to merge in.
+            {t("people.nothingToMerge")}
           </Text>
         )}
         {other && (
           <Alert variant="light" color="blue" icon={<IconArrowsJoin2 size={18} />}>
             <Text size="sm" fw={600} mb={4}>
-              From {other.name} to {person.name}:
+              {t("people.mergeFromTo", { from: other.name, to: person.name })}
             </Text>
             <List size="sm" spacing={2}>
-              <List.Item>contact details {person.name} doesn't already have</List.Item>
-              <List.Item>calls, and the roles they pitched</List.Item>
-              <List.Item>the applications and interviews they're on</List.Item>
-              <List.Item>notes, links, files and to-dos about them</List.Item>
-              <List.Item>the favourite star, if either has it</List.Item>
-              <List.Item>
-                title, agency or company, and waiting or chased, where {person.name} has none
-              </List.Item>
+              <List.Item>{t("people.mergeListDetails", { name: person.name })}</List.Item>
+              <List.Item>{t("people.mergeListCalls")}</List.Item>
+              <List.Item>{t("people.mergeListApplications")}</List.Item>
+              <List.Item>{t("people.mergeListNotes")}</List.Item>
+              <List.Item>{t("people.mergeListFavourite")}</List.Item>
+              <List.Item>{t("people.mergeListFields", { name: person.name })}</List.Item>
             </List>
             <Text size="sm" mt={6}>
-              Then {other.name} is deleted. This can't be undone (but your data repo keeps history).
+              {t("people.mergeThenDeleted", { name: other.name })}
             </Text>
           </Alert>
         )}
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("shared.cancel")}
           </Button>
           <Button
             disabled={!fromId}
@@ -141,8 +145,11 @@ function MergeModal({
                   onSuccess: () => {
                     notifications.show({
                       color: "green",
-                      title: "Merged",
-                      message: `${other?.name ?? "They"} merged into ${person.name}.`,
+                      title: t("people.mergedTitle"),
+                      message: t("people.mergedMessage", {
+                        from: other?.name ?? t("people.they"),
+                        name: person.name,
+                      }),
                     });
                     setFromId(null);
                     onClose();
@@ -151,7 +158,7 @@ function MergeModal({
               )
             }
           >
-            Merge into {person.name}
+            {t("people.mergeIntoNamed", { name: person.name })}
           </Button>
         </Group>
       </Stack>
@@ -162,6 +169,7 @@ function MergeModal({
 /** "Merge…" on a person's page. */
 export function MergePersonButton({ person }: { person: Contact }) {
   const [opened, setOpened] = useState(false);
+  const t = useT();
   return (
     <>
       <Button
@@ -170,7 +178,7 @@ export function MergePersonButton({ person }: { person: Contact }) {
         leftSection={<IconArrowsJoin2 size={14} />}
         onClick={() => setOpened(true)}
       >
-        Merge…
+        {t("people.mergeButton")}
       </Button>
       {opened && <MergeModal person={person} opened onClose={() => setOpened(false)} initial={null} />}
     </>
@@ -194,6 +202,7 @@ const pair = (a: string, b: string) => [a, b].sort().join("|");
 export function PossibleDuplicates({ person }: { person: Contact }) {
   const { data: contacts } = useContacts();
   const where = useWhere();
+  const t = useT();
   const [merging, setMerging] = useState<string | null>(null);
   const [notSame, setNotSame] = useState(readNotSame);
   const dismiss = (otherId: string) => {
@@ -210,31 +219,41 @@ export function PossibleDuplicates({ person }: { person: Contact }) {
   );
   if (!likely.length) return null;
   return (
-    <Alert variant="light" color="yellow" icon={<IconCopy size={18} />} title="Looks like a duplicate">
+    <Alert
+      variant="light"
+      color="yellow"
+      icon={<IconCopy size={18} />}
+      title={t("people.duplicateAlertTitle")}
+    >
       <Stack gap={6}>
         {likely.map(({ contact, why }) => (
           <Group key={contact.id} justify="space-between" wrap="wrap" gap="xs">
             <Text size="sm">
               <b>{contact.name}</b>
-              {where(contact) ? ` · ${where(contact)}` : ""} has the {why}.
+              {where(contact) ? ` · ${where(contact)}` : ""}
+              {t("people.duplicateHasWhy", { why })}
             </Text>
             <Group gap={6}>
               <Button
                 size="compact-xs"
                 variant="light"
-                aria-label={`Merge ${contact.name}${where(contact) ? ` (${where(contact)})` : ""} into this one`}
+                aria-label={t("people.mergeIntoThisAria", {
+                  name: `${contact.name}${where(contact) ? ` (${where(contact)})` : ""}`,
+                })}
                 onClick={() => setMerging(contact.id)}
               >
-                Merge into this one
+                {t("people.mergeIntoThis")}
               </Button>
               <Button
                 size="compact-xs"
                 variant="subtle"
                 color="gray"
-                aria-label={`${contact.name}${where(contact) ? ` (${where(contact)})` : ""} is not the same person`}
+                aria-label={t("people.notSamePersonAria", {
+                  name: `${contact.name}${where(contact) ? ` (${where(contact)})` : ""}`,
+                })}
                 onClick={() => dismiss(contact.id)}
               >
-                Not the same person
+                {t("people.notSamePerson")}
               </Button>
             </Group>
           </Group>

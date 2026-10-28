@@ -4,6 +4,7 @@ import { sankey, sankeyLinkHorizontal, type SankeyLink, type SankeyNode } from "
 import { useMemo, useState } from "react";
 
 import type { Flow, FlowLink, FlowNode } from "../api/insightHooks";
+import { useT } from "../i18n";
 
 type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
@@ -48,8 +49,8 @@ type Layout = { nodes: Node[]; links: Link[] };
 function yAt(l: Link, x: number): number {
   const x0 = (l.source as Node).x1 ?? 0;
   const x1 = (l.target as Node).x0 ?? 0;
-  const t = x1 === x0 ? 0 : (x - x0) / (x1 - x0);
-  return (l.y0 ?? 0) + t * ((l.y1 ?? 0) - (l.y0 ?? 0));
+  const frac = x1 === x0 ? 0 : (x - x0) / (x1 - x0);
+  return (l.y0 ?? 0) + frac * ((l.y1 ?? 0) - (l.y0 ?? 0));
 }
 
 /** How tangled a layout is: flows crossing each other, and flows running through a node, each
@@ -177,19 +178,29 @@ export function SankeyChart({
   unit?: "application" | "role";
   label?: string; // what the diagram shows, for screen readers
 }) {
-  const plural = (n: number) => `${n} ${unit}${n === 1 ? "" : "s"}`;
+  const t = useT();
+  const plural = (n: number) =>
+    t(unit === "role" ? "insights.countRole" : "insights.countApplications", { n });
   const nodeText = (n: FlowNode) => {
     // Sources, and where things are waiting, count what's there rather than what "reached" it.
     if (unit === "role" || n.kind === "holding" || n.id.startsWith("source:"))
-      return `${n.name}: ${plural(n.reached)}`;
-    const still = n.current ? `, ${n.current} still there` : "";
-    return `${n.name}: ${plural(n.reached)} reached${still}`;
+      return t(unit === "role" ? "insights.nodeRolesCount" : "insights.nodeAppsCount", {
+        name: n.name,
+        n: n.reached,
+      });
+    const still = n.current ? t("insights.stillThere", { n: n.current }) : "";
+    return t("insights.nodeAppsReached", { name: n.name, n: n.reached }) + still;
   };
   const linkText = (l: Link) => {
     const source = l.source as Node;
     const target = l.target as Node;
     const share = source.reached ? Math.round((100 * l.value) / source.reached) : 0;
-    return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
+    return t("insights.linkShare", {
+      source: source.name,
+      target: target.name,
+      count: plural(l.value),
+      share,
+    });
   };
   const { ref, width: measured } = useElementSize();
   // Never so narrow that labels run into the next column: on a phone it scrolls sideways instead.
@@ -221,8 +232,8 @@ export function SankeyChart({
         aria-label={
           label ??
           (unit === "role"
-            ? `Sankey diagram of ${plural(flow.applications)} pitched to you, by what happened to them`
-            : `Sankey diagram of ${plural(flow.applications)} moving through the stages`)
+            ? t("insights.sankeyAriaRoles", { count: plural(flow.applications) })
+            : t("insights.sankeyAriaApps", { count: plural(flow.applications) }))
         }
         style={{ display: "block" }}
       >
@@ -298,7 +309,7 @@ export function SankeyChart({
         })}
       </svg>
       <Text size="sm" c={caption ? undefined : "dimmed"} mt="xs">
-        {caption ?? "Hover over a stage or a flow to see its numbers."}
+        {caption ?? t("insights.sankeyHint")}
       </Text>
     </div>
   );

@@ -3,30 +3,30 @@ import { IconListDetails, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { useRoleSummaries, type RoleStatus } from "../api/roleHooks";
+import { useT, type Key } from "../i18n";
 import { RoleFormModal, RoleLine } from "../components/Roles";
 
-const VIEWS: { value: RoleStatus | "all"; label: string }[] = [
-  { value: "to_decide", label: "To decide" },
-  { value: "interested", label: "Interested" },
-  { value: "applied", label: "Applied" },
-  { value: "closed", label: "Closed" },
-  { value: "passed", label: "Passed" },
-  { value: "all", label: "All" },
+const VIEWS: { value: RoleStatus | "all"; key: Key }[] = [
+  { value: "to_decide", key: "plans.viewToDecide" },
+  { value: "interested", key: "plans.interested" },
+  { value: "applied", key: "plans.viewApplied" },
+  { value: "closed", key: "plans.viewClosed" },
+  { value: "passed", key: "plans.passed" },
+  { value: "all", key: "plans.viewAll" },
 ];
 
-const EMPTY: Record<RoleStatus | "all", string> = {
-  to_decide:
-    "Nothing to decide. After a call with a recruiter, add the roles they mentioned here (or from the call on their page), then apply or pass on each.",
-  interested:
-    "No roles you're interested in but haven't applied for yet. Press Interested on a role to track it.",
-  applied: "No roles applied for from here yet.",
-  closed: "No roles closed before you applied (withdrawn while only interested, say).",
-  passed: "You haven't passed on any roles.",
-  all: "No roles yet.",
+const EMPTY: Record<RoleStatus | "all", Key> = {
+  to_decide: "plans.emptyToDecide",
+  interested: "plans.emptyInterested",
+  applied: "plans.emptyApplied",
+  closed: "plans.emptyClosed",
+  passed: "plans.emptyPassed",
+  all: "plans.emptyAll",
 };
 
 /** Roles before you apply: pitched by a recruiter or spotted, then applied for or passed on. */
 export function RolesPage() {
+  const t = useT();
   const [view, setView] = useState<RoleStatus | "all">("to_decide");
   const [adding, setAdding] = useState(false);
   const { data: roles, isLoading } = useRoleSummaries(view === "all" ? {} : { status: view });
@@ -37,21 +37,21 @@ export function RolesPage() {
         <div>
           <Group gap="sm">
             <IconListDetails size={26} stroke={1.6} />
-            <Title order={2}>Roles</Title>
+            <Title order={2}>{t("plans.roles")}</Title>
           </Group>
           <Text c="dimmed" size="sm">
-            Roles you might go for, before you apply: apply, mark as interested, or pass on each.
+            {t("plans.rolesSubtitle")}
           </Text>
         </div>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setAdding(true)}>
-          Add role
+          {t("plans.addRole")}
         </Button>
       </Group>
       <SegmentedControl
         value={view}
         onChange={(v) => setView(v as RoleStatus | "all")}
-        data={VIEWS}
-        aria-label="Show"
+        data={VIEWS.map(({ value, key }) => ({ value, label: t(key) }))}
+        aria-label={t("plans.showAria")}
         style={{ alignSelf: "flex-start" }}
       />
       {isLoading ? (
@@ -59,7 +59,7 @@ export function RolesPage() {
       ) : !roles?.length ? (
         <Card withBorder p="xl">
           <Text c="dimmed" size="sm" ta="center">
-            {EMPTY[view]}
+            {t(EMPTY[view])}
           </Text>
         </Card>
       ) : (

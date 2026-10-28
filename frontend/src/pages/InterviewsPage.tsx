@@ -21,9 +21,11 @@ import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
 import { RescheduledBadge, RescheduleModal } from "../components/Reschedule";
 import { formatDateTime } from "../utils/time";
+import { useT } from "../i18n";
 
 /** Edit a round, or move a booked one to another time. */
 function RoundActions({ interview }: { interview: Interview }) {
+  const t = useT();
   const [open, setOpen] = useState<"edit" | "reschedule" | null>(null);
   return (
     <Group gap={4} wrap="nowrap" justify="flex-end">
@@ -31,14 +33,18 @@ function RoundActions({ interview }: { interview: Interview }) {
         <Button
           size="compact-xs"
           variant="light"
-          aria-label={`Reschedule ${interview.label}`}
+          aria-label={t("plans.rescheduleAria", { name: interview.label })}
           onClick={() => setOpen("reschedule")}
         >
-          Reschedule
+          {t("plans.reschedule")}
         </Button>
       )}
-      <Tooltip label="Edit">
-        <ActionIcon variant="subtle" aria-label={`Edit ${interview.label}`} onClick={() => setOpen("edit")}>
+      <Tooltip label={t("shared.edit")}>
+        <ActionIcon
+          variant="subtle"
+          aria-label={t("plans.editNamed", { name: interview.label })}
+          onClick={() => setOpen("edit")}
+        >
           <IconPencil size={16} />
         </ActionIcon>
       </Tooltip>
@@ -57,6 +63,7 @@ function RoundActions({ interview }: { interview: Interview }) {
 }
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
+  const t = useT();
   if (!interviews.length) {
     return (
       <Text size="sm" c="dimmed">
@@ -68,10 +75,10 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
     <Table highlightOnHover>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>When</Table.Th>
-          <Table.Th>Round</Table.Th>
-          <Table.Th>Application</Table.Th>
-          <Table.Th>Status</Table.Th>
+          <Table.Th>{t("plans.when")}</Table.Th>
+          <Table.Th>{t("plans.round")}</Table.Th>
+          <Table.Th>{t("plans.colApplication")}</Table.Th>
+          <Table.Th>{t("plans.statusLabel")}</Table.Th>
           <Table.Th />
         </Table.Tr>
       </Table.Thead>
@@ -82,7 +89,9 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
             <Table.Tr key={i.id}>
               <Table.Td>
                 <Text size="sm">
-                  {when ? `${!i.starts_at ? "Due " : ""}${formatDateTime(when)}` : "Not booked yet"}
+                  {when
+                    ? `${!i.starts_at ? t("plans.duePrefix") : ""}${formatDateTime(when)}`
+                    : t("plans.notBookedYet")}
                 </Text>
               </Table.Td>
               <Table.Td>
@@ -119,6 +128,7 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
 
 /** Every interview round across applications: what's coming up, then everything else, newest first. */
 export function InterviewsPage() {
+  const t = useT();
   // "Upcoming" starts at your local midnight, so this morning's interview still counts today.
   const midnight = new Date();
   midnight.setHours(0, 0, 0, 0);
@@ -133,7 +143,7 @@ export function InterviewsPage() {
     <Stack maw={1100}>
       <Group gap="sm">
         <IconCalendarEvent size={26} stroke={1.6} />
-        <Title order={2}>Interviews</Title>
+        <Title order={2}>{t("plans.interviews")}</Title>
       </Group>
       {isLoading ? (
         <Loader />
@@ -141,18 +151,15 @@ export function InterviewsPage() {
         <>
           <Card withBorder>
             <Title order={4} mb="sm">
-              Coming up
+              {t("plans.comingUp")}
             </Title>
-            <InterviewTable
-              interviews={upcoming ?? []}
-              empty="Nothing booked. Add interview rounds from an application's page."
-            />
+            <InterviewTable interviews={upcoming ?? []} empty={t("plans.upcomingEmpty")} />
           </Card>
           <Card withBorder>
             <Title order={4} mb="sm">
-              Earlier and cancelled
+              {t("plans.earlierCancelled")}
             </Title>
-            <InterviewTable interviews={rest} empty="None yet." />
+            <InterviewTable interviews={rest} empty={t("plans.noneYet")} />
           </Card>
         </>
       )}

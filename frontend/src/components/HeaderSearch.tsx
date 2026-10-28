@@ -4,8 +4,11 @@ import { IconSearch } from "@tabler/icons-react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 
+import { useT } from "../i18n";
+
 /** The search box in the header. Enter opens the results; "/" jumps to it from anywhere. */
 export function HeaderSearch() {
+  const t = useT();
   const navigate = useNavigate();
   const current = useRouterState({
     select: (s) => (s.location.pathname === "/search" ? ((s.location.search as { q?: string }).q ?? "") : ""),
@@ -31,8 +34,8 @@ export function HeaderSearch() {
     >
       <TextInput
         ref={input}
-        aria-label="Search everything"
-        placeholder="Search everything"
+        aria-label={t("shell.search")}
+        placeholder={t("shell.search")}
         leftSection={<IconSearch size={16} />}
         rightSection={<Kbd size="xs">/</Kbd>}
         value={value}

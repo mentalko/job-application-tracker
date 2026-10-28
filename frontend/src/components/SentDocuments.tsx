@@ -7,10 +7,12 @@ import { useState } from "react";
 
 import type { ApplicationDetail } from "../api/client";
 import { KIND_LABEL, useDocuments, useSendDocument, useUnsendDocument } from "../api/documentHooks";
+import { useT } from "../i18n";
 import { formatDate } from "../utils/time";
 
 /** Which CV and cover-letter versions went with this application, and when. */
 export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
+  const t = useT();
   const { data: documents } = useDocuments();
   const send = useSendDocument(app.id);
   const unsend = useUnsendDocument(app.id);
@@ -30,7 +32,7 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>Documents sent</Title>
+        <Title order={4}>{t("library.documentsSent")}</Title>
         {app.documents.map((d) => (
           <Group key={d.id} justify="space-between" wrap="nowrap">
             <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
@@ -43,22 +45,22 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
                   <Text size="sm">{d.version_label}</Text>
                   {d.file_url && (
                     <Anchor href={d.file_url} target="_blank" rel="noreferrer noopener" size="xs">
-                      open
+                      {t("library.open")}
                     </Anchor>
                   )}
                 </Group>
                 <Text size="xs" c="dimmed">
                   {KIND_LABEL[d.kind] ?? d.kind}
-                  {d.sent_on ? ` · sent ${formatDate(d.sent_on)}` : ""}
+                  {d.sent_on ? t("library.sentDate", { date: formatDate(d.sent_on) }) : ""}
                 </Text>
               </div>
             </Group>
-            <Tooltip label="Not sent with this one">
+            <Tooltip label={t("library.notSentHere")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 onClick={() => unsend.mutate(d.id)}
-                aria-label={`Remove ${d.document_name} ${d.version_label}`}
+                aria-label={t("library.removeVersionAria", { name: d.document_name, label: d.version_label })}
               >
                 <IconTrash size={16} />
               </ActionIcon>
@@ -67,22 +69,22 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
         ))}
         {!app.documents.length && (
           <Text size="sm" c="dimmed">
-            Record which CV and cover letter you sent, so you know what they've seen.
+            {t("library.noDocsYet")}
           </Text>
         )}
         {documents && !documents.some((d) => d.versions.length) ? (
           <Text size="sm" c="dimmed">
             <Anchor component={Link} to="/documents" size="sm">
-              Add your CV on the Documents page
-            </Anchor>{" "}
-            first.
+              {t("library.addCvOnDocuments")}
+            </Anchor>
+            {t("library.firstSuffix")}
           </Text>
         ) : (
           <Group align="flex-end" gap="xs" wrap="nowrap">
             <Select
               size="xs"
-              label="Version"
-              placeholder="Pick a CV or cover letter"
+              label={t("library.versionLabel")}
+              placeholder={t("library.pickVersion")}
               data={options}
               value={versionId}
               onChange={setVersionId}
@@ -91,7 +93,7 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
             />
             <DateInput
               size="xs"
-              label="Sent on"
+              label={t("library.sentOn")}
               clearable
               value={sentOn}
               onChange={setSentOn}
@@ -113,7 +115,7 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
                 )
               }
             >
-              Add
+              {t("library.add")}
             </Button>
           </Group>
         )}

@@ -36,6 +36,7 @@ import { StageBadge } from "../components/StageBadge";
 import { PersonChase, PersonClosed } from "../components/PersonChase";
 import { PersonWaiting } from "../components/Waiting";
 import { ago, formatDateTime } from "../utils/time";
+import { useT } from "../i18n";
 
 /** A person's page: who they are, how to reach them, what they've been part of, and your notes. */
 export function PersonPage() {
@@ -45,8 +46,9 @@ export function PersonPage() {
   const stages = stageLookup(workflow);
   const [editing, setEditing] = useState(false);
   const router = useRouter();
+  const t = useT();
 
-  if (isError) return <Alert color="red">Couldn't load this person.</Alert>;
+  if (isError) return <Alert color="red">{t("people.loadFailedPerson")}</Alert>;
   if (isLoading || !data) return <Loader />;
   const { contact, agency_name, company_name, applications, interviews } = data;
   const where = contact.agency_id ? (
@@ -63,7 +65,7 @@ export function PersonPage() {
     <Stack maw={1200}>
       <Anchor component={Link} to="/recruiters" size="sm">
         <Group gap={4}>
-          <IconArrowLeft size={14} /> All people
+          <IconArrowLeft size={14} /> {t("people.allPeople")}
         </Group>
       </Anchor>
       <Group justify="space-between" wrap="wrap">
@@ -103,14 +105,14 @@ export function PersonPage() {
             leftSection={<IconPencil size={14} />}
             onClick={() => setEditing(true)}
           >
-            Edit
+            {t("shared.edit")}
           </Button>
           <MergePersonButton person={contact} />
           <DeleteButton
             kind="contact"
             id={contact.id}
             name={contact.name}
-            confirm={`Delete ${contact.name}? They come off the applications and interviews they're on, and their calls are deleted; the applications themselves stay. Two records of the same person? Use Merge instead: it keeps everything.`}
+            confirm={t("people.deletePersonConfirm", { name: contact.name })}
             onDeleted={() => router.history.push("/recruiters")}
           />
         </Group>
@@ -121,19 +123,19 @@ export function PersonPage() {
           <Stack>
             <MeetingsCard contactId={contact.id} name={contact.name} />
             <RolesCard
-              title="Roles they've mentioned"
+              title={t("people.rolesMentionedTitle")}
               filters={{ contact_id: contact.id }}
               start={{ contactId: contact.id }}
-              empty={`No roles from ${contact.name} yet. Add the ones they mention, then apply or pass on each.`}
+              empty={t("people.rolesMentionedEmpty", { name: contact.name })}
               showSource={false}
             />
             <Card withBorder>
               <Title order={4} mb="sm">
-                Applications
+                {t("people.applications")}
               </Title>
               {!applications.length ? (
                 <Text size="sm" c="dimmed">
-                  Not linked to any applications yet. Link them from an application's People card.
+                  {t("people.noApplicationsYet")}
                 </Text>
               ) : (
                 <Table highlightOnHover>
@@ -146,7 +148,7 @@ export function PersonPage() {
                           </Anchor>
                           <Text size="xs" c="dimmed">
                             {a.relations
-                              .map((r) => (r === "source" ? "Brought it to you" : relationLabel(r)))
+                              .map((r) => (r === "source" ? t("people.relationSource") : relationLabel(r)))
                               .join(", ")}
                           </Text>
                         </Table.Td>
@@ -167,7 +169,7 @@ export function PersonPage() {
             {interviews.length > 0 && (
               <Card withBorder>
                 <Title order={4} mb="sm">
-                  Interviews
+                  {t("people.interviews")}
                 </Title>
                 <Stack gap="xs">
                   {interviews.map((i) => (

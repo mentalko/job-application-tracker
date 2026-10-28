@@ -35,6 +35,7 @@ import { Board } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
 import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
+import { t, useT } from "../i18n";
 import { ago } from "../utils/time";
 
 type Sort = NonNullable<ApplicationFilters["sort"]>;
@@ -66,11 +67,12 @@ function SortHeader({
 
 function routeLabel(row: ApplicationRow): string {
   if (row.route === "agency")
-    return [row.recruiter_name, row.agency_name].filter(Boolean).join(" · ") || "Agency";
-  return row.route === "referral" ? "Referral" : "Direct";
+    return [row.recruiter_name, row.agency_name].filter(Boolean).join(" · ") || t("applications.routeAgency");
+  return row.route === "referral" ? t("applications.routeReferral") : t("applications.routeDirect");
 }
 
 export function ApplicationsPage() {
+  const t = useT();
   const [q, setQ] = useState("");
   const [debouncedQ] = useDebouncedValue(q, 250);
   const [stage, setStage] = useState<string[]>([]);
@@ -117,7 +119,7 @@ export function ApplicationsPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconBriefcase size={26} stroke={1.6} />
-          <Title order={2}>Applications</Title>
+          <Title order={2}>{t("applications.title")}</Title>
           {rows && (
             <Badge variant="light" color="gray">
               {rows.length}
@@ -130,61 +132,65 @@ export function ApplicationsPage() {
             value={view}
             onChange={(v) => setView(v as "list" | "board")}
             data={[
-              { value: "list", label: "List" },
-              { value: "board", label: "Board" },
+              { value: "list", label: t("applications.viewList") },
+              { value: "board", label: t("applications.viewBoard") },
             ]}
-            aria-label="View"
+            aria-label={t("applications.viewAria")}
           />
         </Group>
       </Group>
 
       <Group gap="sm" align="flex-end" wrap="wrap">
         <TextInput
-          placeholder="Search company, role, recruiter…"
+          placeholder={t("applications.searchPlaceholder")}
           leftSection={<IconSearch size={16} />}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
           w={300}
-          aria-label="Search"
+          aria-label={t("applications.searchAria")}
         />
         <MultiSelect
-          placeholder={stage.length ? undefined : "All stages"}
+          placeholder={stage.length ? undefined : t("applications.allStages")}
           data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
           value={stage}
           onChange={setStage}
           clearable
           w={240}
-          aria-label="Stages"
+          aria-label={t("applications.stagesAria")}
         />
         <Select
-          placeholder="Any route"
+          placeholder={t("applications.anyRoute")}
           data={[
-            { value: "direct", label: "Direct" },
-            { value: "agency", label: "Recruiter" },
-            { value: "referral", label: "Referral" },
+            { value: "direct", label: t("applications.routeDirect") },
+            { value: "agency", label: t("applications.routeRecruiter") },
+            { value: "referral", label: t("applications.routeReferral") },
           ]}
           value={route}
           onChange={setRoute}
           clearable
           w={140}
-          aria-label="Route"
+          aria-label={t("applications.routeAria")}
         />
         <Select
-          placeholder="Any agency"
+          placeholder={t("applications.anyAgency")}
           data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
           value={agencyId}
           onChange={setAgencyId}
           clearable
           searchable
           w={200}
-          aria-label="Agency"
+          aria-label={t("applications.agencyAria")}
         />
         <Switch
-          label="Needs chasing"
+          label={t("applications.needsChasing")}
           checked={staleOnly}
           onChange={(e) => setStaleOnly(e.currentTarget.checked)}
         />
-        <Switch label="Archived" checked={archived} onChange={(e) => setArchived(e.currentTarget.checked)} />
+        <Switch
+          label={t("applications.archived")}
+          checked={archived}
+          onChange={(e) => setArchived(e.currentTarget.checked)}
+        />
       </Group>
 
       {isLoading ? (
@@ -194,13 +200,13 @@ export function ApplicationsPage() {
       ) : !rows?.length ? (
         <Card withBorder p="xl">
           <Stack align="center" gap="xs">
-            <Text fw={600}>{filtered ? "No applications match these filters" : "No applications yet"}</Text>
+            <Text fw={600}>{filtered ? t("applications.noMatchFilters") : t("applications.noneYet")}</Text>
             <Text c="dimmed" size="sm">
-              {filtered ? "Try clearing a filter." : "Add the first one: company, role and how you applied."}
+              {filtered ? t("applications.tryClearing") : t("applications.addFirst")}
             </Text>
             {!filtered && (
               <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-                New application
+                {t("applications.newApplication")}
               </Button>
             )}
           </Stack>
@@ -213,22 +219,27 @@ export function ApplicationsPage() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>
-                  <SortHeader label="Company / role" asc="company" sort={sort} onSort={setSort} />
+                  <SortHeader
+                    label={t("applications.thCompanyRole")}
+                    asc="company"
+                    sort={sort}
+                    onSort={setSort}
+                  />
                 </Table.Th>
-                <Table.Th>Route</Table.Th>
+                <Table.Th>{t("applications.thRoute")}</Table.Th>
                 <Table.Th>
-                  <SortHeader label="Stage" asc="stage" sort={sort} onSort={setSort} />
+                  <SortHeader label={t("applications.thStage")} asc="stage" sort={sort} onSort={setSort} />
                 </Table.Th>
                 <Table.Th>
                   <SortHeader
-                    label="Last activity"
+                    label={t("applications.thLastActivity")}
                     asc="last_activity"
                     desc="-last_activity"
                     sort={sort}
                     onSort={setSort}
                   />
                 </Table.Th>
-                <Table.Th>Tags</Table.Th>
+                <Table.Th>{t("applications.labelTags")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -243,7 +254,10 @@ export function ApplicationsPage() {
                     }
                   }}
                   tabIndex={0}
-                  aria-label={`Open ${row.role_title} at ${row.company_name}`}
+                  aria-label={t("applications.openRowAria", {
+                    role: row.role_title,
+                    company: row.company_name,
+                  })}
                   style={{ cursor: "pointer" }}
                 >
                   <Table.Td>
@@ -272,20 +286,20 @@ export function ApplicationsPage() {
                     </Text>
                     {row.stale && (
                       <Text size="xs" c="red">
-                        needs chasing
+                        {t("applications.needsChasingLower")}
                       </Text>
                     )}
                     {row.reply_to_read_since && (
                       <Text size="xs" c="orange" fw={600}>
-                        reply to read
+                        {t("applications.replyToReadLower")}
                       </Text>
                     )}
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4}>
-                      {row.tags.map((t) => (
-                        <Badge key={t} size="sm" variant="dot" color="gray">
-                          {t}
+                      {row.tags.map((tag) => (
+                        <Badge key={tag} size="sm" variant="dot" color="gray">
+                          {tag}
                         </Badge>
                       ))}
                     </Group>

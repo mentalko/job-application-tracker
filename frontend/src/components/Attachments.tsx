@@ -28,6 +28,7 @@ import {
   useUploadAttachments,
   type AttachmentItem,
 } from "../api/attachmentHooks";
+import { t, useT } from "../i18n";
 import { formatDate, formatDateTime } from "../utils/time";
 
 /** An icon for the file's type. */
@@ -43,9 +44,9 @@ function AttachmentIcon({ att }: { att: AttachmentItem }) {
 }
 
 export function humanSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return t("library.sizeB", { n: bytes });
+  if (bytes < 1024 * 1024) return t("library.sizeKb", { n: Math.round(bytes / 1024) });
+  return t("library.sizeMb", { n: (bytes / (1024 * 1024)).toFixed(1) });
 }
 
 interface EmailMeta {
@@ -57,10 +58,11 @@ interface EmailMeta {
 }
 
 function AttachmentRow({ att }: { att: AttachmentItem }) {
+  const t = useT();
   const remove = useDeleteAttachment();
   // Exported emails show what they're about, not their file name.
   const mail = att.meta as EmailMeta;
-  const title = mail.email ? mail.subject || "(no subject)" : att.original_name;
+  const title = mail.email ? mail.subject || t("library.noSubject") : att.original_name;
   const detail = mail.email
     ? [mail.from?.[0], mail.date ? formatDateTime(mail.date) : null, humanSize(att.size)]
         .filter(Boolean)
@@ -94,16 +96,16 @@ function AttachmentRow({ att }: { att: AttachmentItem }) {
           )}
         </div>
       </Group>
-      <Tooltip label="Delete file">
+      <Tooltip label={t("library.deleteFile")}>
         <ActionIcon
           variant="subtle"
           color="gray"
           loading={remove.isPending}
           onClick={() => {
-            if (window.confirm(`Delete ${att.original_name}? (It stays in your data repo's git history.)`))
+            if (window.confirm(t("library.confirmDeleteFile", { name: att.original_name })))
               remove.mutate(att.id);
           }}
-          aria-label={`Delete ${att.original_name}`}
+          aria-label={t("library.deleteAria", { name: att.original_name })}
         >
           <IconTrash size={16} />
         </ActionIcon>
@@ -140,17 +142,18 @@ function useFileDrop(onFiles: (files: File[]) => void) {
 function UploadButton({
   onFiles,
   loading,
-  label = "Upload",
+  label,
 }: {
   onFiles: (f: File[]) => void;
   loading: boolean;
   label?: string;
 }) {
+  const t = useT();
   return (
     <FileButton onChange={(picked) => picked.length && onFiles(picked)} multiple>
       {(props) => (
         <Button {...props} size="xs" variant="light" leftSection={<IconUpload size={14} />} loading={loading}>
-          {label}
+          {label ?? t("library.upload")}
         </Button>
       )}
     </FileButton>
@@ -166,7 +169,7 @@ export function AttachmentsCard({
   entityType,
   entityId,
   inherited,
-  empty = "Drop files here: the CV you sent, a brief, an exported email. Up to 50 MB each, kept in your data folder.",
+  empty,
 }: {
   entityType: string;
   entityId: string;
@@ -174,6 +177,7 @@ export function AttachmentsCard({
   /** What to say when there are none. */
   empty?: string;
 }) {
+  const t = useT();
   const { data: files } = useAttachments(entityType, entityId);
   const { data: theirs } = useAttachments(
     inherited?.entityType ?? "",
@@ -190,7 +194,7 @@ export function AttachmentsCard({
         <Group justify="space-between">
           <Group gap={6}>
             <IconPaperclip size={18} />
-            <Title order={4}>Files</Title>
+            <Title order={4}>{t("library.files")}</Title>
           </Group>
           <UploadButton onFiles={(picked) => upload.mutate(picked)} loading={upload.isPending} />
         </Group>
@@ -199,7 +203,7 @@ export function AttachmentsCard({
         ))}
         {files && !files.length && !fromThem.length && (
           <Text size="sm" c="dimmed">
-            {empty}
+            {empty ?? t("library.dropFilesEmpty")}
           </Text>
         )}
         {fromThem.length > 0 && (
